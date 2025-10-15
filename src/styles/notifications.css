@@ -1,0 +1,125 @@
+/* Material UI Snackbar Notification Styles - Theme Integration */
+
+/* Global notification container */
+.MuiSnackbar-root {
+    z-index: 9999 !important;
+}
+
+/* Notification positioning and spacing */
+.MuiSnackbar-anchorOriginTopRight {
+    top: 24px !important;
+    right: 24px !important;
+}
+
+/* Alert component styling */
+.MuiAlert-root {
+    min-width: 300px;
+    max-width: 400px;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Dark theme specific styles */
+[data-theme="dark"] .MuiAlert-root {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Success notification colors */
+.MuiAlert-filledSuccess {
+    background-color: var(--success-color) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAlert-filledSuccess {
+    color: #000000 !important;
+}
+
+/* Error notification colors */
+.MuiAlert-filledError {
+    background-color: var(--danger-color) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAlert-filledError {
+    color: #000000 !important;
+}
+
+/* Warning notification colors */
+.MuiAlert-filledWarning {
+    background-color: var(--warning-color) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAlert-filledWarning {
+    color: #000000 !important;
+}
+
+/* Info notification colors */
+.MuiAlert-filledInfo {
+    background-color: var(--info-color) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .MuiAlert-filledInfo {
+    color: #000000 !important;
+}
+
+/* Icon styling */
+.MuiAlert-icon {
+    font-size: 20px !important;
+    margin-right: 8px !important;
+}
+
+/* Message text styling */
+.MuiAlert-message {
+    padding: 8px 0 !important;
+    flex: 1 !important;
+}
+
+/* Close button styling */
+.MuiAlert-action .MuiIconButton-root {
+    color: #ffffff !important;
+    padding: 4px !important;
+    margin-right: 4px !important;
+}
+
+.MuiAlert-action .MuiIconButton-root:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .MuiAlert-action .MuiIconButton-root {
+    color: #000000 !important;
+}
+
+[data-theme="dark"] .MuiAlert-action .MuiIconButton-root:hover {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Animation improvements */
+.MuiSnackbar-root .MuiAlert-root {
+    transform: translateX(0) !important;
+    transition: transform 0.3s ease-in-out !important;
+}
+
+.MuiSnackbar-root[aria-hidden="true"] .MuiAlert-root {
+    transform: translateX(100%) !important;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .MuiAlert-root {
+        min-width: 280px;
+        max-width: calc(100vw - 48px);
+        margin: 0 24px;
+    }
+    
+    .MuiSnackbar-anchorOriginTopRight {
+        top: 16px !important;
+        right: 16px !important;
+        left: 16px !important;
+    }
+}

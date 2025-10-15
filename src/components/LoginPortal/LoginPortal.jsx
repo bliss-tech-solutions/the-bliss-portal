@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import "./LoginPortal.css";
-import { Row, Col, Form, Input, Button, Checkbox, Spin, App } from "antd";
+import { Row, Col, Form, Input, Button, Checkbox, Spin } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useSignInUserMutation } from "../../store/api";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../store/slices/authSlice";
+import { selectTheme, toggleTheme } from "../../store/slices/themeSlice";
+import { useNotification } from "../../contexts/NotificationContext";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const LoginPortal = () => {
@@ -12,7 +15,13 @@ const LoginPortal = () => {
     const dispatch = useDispatch();
     const [signInUser, { isLoading }] = useSignInUserMutation();
     const [loading, setLoading] = useState(false);
-    const { notification } = App.useApp();
+    const { success, error } = useNotification();
+    const theme = useSelector(selectTheme);
+    const isDarkMode = theme === 'dark';
+
+    const handleThemeToggle = () => {
+        dispatch(toggleTheme());
+    };
 
     const handleLogin = async (values) => {
         setLoading(true);
@@ -22,12 +31,7 @@ const LoginPortal = () => {
 
             // Check if credentials are provided
             if (!email || !password) {
-                notification.error({
-                    message: 'Authentication Failed',
-                    description: 'User credentials not found. Please contact administrator.',
-                    placement: 'topRight',
-                    duration: 4.5,
-                });
+                error('User credentials not found. Please contact administrator.');
                 setLoading(false);
                 return;
             }
@@ -40,8 +44,8 @@ const LoginPortal = () => {
             if (response.success) {
                 // Dispatch login success action to update auth state
                 dispatch(loginSuccess({
-                    user: response.data || { 
-                        email: email, 
+                    user: response.data || {
+                        email: email,
                         id: response.data?._id,
                         name: response.data?.name || '',
                         firstName: response.data?.firstName || '',
@@ -53,49 +57,24 @@ const LoginPortal = () => {
                     token: response.token || 'authenticated'
                 }));
 
-                notification.success({
-                    message: 'Login Successful',
-                    description: 'Welcome back! Redirecting to dashboard...',
-                    placement: 'topRight',
-                    duration: 3,
-                });
+                success('Welcome back! Redirecting to dashboard...');
 
                 // Add a smooth delay before redirect with fade effect
                 setTimeout(() => {
                     navigate('/Dashboard', { replace: true });
                 }, 1500);
             } else {
-                notification.error({
-                    message: 'Login Failed',
-                    description: response.message || 'Invalid credentials. Please check your email and password.',
-                    placement: 'topRight',
-                    duration: 4.5,
-                });
+                error(response.message || 'Invalid credentials. Please check your email and password.');
             }
         } catch (error) {
             console.error('Login error:', error);
 
             if (error.status === 401) {
-                notification.error({
-                    message: 'Authentication Failed',
-                    description: 'User credentials not found. Please contact administrator.',
-                    placement: 'topRight',
-                    duration: 4.5,
-                });
+                error('User credentials not found. Please contact administrator.');
             } else if (error.data?.message) {
-                notification.error({
-                    message: 'Login Failed',
-                    description: error.data.message,
-                    placement: 'topRight',
-                    duration: 4.5,
-                });
+                error(error.data.message);
             } else {
-                notification.error({
-                    message: 'Login Failed',
-                    description: 'An unexpected error occurred. Please try again.',
-                    placement: 'topRight',
-                    duration: 4.5,
-                });
+                error('An unexpected error occurred. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -103,7 +82,7 @@ const LoginPortal = () => {
     };
 
     return (
-        <div id="LoginPortal" className={`page-transition ${loading ? 'fade-out' : ''}`}>
+        <div id="LoginPortal" className={`page-transition theme-${theme} ${loading ? 'fade-out' : ''}`}>
             <div>
                 <div className="LoginPortalBackgroundOverlay">
                     <img src="/Images/BackgroundOverlay.jpg" alt="" />
@@ -125,8 +104,21 @@ const LoginPortal = () => {
                     <Col lg={12}>
                         <div className="LoginPortalForm">
                             <div className="LoginPortalFormInner">
+                                {/* Theme Toggle Button */}
+                                <div className="login-theme-toggle">
+                                    <Button
+                                        type="text"
+                                        icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+                                        onClick={handleThemeToggle}
+                                        className="login-theme-button"
+                                        title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                                    >
+                                        {isDarkMode ? 'Light' : 'Dark'}
+                                    </Button>
+                                </div>
+
                                 <div className="LoginPortalFormInnerLogo MarginBottomMedium">
-                                    <img src="https://the-bliss-solution.vercel.app/Images/BlissLogo/BlissBlacklogo.png" alt="Bliss Solution Logo" />
+                                    <img src={theme === 'dark' ? "https://the-bliss-solution.vercel.app/Images/BlissLogo/BlissWhiteLogo.png" : "https://the-bliss-solution.vercel.app/Images/BlissLogo/BlissBlacklogo.png"} alt="Bliss Solution Logo" />
                                 </div>
                                 <Form layout="vertical" onFinish={handleLogin}>
                                     <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email', message: 'Enter valid email' }]}>
@@ -172,13 +164,4 @@ const LoginPortal = () => {
     )
 }
 
-// Create the component with App provider
-const LoginPortalWithApp = () => {
-    return (
-        <App>
-            <LoginPortal />
-        </App>
-    );
-};
-
-export default LoginPortalWithApp;
+export default LoginPortal;

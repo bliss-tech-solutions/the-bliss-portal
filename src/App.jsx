@@ -1,9 +1,11 @@
 import './App.css'
 import './styles/theme.css'
+import './styles/notifications.css'
 import PortalRoutes from './routes/PortalRoutes'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { setTheme } from './store/slices/themeSlice'
+import { NotificationProvider } from './contexts/NotificationContext'
 
 function App() {
   const dispatch = useDispatch()
@@ -15,9 +17,9 @@ function App() {
   }, [dispatch])
 
   return (
-    <>
+    <NotificationProvider>
       <PortalRoutes />
-    </>
+    </NotificationProvider>
   )
 }
 

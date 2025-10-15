@@ -1,26 +1,61 @@
 import React, { useState, useEffect } from "react";
 import "./PortalHeader.css";
-import { Row, Col, Dropdown, Badge, Avatar, Space, Button } from "antd";
+import { Row, Col, Dropdown, Badge, Avatar, Space, Button, Spin } from "antd";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { selectCurrentHeaderLogo, toggleTheme, selectTheme } from "../../../store/slices/themeSlice";
-import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { logout } from "../../../store/slices/authSlice";
+import { useNotification } from "../../../contexts/NotificationContext";
+import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined } from "@ant-design/icons";
 
 const PortalHeader = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { user } = useSelector((state) => state.auth);
     const currentHeaderLogo = useSelector(selectCurrentHeaderLogo);
     const theme = useSelector(selectTheme);
+    const { success } = useNotification();
     const [greeting, setGreeting] = useState('Good Morning');
     const [currentDate, setCurrentDate] = useState({
         date: '',
         day: ''
     });
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
     const isDarkMode = theme === 'dark';
 
     const handleThemeToggle = () => {
         dispatch(toggleTheme());
     };
 
+    // Handle logout with loading state
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
+
+        // Show loading for 1.5-2 seconds
+        setTimeout(() => {
+            // Dispatch logout action to clear Redux state and localStorage
+            dispatch(logout());
+
+            // Show success notification using MUI Snackbar
+            success('Logged out successfully from Bliss Portal');
+
+            // Navigate to login page
+            navigate('/');
+
+            // Reset loading state
+            setIsLoggingOut(false);
+        }, 1800); // 1.8 seconds delay
+    };
+
+    // Get user's first name and last name from API response
+    const firstName = user?.firstName || '';
+    const lastName = user?.lastName || '';
+
+    // Combine first name and last name
+    const fullName = (firstName && lastName) ? `${firstName} ${lastName}` :
+        firstName ? firstName :
+            lastName ? lastName :
+                'User';
 
     // Notification dropdown items
     const notificationItems = [
@@ -56,35 +91,56 @@ const PortalHeader = () => {
     // Profile dropdown items
     const profileItems = [
         {
-            key: '1',
-            icon: <UserOutlined />,
-            label: 'Profile',
-        },
-        {
-            key: '2',
-            icon: <SettingOutlined />,
-            label: 'Settings',
+            key: 'profile-header',
+            label: (
+                <div className="profile-dropdown-header">
+                    <div className="profile-avatar-section">
+                        <Avatar size={64} icon={<UserOutlined />} className="profile-main-avatar" />
+                        <div className="profile-info">
+                            <div className="profile-name">{fullName}</div>
+                            <div className="profile-role">{user?.role || 'User'}</div>
+                            <div className="profile-email">{user?.email || user?.userEmail || ''}</div>
+                        </div>
+                    </div>
+                </div>
+            ),
+            disabled: true,
         },
         {
             type: 'divider',
         },
         {
-            key: '3',
-            icon: <LogoutOutlined />,
-            label: 'Logout',
+            key: 'edit-profile',
+            icon: <UserOutlined />,
+            label: (
+                <div className="edit-profile-button-container">
+                    <Button
+                        type="primary"
+                        size="small"
+                        className="edit-profile-button"
+                        icon={<UserOutlined />}
+                    >
+                        Edit Profile
+                    </Button>
+                </div>
+            ),
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: 'settings',
+            icon: <SettingOutlined />,
+            label: 'Settings',
+        },
+        {
+            key: 'logout',
+            icon: isLoggingOut ? <LoadingOutlined spin /> : <LogoutOutlined />,
+            label: isLoggingOut ? 'Logging out...' : 'Logout',
             danger: true,
+            disabled: isLoggingOut,
         },
     ];
-
-    // Get user's first name and last name from API response
-    const firstName = user?.firstName || '';
-    const lastName = user?.lastName || '';
-
-    // Combine first name and last name
-    const fullName = (firstName && lastName) ? `${firstName} ${lastName}` :
-        firstName ? firstName :
-            lastName ? lastName :
-                'User';
 
     // Set greeting and date/time based on Indian time
     useEffect(() => {
@@ -197,7 +253,14 @@ const PortalHeader = () => {
 
                                     {/* Profile Dropdown */}
                                     <Dropdown
-                                        menu={{ items: profileItems }}
+                                        menu={{
+                                            items: profileItems,
+                                            onClick: ({ key }) => {
+                                                if (key === 'logout') {
+                                                    handleLogout();
+                                                }
+                                            }
+                                        }}
                                         placement="bottomRight"
                                         trigger={['click']}
                                         overlayClassName="portal-profile-dropdown"

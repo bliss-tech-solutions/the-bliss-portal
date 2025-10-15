@@ -1,5 +1,9 @@
 #LoginPortal {
     position: relative;
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
 }
 
 .LoginPortalImage {
@@ -20,38 +24,177 @@
     min-height: 100vh;
     display: flex;
     align-items: center;
+    background-color: var(--primary-bg);
+    transition: background-color 0.3s ease;
 }
 
 .LoginPortalFormInner {
     width: 70%;
     margin: 0 auto;
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .LoginAltAction {
     text-align: center;
+    color: var(--primary-text);
+    transition: color 0.3s ease;
+}
+
+.LoginAltAction a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.LoginAltAction a:hover {
+    color: var(--button-primary-hover);
+    text-decoration: underline;
 }
 
 .LoginSubmitBtn {
     height: 48px;
-    border-radius: 0px;
-    background: black;
+    border-radius: 8px;
+    background: var(--button-primary);
     border: none;
     font-weight: 600;
-    color: white;
+    color: var(--button-text);
+    transition: all 0.3s ease;
 }
 
 .LoginSubmitBtn:hover {
-    color: #eab236 !important;
-    background: black !important;
+    color: var(--accent-color) !important;
+    background: var(--button-primary-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--shadow);
 }
 
-.LoginSubmitBtn:hover {
-    filter: brightness(0.95);
+.LoginSubmitBtn:focus {
+    color: var(--accent-color) !important;
+    background: var(--button-primary-hover) !important;
 }
 
 .LoginSubmitBtn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+/* Theme-aware Ant Design form styling */
+.LoginPortalFormInner .ant-form-item-label > label {
+    color: var(--primary-text) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.LoginPortalFormInner .ant-input {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.LoginPortalFormInner .ant-input:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.LoginPortalFormInner .ant-input:focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2) !important;
+}
+
+.LoginPortalFormInner .ant-input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.LoginPortalFormInner .ant-checkbox-wrapper {
+    color: var(--primary-text) !important;
+    transition: color 0.3s ease;
+}
+
+.LoginPortalFormInner .ant-checkbox-wrapper a {
+    color: var(--accent-color) !important;
+    text-decoration: none;
+}
+
+.LoginPortalFormInner .ant-checkbox-wrapper a:hover {
+    color: var(--button-primary-hover) !important;
+    text-decoration: underline;
+}
+
+.LoginPortalFormInner .ant-checkbox-inner {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.LoginPortalFormInner .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Logo styling */
+.LoginPortalFormInnerLogo img {
+    transition: filter 0.3s ease;
+    max-width: 200px;
+    height: auto;
+}
+
+/* Theme Toggle Button */
+.login-theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.login-theme-button {
+    color: var(--primary-text) !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    height: auto !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px var(--shadow) !important;
+}
+
+.login-theme-button:hover {
+    color: var(--accent-color) !important;
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+}
+
+.login-theme-button:focus {
+    color: var(--accent-color) !important;
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Form container responsive adjustments */
+@media (max-width: 768px) {
+    .LoginPortalFormInner {
+        width: 90%;
+        padding: 30px 20px;
+        margin: 20px auto;
+    }
+    
+    .login-theme-toggle {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .login-theme-button {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+    }
 }
 
 .LoginSubmitBtn .ant-spin {
