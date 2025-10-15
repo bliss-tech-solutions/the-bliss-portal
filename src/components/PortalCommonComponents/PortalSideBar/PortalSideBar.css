@@ -1,0 +1,63 @@
+#PortalSideBar .PortalLogoContainer {
+    /* padding: 20px; */
+    min-height: 100px;
+    max-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#PortalSideBar {
+    height: 100%;
+    background-color: var(--sidebar-bg);
+    transition: background-color 0.3s ease;
+}
+
+.PortalBrandLogoContainer {
+    padding: 10px;
+}
+
+/* Portal sidebar specific styling */
+.portal-sidebar {
+    border-right: 1px solid var(--border-color);
+    /* box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navigation container */
+.PortalNavigationContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px 16px 8px;
+}
+
+/* Navigation menu styling */
+.PortalNavigationContainer .ant-menu {
+    background: transparent !important;
+    border: none !important;
+}
+
+.PortalNavigationContainer .ant-menu-item {
+    margin: 4px 0 !important;
+    border-radius: 6px !important;
+    color: var(--primary-text) !important;
+}
+
+.PortalNavigationContainer .ant-menu-item:hover {
+    background-color: var(--hover-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.PortalNavigationContainer .ant-menu-item-selected {
+    background-color: var(--accent-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.PortalNavigationContainer .ant-menu-item-icon {
+    color: var(--primary-text) !important;
+}
+
+.PortalNavigationContainer .ant-menu-item-selected .ant-menu-item-icon {
+    color: var(--primary-text) !important;
+}

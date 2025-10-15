@@ -1,0 +1,54 @@
+#Dashboard {
+    min-height: 100vh;
+    height: 100vh;
+    background-color: var(--primary-bg);
+    transition: background-color 0.3s ease;
+}
+
+/* Portal layout styling */
+.portal-container {
+    width: 100%;
+    height: 100%;
+}
+
+/* Smooth column transitions */
+.portal-column-transition {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Portal container styling */
+/* .PortalContainer {
+    height: 100vh;
+    overflow: hidden;
+} */
+
+/* Smooth row transitions */
+.PortalContainer .ant-row {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Column hover effects */
+.portal-column-transition:hover {
+    z-index: 10;
+    position: relative;
+}
+
+/* Portal sidebar specific hover styling */
+/* .portal-column-transition:first-child:hover {
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+} */
+
+/* Portal Components Container */
+.PortalComponentsContainer {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-y: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .portal-column-transition {
+        transition: all 0.3s ease !important;
+    }
+}

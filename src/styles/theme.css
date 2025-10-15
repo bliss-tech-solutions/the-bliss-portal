@@ -1,0 +1,257 @@
+/* Theme CSS Variables */
+:root {
+    /* Light Theme (Default) */
+    --primary-bg: #ffffff;
+    --secondary-bg: #f8f9fa;
+    --tertiary-bg: #e9ecef;
+    --primary-text: #212529;
+    --button-text: #ffffff;
+    --secondary-text: #6c757d;
+    --accent-color: #EBB236;
+    --border-color: #dee2e6;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --hover-bg: #f1f3f4;
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --button-primary: black;
+    --button-primary-hover: #EBB236;
+    --brand-color: #EBB236;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --sidebar-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    /* Dark Theme */
+    --sidebar-bg: #161616;
+    --primary-bg: #0e0e0e;
+    --secondary-bg: #0e0e0e;
+    --tertiary-bg: #404040;
+    --primary-text: #ffffff;
+    --button-text: #ffffff;
+    --secondary-text: #b0b0b0;
+    --accent-color: #EBB236;
+    --brand-color: #EBB236;
+    --border-color: #404040;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --hover-bg: #404040;
+    --card-bg: #2d2d2d;
+    --input-bg: #404040;
+    --button-primary: black;
+    --button-primary-hover: black;
+    --success-color: #51cf66;
+    --warning-color: #ffd43b;
+    --danger-color: #ff6b6b;
+    --info-color: #74c0fc;
+}
+
+/* Global Theme Styles */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Body color changes globally based on theme */
+body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; */
+}
+
+/* Portal container inherits from body but can override */
+.portal-container {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+/* Theme-aware components - Only for portal */
+.portal-container .theme-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.portal-container .theme-input {
+    background-color: var(--input-bg);
+    color: var(--primary-text);
+    border: 1px solid var(--border-color);
+}
+
+.portal-container .theme-button {
+    background-color: var(--button-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+.portal-container .theme-button:hover {
+    background-color: var(--button-primary-hover);
+}
+
+.portal-container .theme-text-primary {
+    color: var(--primary-text);
+}
+
+.portal-container .theme-text-secondary {
+    color: var(--secondary-text);
+}
+
+.portal-container .theme-bg-primary {
+    background-color: var(--primary-bg);
+}
+
+.portal-container .theme-bg-secondary {
+    background-color: var(--secondary-bg);
+}
+
+.portal-container .theme-border {
+    border-color: var(--border-color);
+}
+
+/* Sidebar Theme Styles - Only for portal */
+.portal-container .theme-sidebar {
+    background-color: var(--secondary-bg);
+    /* border-right: 1px solid var(--border-color); */
+}
+
+.portal-container .theme-sidebar-item {
+    color: var(--primary-text);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 4px 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.portal-container .theme-sidebar-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.portal-container .theme-sidebar-item.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Header Theme Styles - Only for portal */
+/* .portal-container .theme-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px var(--shadow);
+} */
+
+/* Dashboard Theme Styles - Only for portal */
+.portal-container .theme-dashboard {
+    background-color: var(--primary-bg);
+}
+
+.portal-container .theme-dashboard-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+/* Theme Toggle Styles - Only for portal */
+.portal-container .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--tertiary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.portal-container .theme-toggle:hover {
+    background-color: var(--hover-bg);
+}
+
+.portal-container .theme-toggle-icon {
+    width: 20px;
+    height: 20px;
+    transition: all 0.3s ease;
+}
+
+.portal-container .theme-toggle-text {
+    color: var(--primary-text);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Global Ant Design Theme Overrides */
+.ant-layout {
+    background-color: var(--primary-bg) !important;
+}
+
+.ant-layout-sider {
+    background-color: var(--secondary-bg) !important;
+}
+
+.ant-menu {
+    background-color: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-menu-item {
+    color: var(--primary-text) !important;
+}
+
+.ant-menu-item:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.ant-menu-item-selected {
+    background-color: var(--accent-color) !important;
+    color: white !important;
+}
+
+.ant-card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ant-card-head {
+    border-bottom-color: var(--border-color) !important;
+}
+
+.ant-input {
+    background-color: var(--input-bg) !important;
+    color: var(--primary-text) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ant-btn-primary {
+    background-color: var(--button-primary) !important;
+    /* border-color: var(--button-primary) !important; */
+}
+
+.ant-btn-primary:hover {
+    background-color: var(--button-primary-hover) !important;
+    border-color: var(--button-primary-hover) !important;
+}
+
+/* Additional global overrides */
+.ant-notification {
+    background-color: var(--card-bg) !important;
+}
+
+.ant-notification-notice {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-notification-notice-message {
+    color: var(--primary-text) !important;
+}
+
+.ant-notification-notice-description {
+    color: var(--secondary-text) !important;
+}

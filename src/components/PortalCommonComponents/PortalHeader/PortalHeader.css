@@ -1,0 +1,244 @@
+#PortalHeader {
+    /* padding: 20px 20px; */
+    position: relative;
+    overflow: hidden;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0px 20px;
+    border-bottom: 1px solid var(--border-color);
+    /* justify-content: space-between; */
+}
+
+.PortalLogoContainer img {
+    width: 80%;
+}
+
+.PortalBackgroundBlissOverlayText {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: -40px;
+}
+
+.PortalBackgroundBlissOverlayText h1 {
+    font-size: 13rem;
+    opacity: 0.08;
+    text-align: center;
+}
+
+.PortalBrandLogoAndGreetingsContainer {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.PortalGreetingsContainer {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+#PortalHeader .PortalContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.PortalGreetingsText {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.PortalGreetingsText p {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Portal theme toggle styling */
+.portal-theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--button-primary);
+    color: white;
+    border: 1px solid var(--border-color);
+}
+
+.portal-theme-toggle:hover {
+    background-color: var(--border-color);
+    color: black;
+}
+
+.portal-theme-toggle-icon {
+    font-size: 16px;
+}
+
+.portal-theme-toggle-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.portal-theme-toggle-container {
+    padding: 10px;
+}
+
+/* Portal Header Actions */
+.portal-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Header Buttons */
+.portal-theme-button,
+.portal-notification-button,
+.portal-profile-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    color: var(--primary-text) !important;
+}
+
+/* Theme toggle hover - black on dark theme */
+.portal-theme-button:hover {
+    background-color: #000000;
+    color: var(--primary-text) !important;
+}
+
+/* Other buttons hover */
+.portal-notification-button:hover,
+.portal-profile-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-text);
+}
+
+/* Header Icons */
+.portal-header-icon {
+    font-size: 16px;
+    color: var(--primary-text);
+}
+
+/* Profile Elements */
+.portal-profile-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-text);
+}
+
+/* Notification Badge */
+.portal-notification-button .ant-badge {
+    display: flex;
+    align-items: center;
+}
+
+/* Dropdown Styling */
+.portal-notification-dropdown,
+.portal-profile-dropdown {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+}
+
+/* Notification Items */
+.notification-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-text);
+    margin-bottom: 4px;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.PortalProfileDetailsContainer {
+    display: flex;
+    justify-content: end;
+}
+
+/* Date Styling */
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.PortalGreetingsName {
+    font-weight: 500;
+}
+
+.date-icon {
+    color: var(--brand-color);
+    font-size: 14px;
+}
+
+.date-text {
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+.PortalGreetingsText>div {
+    border: 1px solid var(--border-color);
+    padding: 5px 20px;
+    border-radius: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .portal-profile-name {
+        display: none;
+    }
+
+    .portal-theme-button span {
+        display: none;
+    }
+
+    .portal-header-actions {
+        gap: 4px;
+    }
+
+    .date-time-container {
+        gap: 6px;
+    }
+
+    .date-text,
+    .time-text {
+        font-size: 12px;
+    }
+
+    .date-time-icon {
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,127 @@
+/* Theme support for UserVerificationForm */
+.CreateNewUserContainer {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.UserVerificationFormImage {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.UserVerificationFormImage div img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+.CreateNewUserBrandLogo img {
+    width: 100px;
+}
+
+.CreateNewUserFormContainer {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.CreateNewUserFormContainerInner {
+    width: 70%;
+}
+
+.SlidesControlButtonsAndNavigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* .SlidesControlButtonsAndNavigation .ant-btn span{
+    color: var(--primary-text) !important;
+} */
+.SlidesControlButtonsAndNavigation .ant-btn {
+    background-color: var(--button-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0px !important;
+    padding: 15px 30px;
+    transition: all 0.3s ease;
+    color: var(--button-text) !important;
+}
+
+.SlidesControlButtonsAndNavigation .ant-btn:hover {
+    background-color: var(--accent-color) !important;
+    color: var(--button-text) !important;
+}
+
+.SlidesChangeLoginContainer .ant-input,
+.SlidesChangeLoginContainer .ant-select-selector,
+.SlidesChangeLoginContainer .ant-picker {
+    border-radius: 0px !important;
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.SlidesChangeLoginContainer .ant-input::placeholder,
+.SlidesChangeLoginContainer .ant-select-selection-placeholder {
+    font-size: 12px;
+    color: var(--secondary-text) !important;
+}
+
+.SlidesChangeLoginContainer label {
+    font-size: 13px;
+    text-transform: capitalize;
+    color: var(--primary-text) !important;
+}
+
+.SlidesChangeLoginContainer .ant-form-item {
+    margin-bottom: 14px;
+}
+
+/* Theme support for text elements */
+.CreateNewUserFormContainerInner h2 {
+    color: var(--primary-text);
+}
+
+.CreateNewUserFormContainerInner p {
+    color: var(--secondary-text);
+}
+
+/* Theme support for form elements */
+.SlidesChangeLoginContainer .ant-checkbox-wrapper {
+    color: var(--primary-text);
+}
+
+.SlidesChangeLoginContainer .ant-checkbox-inner {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+}
+
+.SlidesChangeLoginContainer .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.AgreeToTermsAndConditions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .CreateNewUserFormContainerInner {
+        width: 90%;
+    }
+
+    .UserVerificationFormImage {
+        display: none;
+    }
+
+    .CreateNewUserFormContainer {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+    }
+}
