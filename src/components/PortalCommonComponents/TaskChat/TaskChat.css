@@ -1,0 +1,394 @@
+/* Task Chat Component - Reusable Chat Module */
+
+.task-chat-card {
+    margin-bottom: 10px !important;
+}
+
+.task-chat-card .ant-card-body {
+    padding: 10px !important;
+    background-color: var(--secondary-bg) !important;
+}
+
+.task-chat-card .ant-card-head {
+    padding: 10px !important;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.task-chat-card .ant-card-head-title {
+    color: var(--primary-text) !important;
+}
+
+/* Comments Section */
+.comments-section {
+    border-top: 1px solid var(--border-color);
+    margin-top: 24px;
+    padding-top: 20px;
+}
+
+.comments-tabs {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.tab-active {
+    color: var(--primary-text);
+    font-size: 15px;
+    font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary-text);
+    margin-bottom: -13px;
+}
+
+.empty-comments {
+    text-align: center;
+    color: var(--secondary-text);
+    font-style: italic;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+/* Chat Message Layout - Minimal Black/White/Brand Colors */
+.chat-message {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    max-width: 100%;
+}
+
+.chat-message:last-child {
+    margin-bottom: 0;
+}
+
+/* Sent Messages - Right Side */
+.chat-message.sent {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.sent .message-content {
+    align-items: flex-end;
+}
+
+.sent .message-bubble {
+    background-color: var(--brand-color);
+    color: white;
+    border-radius: 18px 18px 4px 18px;
+    position: relative;
+}
+
+.sent .message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: -8px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-left-color: var(--brand-color);
+    border-top: none;
+    border-bottom: none;
+}
+
+.sent .message-time {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Received Messages - Left Side */
+.chat-message.received {
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+.received .message-content {
+    align-items: flex-start;
+}
+
+.received .message-bubble {
+    background-color: #000;
+    color: #fff;
+    border-radius: 18px 18px 18px 4px;
+    position: relative;
+}
+
+.received .message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -8px;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-right-color: #000;
+    border-top: none;
+    border-bottom: none;
+}
+
+.received .message-time {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Message Avatar */
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--brand-color);
+    color: white;
+}
+
+.received .message-avatar {
+    background-color: var(--button-text);
+    color: black;
+    border: 1px solid var(--border-color);
+}
+
+/* Message Content */
+.message-content {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    min-width: 120px;
+}
+
+.message-bubble {
+    padding: 12px 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+}
+
+.message-bubble:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.message-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    word-wrap: break-word;
+    margin-bottom: 4px;
+    color: inherit;
+}
+.message-text .emoji-large{
+    font-size: 22px;
+}
+
+.message-time {
+    font-size: 11px;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.received .message-time {
+    text-align: left;
+}
+
+.message-sender {
+    font-size: 11px;
+    color: var(--secondary-text);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Comment Input */
+.comment-input-wrapper {
+    margin-top: 20px;
+}
+
+.comment-input-wrapper .ant-input-affix-wrapper {
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.comment-input-wrapper .ant-input {
+    background-color: transparent;
+    color: var(--primary-text);
+}
+
+.comment-input-wrapper .ant-input::placeholder {
+    color: var(--secondary-text);
+}
+
+.comment-input-wrapper .ant-input-affix-wrapper:hover {
+    border-color: var(--brand-color);
+}
+
+.comment-input-wrapper .ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 3px rgba(235, 178, 54, 0.1);
+}
+
+.comment-input-wrapper .ant-input-suffix {
+    margin-left: 8px;
+}
+
+.comment-input-wrapper .ant-input-suffix svg:hover {
+    transform: scale(1.1);
+}
+
+/* Emoji Picker Styles */
+.emoji-picker-container {
+    position: relative;
+}
+
+.emoji-picker-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    z-index: 1000;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    overflow: hidden;
+}
+
+.emoji-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.emoji-picker-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.emoji-picker-close {
+    color: var(--secondary-text) !important;
+    padding: 2px 4px !important;
+    min-width: auto !important;
+    height: auto !important;
+}
+
+.emoji-picker-close:hover {
+    color: var(--primary-text) !important;
+    background-color: var(--hover-bg) !important;
+}
+
+.emoji-button {
+    transition: all 0.2s ease !important;
+}
+
+.emoji-button:hover {
+    background-color: var(--hover-bg) !important;
+    color: var(--brand-color) !important;
+}
+
+/* Emoji picker customization */
+.emoji-picker-popup .EmojiPickerReact {
+    background: var(--card-bg) !important;
+    border: none !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-search-container input {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-search-container input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-category-label {
+    background: var(--secondary-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-emoji-category-label {
+    color: var(--primary-text) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-emoji:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-preview {
+    background: var(--secondary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.emoji-picker-popup .EmojiPickerReact .epr-preview-name {
+    color: var(--primary-text) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .chat-message {
+        max-width: 100%;
+    }
+
+    .message-content {
+        max-width: 85%;
+    }
+
+    .message-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 10px;
+    }
+
+    .emoji-picker-popup {
+        width: 280px !important;
+        left: -50px;
+    }
+
+    .emoji-picker-popup .EmojiPickerReact {
+        width: 280px !important;
+        height: 280px !important;
+    }
+
+    .emoji-picker-header {
+        padding: 6px 10px;
+    }
+
+    .emoji-picker-title {
+        font-size: 11px;
+    }
+}
+
+/* Comments List */
+.comments-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Custom scrollbar for comments list */
+.comments-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.comments-list::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 2px;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+}
+
+.comments-list::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-color);
+}

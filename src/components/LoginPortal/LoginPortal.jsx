@@ -53,7 +53,7 @@ const LoginPortal = () => {
                         role: response.data?.role || '',
                         userEmail: response.data?.userEmail || email
                     },
-                    userId: response.data?._id,
+                    userId: response.data?.userId,
                     token: response.token || 'authenticated'
                 }));
 

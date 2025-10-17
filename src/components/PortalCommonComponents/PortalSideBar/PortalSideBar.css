@@ -29,6 +29,8 @@
 .PortalNavigationContainer {
     flex: 1;
     overflow-y: auto;
+    display: flex;
+    justify-content: center;
     padding: 0 8px 16px 8px;
 }
 
@@ -39,7 +41,7 @@
 }
 
 .PortalNavigationContainer .ant-menu-item {
-    margin: 4px 0 !important;
+    margin: 10px 0 !important;
     border-radius: 6px !important;
     color: var(--primary-text) !important;
 }
@@ -50,8 +52,10 @@
 }
 
 .PortalNavigationContainer .ant-menu-item-selected {
-    background-color: var(--accent-color) !important;
-    color: var(--primary-text) !important;
+    background-color: var(--brand-color) !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(235, 178, 54, 0.3) !important;
 }
 
 .PortalNavigationContainer .ant-menu-item-icon {
@@ -59,5 +63,5 @@
 }
 
 .PortalNavigationContainer .ant-menu-item-selected .ant-menu-item-icon {
-    color: var(--primary-text) !important;
+    color: #000000 !important;
 }

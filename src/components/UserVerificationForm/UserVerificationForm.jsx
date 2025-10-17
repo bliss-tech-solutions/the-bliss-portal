@@ -3,22 +3,42 @@ import "./UserVerificationForm.css";
 import { Row, Col, Form, Input, Button, Select, DatePicker, Checkbox, App as AntdApp } from "antd";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { useNavigate } from "react-router-dom";
 import { useAddUserDetailsMutation, useGenerateUserCredentialMutation } from "../../store/api";
 import { useSelector } from "react-redux";
 import { selectCurrentHeaderLogo, selectTheme } from "../../store/slices/themeSlice";
 
 const UserVerificationForm = () => {
     const { notification, modal } = AntdApp.useApp();
+    const navigate = useNavigate();
     const [current, setCurrent] = useState(0);
     const [form] = Form.useForm();
+    const [selectedRole, setSelectedRole] = useState(null);
     const swiperRef = useRef(null);
     const totalSlides = 4;
     const [addUserDetails, { isLoading }] = useAddUserDetailsMutation();
     const [generateUserCredential] = useGenerateUserCredentialMutation();
-    
+
     // Theme support
     const currentLogo = useSelector(selectCurrentHeaderLogo);
     const theme = useSelector(selectTheme);
+
+    // Position options based on role
+    const getPositionOptions = (role) => {
+        if (role === "Execution") {
+            return [
+                { value: "SME", label: "SME" }
+            ];
+        } else if (role === "user") {
+            return [
+                { value: "Graphics Designer", label: "Graphics Designer" },
+                { value: "Video Editor", label: "Video Editor" },
+                { value: "Developer", label: "Developer" },
+                { value: "Content Writer", label: "Content Writer" }
+            ];
+        }
+        return [];
+    };
 
     const goPrev = () => swiperRef.current && swiperRef.current.slidePrev();
     const goNext = () => swiperRef.current && swiperRef.current.slideNext();
@@ -64,8 +84,13 @@ const UserVerificationForm = () => {
                                                                         </div>
                                                                     ),
                                                                     width: 480,
+                                                                    onOk: () => {
+                                                                        // Redirect to login page after modal is closed
+                                                                        navigate('/');
+                                                                    }
                                                                 });
                                                                 form.resetFields();
+                                                                setSelectedRole(null); // Reset role selection
                                                             } catch (e) {
                                                                 notification.error({ message: 'Error', description: e?.data?.message || 'Failed to generate credentials' });
                                                             }
@@ -102,11 +127,29 @@ const UserVerificationForm = () => {
                                                                 <Input placeholder="+91 99999 99999" size="large" />
                                                             </Form.Item>
                                                             <Form.Item label="Role" name="role" rules={[{ required: true, message: "Required" }]}>
-                                                                <Select placeholder="Select role" size="large">
-                                                                    <Select.Option value="Executive">Executive</Select.Option>
-                                                                    <Select.Option value="Employee">Employee</Select.Option>
+                                                                <Select
+                                                                    placeholder="Select role"
+                                                                    size="large"
+                                                                    onChange={(value) => {
+                                                                        setSelectedRole(value);
+                                                                        form.setFieldsValue({ position: undefined }); // Clear position when role changes
+                                                                    }}
+                                                                >
+                                                                    <Select.Option value="Execution">Execution</Select.Option>
+                                                                    <Select.Option value="user">user</Select.Option>
                                                                 </Select>
                                                             </Form.Item>
+                                                            {selectedRole && (
+                                                                <Form.Item label="Position" name="position" rules={[{ required: true, message: "Required" }]}>
+                                                                    <Select placeholder="Select position" size="large">
+                                                                        {getPositionOptions(selectedRole).map(option => (
+                                                                            <Select.Option key={option.value} value={option.value}>
+                                                                                {option.label}
+                                                                            </Select.Option>
+                                                                        ))}
+                                                                    </Select>
+                                                                </Form.Item>
+                                                            )}
                                                             <Form.Item label="Marital status" name="maritalStatus">
                                                                 <Select placeholder="Select status" size="large">
                                                                     <Select.Option value="Single">Single</Select.Option>

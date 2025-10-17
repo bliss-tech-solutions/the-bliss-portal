@@ -98,7 +98,7 @@ const PortalHeader = () => {
                         <Avatar size={64} icon={<UserOutlined />} className="profile-main-avatar" />
                         <div className="profile-info">
                             <div className="profile-name">{fullName}</div>
-                            <div className="profile-role">{user?.role || 'User'}</div>
+                            <div className="profile-role">{user?.role || 'User'} • ({user?.position || 'Position'})</div>
                             <div className="profile-email">{user?.email || user?.userEmail || ''}</div>
                         </div>
                     </div>
@@ -111,7 +111,7 @@ const PortalHeader = () => {
         },
         {
             key: 'edit-profile',
-            icon: <UserOutlined />,
+            icon: "",
             label: (
                 <div className="edit-profile-button-container">
                     <Button
@@ -119,6 +119,7 @@ const PortalHeader = () => {
                         size="small"
                         className="edit-profile-button"
                         icon={<UserOutlined />}
+                        onClick={() => navigate('/profile-settings')}
                     >
                         Edit Profile
                     </Button>
@@ -258,6 +259,8 @@ const PortalHeader = () => {
                                             onClick: ({ key }) => {
                                                 if (key === 'logout') {
                                                     handleLogout();
+                                                } else if (key === 'edit-profile') {
+                                                    navigate('/profile-settings');
                                                 }
                                             }
                                         }}

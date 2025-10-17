@@ -1,15 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import PortalHeader from "../PortalCommonComponents/PortalHeader/PortalHeader";
 import { Row, Col } from "antd";
 import PortalSideBar from "../PortalCommonComponents/PortalSideBar/PortalSideBar";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { getAllRoutesForRole } from "../Navigation/navigationConfig";
+import { getComponentByRoute } from "../Navigation/navigationConfig";
+import { connectSocket, disconnectSocket } from "../../utils/socket";
+import { selectUserId } from "../../store/slices/authSlice";
+
 const Dashboard = () => {
     const [isSidebarHovered, setIsSidebarHovered] = useState(false);
     const location = useLocation();
     const { user } = useSelector((state) => state.auth);
+    const userId = useSelector(selectUserId);
+
+    // Initialize Socket connection
+    useEffect(() => {
+        if (userId) {
+            connectSocket(userId);
+        }
+
+        return () => {
+            disconnectSocket();
+        };
+    }, [userId]);
 
     const handleSidebarMouseEnter = () => {
         setIsSidebarHovered(true);
@@ -19,13 +34,8 @@ const Dashboard = () => {
         setIsSidebarHovered(false);
     };
 
-    // Get user role and available routes
-    const userRole = user?.role || 'user';
-    const availableRoutes = getAllRoutesForRole(userRole);
-
-    // Find the current route component
-    const currentRoute = availableRoutes.find(route => route.path === location.pathname);
-    const CurrentComponent = currentRoute?.element;
+    // Get component for current route using Navigation config
+    const CurrentComponent = getComponentByRoute(location.pathname);
 
     const sidebarSize = isSidebarHovered ? 4 : 2;
     const mainContentSize = isSidebarHovered ? 20 : 22;

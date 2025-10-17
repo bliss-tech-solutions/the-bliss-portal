@@ -1,10 +1,10 @@
 import React from 'react';
-import { Menu } from 'antd';
+import { Menu, Tooltip } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getNavigationForRole } from './navigationConfig';
 
-const Navigation = () => {
+const Navigation = ({ isCollapsed = true }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useSelector((state) => state.auth);
@@ -19,7 +19,8 @@ const Navigation = () => {
     const menuItems = navigationItems.map(item => ({
         key: item.routeName,
         icon: React.createElement(item.icon),
-        label: item.componentLabelName,
+        label: isCollapsed ? null : item.componentLabelName,
+        title: isCollapsed ? item.componentLabelName : undefined, // Tooltip for collapsed state
     }));
 
     // Handle menu item click
@@ -33,6 +34,8 @@ const Navigation = () => {
             selectedKeys={[location.pathname]}
             items={menuItems}
             onClick={handleMenuClick}
+            inlineCollapsed={isCollapsed}
+            className={isCollapsed ? 'collapsed-navigation' : 'expanded-navigation'}
         />
     );
 };

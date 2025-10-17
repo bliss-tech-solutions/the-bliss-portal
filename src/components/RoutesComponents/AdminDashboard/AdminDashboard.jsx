@@ -13,7 +13,7 @@ const AdminDashboard = () => {
                     Admin Dashboard
                 </Title>
             </div>
-            
+
             <div className="admin-dashboard-content">
                 <Row gutter={[16, 16]} className="stats-row">
                     <Col xs={24} sm={12} lg={6}>

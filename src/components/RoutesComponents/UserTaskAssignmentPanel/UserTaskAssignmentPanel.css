@@ -1,0 +1,121 @@
+/* User Task Assignment Panel Styles */
+#UserTaskAssignmentPanel {
+    /* padding: 20px; */
+    background-color: var(--bg-color);
+    min-height: 100vh;
+}
+
+#UserTaskAssignmentPanel h2 {
+    color: var(--primary-text);
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.MarginTopMedium {
+    margin-top: 24px;
+}
+
+.AntdTabsNames {
+    margin-bottom: 16px;
+}
+
+.AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--secondary-text);
+    border-radius: 8px 8px 0 0;
+    margin-right: 8px;
+    transition: all 0.3s ease;
+}
+
+.AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-text);
+}
+
+.AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active {
+    background-color: var(--brand-color);
+    color: white;
+    border-color: var(--brand-color);
+}
+
+.AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: white;
+}
+
+.AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-ink-bar {
+    display: none;
+}
+
+/* Match ExecutionTaskAssignPanel tab styling */
+#UserTaskAssignmentPanel .ant-tabs-nav::before {
+    display: none;
+}
+
+#UserTaskAssignmentPanel .ant-tabs-nav-list {
+    display: flex;
+    gap: 10px;
+    background-color: var(--secondary-bg);
+    padding: 5px 10px;
+    border-radius: 10px !important;
+}
+
+#UserTaskAssignmentPanel .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #EBB236 !important;
+}
+
+#UserTaskAssignmentPanel .ant-tabs-tab {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    border-radius: 10px !important;
+}
+
+.AntdTabsContent {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0 8px 8px 8px;
+    padding: 24px;
+    min-height: 400px;
+}
+
+.AntdTabsContent p {
+    color: var(--secondary-text);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #UserTaskAssignmentPanel {
+        padding: 16px;
+    }
+    
+    .AntdTabsContent {
+        padding: 16px;
+    }
+    
+    .AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+        margin-right: 4px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    #UserTaskAssignmentPanel h2 {
+        font-size: 20px;
+    }
+    
+    .AntdTabsNames .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab {
+        font-size: 12px;
+        padding: 6px 8px;
+        margin-right: 2px;
+    }
+    
+    .AntdTabsContent {
+        padding: 12px;
+        min-height: 300px;
+    }
+}

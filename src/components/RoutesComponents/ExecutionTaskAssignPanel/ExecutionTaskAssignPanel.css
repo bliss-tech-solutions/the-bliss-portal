@@ -1,0 +1,346 @@
+#ExecutionTaskAssignPanel .ant-tabs-nav::before {
+    display: none;
+}
+
+#ExecutionTaskAssignPanel .ant-tabs-nav-list {
+    display: flex;
+    gap: 10px;
+    background-color: var(--secondary-bg);
+    padding: 5px 10px;
+    border-radius: 10px !important;
+}
+
+#ExecutionTaskAssignPanel .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #EBB236 !important;
+}
+
+#ExecutionTaskAssignPanel .ant-tabs-tab {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    border-radius: 10px !important;
+}
+
+#ExecutionTaskAssignPanel .AddNewTaskButton {
+    display: flex;
+    justify-content: end;
+}
+
+/* Filter Section Styles */
+.filters-section {
+    transition: all 0.3s ease;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-active {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: white !important;
+}
+
+.filter-active:hover {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: white !important;
+    opacity: 0.9;
+}
+
+/* Responsive Filter Layout */
+@media (max-width: 768px) {
+    .filters-section .ant-col {
+        margin-bottom: 8px;
+    }
+}
+
+/* Custom Drawer Header */
+.custom-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+    padding: 0 24px;
+    background-color: var(--card-bg);
+    /* border-bottom: 1px solid var(--border-color); */
+}
+
+.drawer-title h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.drawer-close-btn {
+    display: flex;
+    align-items: center;
+}
+
+.close-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    color: var(--primary-text);
+    background-color: transparent;
+}
+
+.close-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--danger-color);
+}
+
+.close-button .anticon {
+    font-size: 18px;
+}
+
+.custom-drawer .ant-drawer-header {
+    padding: 0px !important;
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.custom-drawer .ant-drawer-body {
+    background-color: var(--primary-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.custom-drawer .ant-drawer-content {
+    background-color: var(--primary-bg) !important;
+}
+
+.drawer-content {
+    color: var(--primary-text);
+    /* padding: 16px 0; */
+}
+
+.drawer-content p {
+    color: var(--primary-text);
+    margin: 0;
+}
+
+/* Task Form Styling */
+.task-form {
+    padding: 0;
+}
+
+.task-form .ant-form-item {
+    margin-bottom: 20px;
+}
+
+.task-form .ant-form-item-label > label {
+    color: var(--primary-text);
+    font-weight: 500;
+}
+
+.task-form .ant-input,
+.task-form .ant-input-affix-wrapper,
+.task-form .ant-select-selector,
+.task-form .ant-input-textarea textarea {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+    transition: all 0.3s ease;
+}
+
+.task-form .ant-input::placeholder,
+.task-form .ant-input-textarea textarea::placeholder {
+    color: var(--secondary-text);
+}
+
+.task-form .ant-input:hover,
+.task-form .ant-input-affix-wrapper:hover,
+.task-form .ant-select-selector:hover,
+.task-form .ant-input-textarea textarea:hover {
+    border-color: var(--brand-color);
+}
+
+.task-form .ant-input:focus,
+.task-form .ant-input-affix-wrapper:focus,
+.task-form .ant-input-affix-wrapper-focused,
+.task-form .ant-select-focused .ant-select-selector,
+.task-form .ant-input-textarea textarea:focus {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2);
+}
+
+.task-form .ant-select-selection-placeholder,
+.task-form .ant-select-selection-item {
+    color: var(--primary-text);
+}
+
+.task-form .ant-input-prefix {
+    color: var(--secondary-text);
+}
+
+.task-form .ant-btn {
+    border-color: var(--border-color);
+    /* color: var(--primary-text); */
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.task-form .ant-btn:hover {
+    border-color: var(--brand-color);
+    color: var(--brand-color);
+}
+
+.task-form .ant-upload-list {
+    color: var(--primary-text);
+}
+
+.task-form .ant-upload-list-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.task-form .ant-upload-list-item:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Chat Section Styling */
+.chat-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-section h4 {
+    color: var(--primary-text);
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.chat-messages {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.chat-message {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.chat-message:last-child {
+    margin-bottom: 0;
+}
+
+.chat-avatar {
+    background-color: var(--brand-color);
+    color: #000;
+    flex-shrink: 0;
+}
+
+.chat-message-content {
+    flex: 1;
+}
+
+.chat-message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.chat-user {
+    color: var(--primary-text);
+    font-weight: 600;
+}
+
+.chat-time {
+    color: var(--secondary-text);
+    font-size: 12px;
+}
+
+.chat-text {
+    color: var(--primary-text);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.chat-input-container .ant-input-affix-wrapper {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+}
+
+.chat-input-container .ant-input {
+    background-color: transparent;
+    color: var(--primary-text);
+}
+
+.chat-input-container .ant-input::placeholder {
+    color: var(--secondary-text);
+}
+
+.chat-input-container .ant-input-suffix {
+    color: var(--brand-color);
+}
+
+.chat-input-container .ant-input-affix-wrapper:hover {
+    border-color: var(--brand-color);
+}
+
+.chat-input-container .ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2);
+}
+
+/* Scrollbar Styling */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 10px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .custom-drawer-header {
+        padding: 0 16px;
+    }
+
+    .drawer-title h3 {
+        font-size: 16px;
+    }
+    
+    .task-form .ant-col {
+        margin-bottom: 0;
+    }
+    
+    .chat-messages {
+        max-height: 200px;
+    }
+    
+    .drawer-content {
+        padding: 12px 0;
+    }
+}

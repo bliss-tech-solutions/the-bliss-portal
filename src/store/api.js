@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData'],
+    tagTypes: ['User', 'UserData', 'Tasks'],
     endpoints: (builder) => ({
         addUserDetails: builder.mutation({
             query: (body) => ({
@@ -47,7 +47,7 @@ export const api = createApi({
                 url: `/api/user/${userId}/data`,
                 method: 'POST',
                 body: data,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${userId}`
                 },
@@ -59,7 +59,7 @@ export const api = createApi({
                 url: `/api/user/${userId}/data/${dataId}`,
                 method: 'PUT',
                 body: data,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${userId}`
                 },
@@ -74,17 +74,93 @@ export const api = createApi({
             }),
             invalidatesTags: ['UserData'],
         }),
+        addTaskAssign: builder.mutation({
+            query: (body) => ({
+                url: '/api/addtaskassign',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
+        getTaskAssign: builder.query({
+            query: (userId) => ({
+                url: `/api/getTaskAssign/${userId}?isArchived=false`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Tasks'],
+        }),
+        archiveTask: builder.mutation({
+            query: (taskId) => ({
+                url: `/api/addtaskassign/${taskId}/archive`,
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
+        // Create chat message with sender and receiver
+        addTaskChat: builder.mutation({
+            query: ({ taskId, senderId, receiverId, userName, message, time }) => ({
+                url: '/api/chat/messages',
+                method: 'POST',
+                body: {
+                    taskId,
+                    senderId,      // ✅ Logged-in user (sender)
+                    receiverId,    // ✅ Task receiver (from position selection)
+                    userName,
+                    message,
+                    time
+                },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['TaskChat'],
+        }),
+
+        // Get chat messages by task (matches your backend)
+        getTaskChatMessages: builder.query({
+            query: (taskId) => ({
+                url: `/api/chat/messages?taskId=${taskId}`,
+                method: 'GET',
+            }),
+            providesTags: ['TaskChat'],
+        }),
+
+        // Get chat messages by user
+        getUserChatMessages: builder.query({
+            query: (userId) => ({
+                url: `/api/chat/messages/user/${userId}`,
+                method: 'GET',
+            }),
+            providesTags: ['TaskChat'],
+        }),
+
+        // Get all users
+        getAllUsers: builder.query({
+            query: () => ({
+                url: '/api/getUserDetails',
+                method: 'GET',
+            }),
+            providesTags: ['Users'],
+        }),
     }),
 })
 
-export const { 
-    useAddUserDetailsMutation, 
-    useGenerateUserCredentialMutation, 
+export const {
+    useAddUserDetailsMutation,
+    useGenerateUserCredentialMutation,
     useSignInUserMutation,
     useGetUserDataQuery,
     useAddUserDataMutation,
     useUpdateUserDataMutation,
-    useDeleteUserDataMutation
+    useDeleteUserDataMutation,
+    useAddTaskAssignMutation,
+    useGetTaskAssignQuery,
+    useArchiveTaskMutation,
+    useAddTaskChatMutation,
+    useGetTaskChatMessagesQuery,
+    useGetUserChatMessagesQuery,
+    useGetAllUsersQuery
 } = api
 
 

@@ -4,35 +4,34 @@ import LoginPortal from '../components/LoginPortal/LoginPortal'
 import Dashboard from '../components/Dashboard/Dashboard'
 import { ProtectedRoute, RedirectIfAuthenticated } from '../components/ProtectedRoute'
 
-// Import AdminDashboard component
-import AdminDashboard from '../components/RoutesComponents/AdminDashboard/AdminDashboard'
 export default function PortalRoutes() {
-
     return (
         <div>
             <Routes>
+                {/* Login Route */}
                 <Route path="/" element={
                     <RedirectIfAuthenticated>
                         <LoginPortal />
                     </RedirectIfAuthenticated>
                 } />
 
-                {/* Dashboard Route - Main Portal */}
+                {/* Create New User Route */}
+                <Route path="/CreateNewUser" element={<UserVerificationForm />} />
+
+                {/* All Dashboard Routes - Single Dynamic Handler */}
+                {/* All authenticated routes are handled by Dashboard component */}
                 <Route path="/Dashboard" element={
                     <ProtectedRoute>
                         <Dashboard />
                     </ProtectedRoute>
                 } />
 
-                {/* Admin Dashboard Route */}
-                <Route path="/admin-dashboard" element={
+                {/* Dynamic Routes - All handled by Dashboard component using Navigation config */}
+                <Route path="/*" element={
                     <ProtectedRoute>
                         <Dashboard />
                     </ProtectedRoute>
                 } />
-
-                {/* Create New User Route */}
-                <Route path="/CreateNewUser" element={<UserVerificationForm />} />
             </Routes>
         </div>
     )

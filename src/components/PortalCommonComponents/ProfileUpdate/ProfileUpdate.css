@@ -1,0 +1,476 @@
+/* Profile Update Component Styles */
+
+.profile-update-container {
+    /* padding: 24px; */
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+
+.title-icon {
+    color: var(--brand-color);
+    font-size: 28px;
+}
+
+.profile-update-subtitle {
+    color: var(--secondary-text);
+    font-size: 16px;
+}
+
+/* Card Styling */
+.profile-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease !important;
+}
+
+.profile-card:hover {
+    box-shadow: 0 4px 12px var(--shadow) !important;
+    transform: translateY(-2px);
+}
+
+.profile-card .ant-card-head {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.profile-card .ant-card-head-title {
+    color: var(--primary-text) !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+}
+
+.profile-card .ant-card-body {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+/* Profile Picture Section */
+.profile-picture-section {
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* Left Column Layout */
+.profile-card:first-child {
+    margin-bottom: 0;
+}
+
+/* Security Settings in Left Column */
+.password-form .form-actions {
+    margin-top: 16px;
+}
+
+.password-form .form-actions .ant-btn {
+    width: 100%;
+}
+
+.profile-avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    border: 4px solid var(--border-color);
+    transition: border-color 0.3s ease;
+}
+
+.profile-avatar:hover {
+    border-color: var(--brand-color);
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: var(--brand-color);
+    color: #000000;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-overlay:hover {
+    background-color: var(--button-primary-hover);
+    transform: scale(1.1);
+}
+
+.profile-upload {
+    margin-bottom: 12px;
+}
+
+.upload-button {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.upload-button:hover {
+    background-color: var(--brand-color) !important;
+    color: #000000 !important;
+    border-color: var(--brand-color) !important;
+    transform: translateY(-1px);
+}
+
+.upload-hint {
+    color: var(--secondary-text);
+    font-size: 12px;
+    display: block;
+    margin-top: 8px;
+}
+
+/* Form Styling */
+.profile-form .ant-form-item-label>label,
+.password-form .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+.profile-form .ant-form-item-label>label.ant-form-item-required::before,
+.password-form .ant-form-item-label>label.ant-form-item-required::before {
+    color: #ff4d4f !important;
+}
+
+.profile-form .ant-form-item-label>label.ant-form-item-required::after,
+.password-form .ant-form-item-label>label.ant-form-item-required::after {
+    content: '' !important;
+}
+
+/* Profile Form Input Styling - Match Security Settings */
+.profile-form .ant-input,
+.profile-form .ant-input-password {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    /* border-radius: 8px !important; */
+    transition: all 0.3s ease !important;
+    /* height: 40px !important; */
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+}
+
+.profile-form .ant-input:hover,
+.profile-form .ant-input-password:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.profile-form .ant-input:focus,
+.profile-form .ant-input-password:focus,
+.profile-form .ant-input-affix-wrapper:focus,
+.profile-form .ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2) !important;
+}
+
+.profile-form .ant-input::placeholder,
+.profile-form .ant-input-password::placeholder {
+    color: var(--secondary-text) !important;
+    font-size: 14px !important;
+}
+
+.profile-form .ant-input-prefix {
+    color: var(--secondary-text) !important;
+    font-size: 14px !important;
+}
+
+.profile-form .ant-input-affix-wrapper:focus-within .ant-input-prefix {
+    color: var(--brand-color) !important;
+}
+
+.profile-form .ant-input-affix-wrapper {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    /* border-radius: 8px !important; */
+    transition: all 0.3s ease !important;
+    height: 40px !important;
+}
+
+.profile-form .ant-input-affix-wrapper:hover {
+    border-color: var(--brand-color) !important;
+}
+
+/* TextArea Styling - Match Input Styling */
+.profile-form .ant-input {
+    /* min-height: 40px !important; */
+    resize: vertical !important;
+}
+
+.profile-form .ant-input[rows="3"] {
+    min-height: 80px !important;
+    padding: 12px !important;
+}
+
+/* Form Error Styling */
+.profile-form .ant-form-item-has-error .ant-input,
+.profile-form .ant-form-item-has-error .ant-input-password,
+.password-form .ant-form-item-has-error .ant-input-password {
+    border-color: #ff4d4f !important;
+    background-color: var(--input-bg) !important;
+}
+
+.profile-form .ant-form-item-explain-error,
+.profile-form .ant-form-item-extra,
+.password-form .ant-form-item-explain-error,
+.password-form .ant-form-item-extra {
+    color: #ff4d4f !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+    background-color: rgba(255, 77, 79, 0.1) !important;
+    padding: 4px 8px !important;
+    /* border-radius: 4px !important; */
+    border-left: 3px solid #ff4d4f !important;
+}
+
+/* Dark theme error styling */
+[data-theme="dark"] .profile-form .ant-form-item-explain-error,
+[data-theme="dark"] .profile-form .ant-form-item-extra,
+[data-theme="dark"] .password-form .ant-form-item-explain-error,
+[data-theme="dark"] .password-form .ant-form-item-extra {
+    color: #ff7875 !important;
+    background-color: rgba(255, 77, 79, 0.2) !important;
+}
+
+/* Password Form Styling */
+
+.password-form .ant-input-password {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    /* border-radius: 8px !important; */
+    transition: all 0.3s ease !important;
+    height: 40px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+}
+
+.password-form .ant-input-affix-wrapper {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    /* border-radius: 8px !important; */
+    transition: all 0.3s ease !important;
+    height: 40px !important;
+}
+
+.password-form .ant-input-password:hover,
+.password-form .ant-input-affix-wrapper:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.password-form .ant-input-password:focus,
+.password-form .ant-input-affix-wrapper:focus,
+.password-form .ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2) !important;
+}
+
+.password-form .ant-input-password::placeholder {
+    color: var(--secondary-text) !important;
+    font-size: 14px !important;
+}
+
+.password-form .ant-input-prefix {
+    color: var(--secondary-text) !important;
+    font-size: 14px !important;
+}
+
+.password-form .ant-input-affix-wrapper:focus-within .ant-input-prefix {
+    color: var(--brand-color) !important;
+}
+
+/* Button Styling */
+.save-button,
+.password-button {
+    background-color: var(--button-primary) !important;
+    border-color: var(--button-primary) !important;
+    color: var(--button-text) !important;
+    /* border-radius: 8px !important; */
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 4px var(--shadow) !important;
+}
+
+.save-button:hover,
+.password-button:hover {
+    background-color: var(--button-primary-hover) !important;
+    border-color: var(--button-primary-hover) !important;
+    color: var(--button-text) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px var(--shadow) !important;
+}
+
+.profile-form .ant-btn:not(.save-button):not(.password-button) {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    /* border-radius: 8px !important; */
+    transition: all 0.3s ease !important;
+}
+
+.profile-form .ant-btn:not(.save-button):not(.password-button):hover {
+    background-color: var(--hover-bg) !important;
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+}
+
+/* Form Actions */
+.form-actions {
+    text-align: center;
+    margin-top: 24px;
+}
+
+/* Divider Styling */
+.ant-divider {
+    border-color: var(--border-color) !important;
+    margin: 24px 0 !important;
+}
+
+/* Additional Settings */
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-item:hover {
+    background-color: var(--hover-bg);
+    /* border-radius: 8px; */
+    padding: 16px 12px;
+    margin: 0 -12px;
+}
+
+.setting-info {
+    flex: 1;
+    margin-right: 16px;
+}
+
+.setting-info h5 {
+    color: var(--primary-text) !important;
+    margin-bottom: 4px !important;
+    font-weight: 500;
+}
+
+.setting-info .ant-typography {
+    color: var(--secondary-text) !important;
+    font-size: 14px;
+}
+
+/* Switch Styling */
+.ant-switch {
+    background-color: var(--border-color) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.ant-switch-checked {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+}
+
+.ant-switch:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.ant-switch-checked:hover {
+    background-color: var(--button-primary-hover) !important;
+    border-color: var(--button-primary-hover) !important;
+}
+
+.ant-switch-handle {
+    background-color: var(--primary-bg) !important;
+    border-radius: 50%;
+}
+
+#ProfileUpdate .ant-form-item {
+    margin-bottom: 10px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-update-container {
+        padding: 16px;
+    }
+
+    .profile-update-header {
+        margin-bottom: 24px;
+    }
+
+    .profile-card {
+        margin-bottom: 16px;
+    }
+
+    /* Stack left and right columns on mobile */
+    .profile-card:first-child {
+        margin-bottom: 16px;
+    }
+
+    .profile-avatar {
+        width: 100px !important;
+        height: 100px !important;
+    }
+
+    .avatar-overlay {
+        width: 28px;
+        height: 28px;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .setting-info {
+        margin-right: 0;
+    }
+
+    /* Security settings form adjustments */
+    .password-form .ant-form-item {
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .profile-update-container {
+        padding: 12px;
+    }
+
+    .profile-update-title {
+        font-size: 20px !important;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .title-icon {
+        font-size: 24px;
+    }
+
+    .profile-avatar {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .avatar-overlay {
+        width: 24px;
+        height: 24px;
+    }
+}
