@@ -7,6 +7,7 @@ import App from './App.jsx'
 import store from './store'
 import { BrowserRouter } from 'react-router-dom'
 import { App as AntdApp, ConfigProvider } from 'antd'
+import { SocketProvider } from './contexts/SocketContext'
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')).render(
       <Provider store={store}>
         <ConfigProvider>
           <AntdApp>
-            <App />
+            <SocketProvider>
+              <App />
+            </SocketProvider>
           </AntdApp>
         </ConfigProvider>
       </Provider>

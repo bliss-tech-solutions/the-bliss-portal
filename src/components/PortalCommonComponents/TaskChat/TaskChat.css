@@ -179,7 +179,8 @@
     margin-bottom: 4px;
     color: inherit;
 }
-.message-text .emoji-large{
+
+.message-text .emoji-large {
     font-size: 22px;
 }
 
@@ -294,6 +295,31 @@
     color: var(--brand-color) !important;
 }
 
+/* Chat input tools (emoji + attach) */
+.chat-input-tools {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.attach-button {
+    transition: all 0.2s ease !important;
+}
+
+.attach-button:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.chat-attach-popover .attach-menu {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-attach-popover .attach-menu-item {
+    width: 100%;
+    text-align: left;
+}
+
 /* Emoji picker customization */
 .emoji-picker-popup .EmojiPickerReact {
     background: var(--card-bg) !important;
@@ -391,4 +417,22 @@
 
 .comments-list::-webkit-scrollbar-thumb:hover {
     background: var(--brand-color);
+}
+
+.batch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.batch-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.batch-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }

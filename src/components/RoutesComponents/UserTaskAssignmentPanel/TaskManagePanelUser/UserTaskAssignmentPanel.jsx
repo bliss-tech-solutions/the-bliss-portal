@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './UserTaskAssignmentPanel.css';
 import { Row, Col, Tabs } from 'antd';
 import { useSelector } from 'react-redux';
-import { selectTheme } from '../../../store/slices/themeSlice';
+import { selectTheme } from '../../../../store/slices/themeSlice';
 import AllUserTaskEntries from './AllUserTaskEntries/AllUserTaskEntries';
 
 const UserTaskAssignmentPanel = () => {

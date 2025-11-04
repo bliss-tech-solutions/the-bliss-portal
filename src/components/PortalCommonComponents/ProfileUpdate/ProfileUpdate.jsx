@@ -27,6 +27,7 @@ import {
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { selectTheme } from "../../../store/slices/themeSlice";
+import { selectUser } from "../../../store/slices/authSlice";
 
 const { Title, Text } = Typography;
 
@@ -35,21 +36,21 @@ const ProfileUpdate = () => {
     const [loading, setLoading] = useState(false);
     const [profileImage, setProfileImage] = useState(null);
     const theme = useSelector(selectTheme);
+    const authUser = useSelector((state) => state.auth?.user || {});
 
-    // Mock current user data - will be replaced with Redux data
-    const currentUser = {
-        firstName: "Sachin",
-        lastName: "Padyar",
-        email: "sachinpadyar22@gmail.com",
-        userEmail: "sachin3687@blissSolution.com",
-        number: "+918308063687",
-        address: "Dhule\nDhule",
-        pincode: "424307",
-        role: "Executive",
-        maritalStatus: "Single",
-        birthDate: "2025-10-02",
-        languages: ["English", "Marathi"],
-        skills: ["React", "Node.js", "JavaScript", "Python", "UI/UX", "Project Management"]
+    const initialValues = {
+        firstName: authUser?.firstName || "",
+        lastName: authUser?.lastName || "",
+        email: authUser?.email || authUser?.userEmail || "",
+        userEmail: authUser?.userEmail || "",
+        number: authUser?.number || "",
+        address: authUser?.address || "",
+        pincode: authUser?.pincode || "",
+        role: authUser?.role || "",
+        maritalStatus: authUser?.maritalStatus || "",
+        birthDate: authUser?.birthDate || "",
+        languages: authUser?.languages || [],
+        skills: authUser?.skills || [],
     };
 
     const handleSubmit = async (values) => {
@@ -218,7 +219,7 @@ const ProfileUpdate = () => {
                         <Form
                             form={form}
                             layout="vertical"
-                            initialValues={currentUser}
+                            initialValues={initialValues}
                             onFinish={handleSubmit}
                             className="profile-form"
                         >

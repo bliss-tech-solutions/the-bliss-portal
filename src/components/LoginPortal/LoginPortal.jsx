@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./LoginPortal.css";
 import { Row, Col, Form, Input, Button, Checkbox, Spin } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { useSignInUserMutation } from "../../store/api";
+import { useSignInUserMutation, useLazyCheckoutStatusQuery } from "../../store/api";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../store/slices/authSlice";
 import { selectTheme, toggleTheme } from "../../store/slices/themeSlice";
@@ -14,6 +14,7 @@ const LoginPortal = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [signInUser, { isLoading }] = useSignInUserMutation();
+    const [triggerCheckoutStatus] = useLazyCheckoutStatusQuery();
     const [loading, setLoading] = useState(false);
     const { success, error } = useNotification();
     const theme = useSelector(selectTheme);
@@ -42,6 +43,21 @@ const LoginPortal = () => {
             }).unwrap();
 
             if (response.success) {
+                // After successful sign-in, check today's checkout status
+                const userIdFromResponse = response.data?.userId || response.data?._id || response.data?.id;
+                if (userIdFromResponse) {
+                    try {
+                        const status = await triggerCheckoutStatus({ userId: userIdFromResponse }).unwrap();
+                        if (status?.checkedOut) {
+                            error('You have already checked out today. Please contact the administrator if you need access.');
+                            setLoading(false);
+                            return;
+                        }
+                    } catch (e) {
+                        // If status endpoint fails, allow login (non-blocking)
+                    }
+                }
+
                 // Dispatch login success action to update auth state
                 dispatch(loginSuccess({
                     user: response.data || {
@@ -53,13 +69,12 @@ const LoginPortal = () => {
                         role: response.data?.role || '',
                         userEmail: response.data?.userEmail || email
                     },
-                    userId: response.data?.userId,
+                    userId: userIdFromResponse,
                     token: response.token || 'authenticated'
                 }));
 
                 success('Welcome back! Redirecting to dashboard...');
 
-                // Add a smooth delay before redirect with fade effect
                 setTimeout(() => {
                     navigate('/Dashboard', { replace: true });
                 }, 1500);

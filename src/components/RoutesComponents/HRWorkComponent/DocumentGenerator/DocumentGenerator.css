@@ -1,0 +1,43 @@
+
+
+/* Default (light theme): tabs with black background and white text */
+.hr-document-generator .ant-tabs-nav .ant-tabs-tab {
+    background: #000000;
+    color: #ffffff;
+   padding: 10px 20px;
+    border-radius: 6px 6px 0px 0px;
+   margin-right: 10px !important;
+   margin-left: 0px ;
+}
+
+.hr-document-generator .ant-tabs-nav .ant-tabs-tab .ant-tabs-tab-btn {
+    color: inherit;
+}
+
+.hr-document-generator .ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active {
+    background: #111111;
+}
+
+.hr-document-generator .ant-tabs-ink-bar {
+    background: var(--brand-color);
+}
+
+/* Dark theme: transparent background, only border, theme-aware colors */
+[data-theme='dark'] .hr-document-generator .ant-tabs-nav .ant-tabs-tab,
+.theme-dark .hr-document-generator .ant-tabs-nav .ant-tabs-tab {
+    background: transparent;
+    color: var(--primary-text);
+    border: 1px solid var(--border-color);
+}
+
+[data-theme='dark'] .hr-document-generator .ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active,
+.theme-dark .hr-document-generator .ant-tabs-nav .ant-tabs-tab.ant-tabs-tab-active {
+    background: transparent;
+    border-color: var(--brand-color);
+}
+
+[data-theme='dark'] .hr-document-generator .ant-tabs-ink-bar,
+.theme-dark .hr-document-generator .ant-tabs-ink-bar {
+    background: var(--brand-color);
+}
+

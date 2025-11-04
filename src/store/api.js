@@ -8,6 +8,92 @@ export const api = createApi({
     }),
     tagTypes: ['User', 'UserData', 'Tasks'],
     endpoints: (builder) => ({
+        createLeave: builder.mutation({
+            query: (body) => ({
+                url: '/api/leave/request',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getUserLeaves: builder.query({
+            query: (userId) => ({
+                url: `/api/leave/getAll/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getAllLeaves: builder.query({
+            query: () => ({
+                url: '/api/leave/getAllLeaves',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        // HR: approve/reject specific dates within a leave
+        rejectLeave: builder.mutation({
+            query: ({ userId, month, leaveId, body }) => ({
+                url: `/api/leave/reject/${userId}/${month}/${leaveId}`,
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        addFestiveNote: builder.mutation({
+            query: (body) => ({
+                url: '/api/festive/note',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        updateFestive: builder.mutation({
+            query: (body) => ({
+                url: '/api/festive/update',
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getFestiveNotesByUser: builder.query({
+            query: (userId) => ({
+                url: `/api/festive/user/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        checkIn: builder.mutation({
+            query: (body) => ({
+                url: '/api/checkin',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        checkout: builder.mutation({
+            query: (body) => ({
+                url: '/api/checkout',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        checkInStatus: builder.query({
+            // Expect backend to return { checkedIn: boolean, timestamp?: string }
+            query: ({ userId }) => ({
+                url: `/api/checkin/status?userId=${encodeURIComponent(userId)}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        checkoutStatus: builder.query({
+            // Expect backend to return { checkedOut: boolean, timestamp?: string }
+            query: ({ userId }) => ({
+                url: `/api/checkout/status?userId=${encodeURIComponent(userId)}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
         addUserDetails: builder.mutation({
             query: (body) => ({
                 url: '/api/addUserDetails',
@@ -99,6 +185,15 @@ export const api = createApi({
             }),
             invalidatesTags: ['Tasks'],
         }),
+        updateTaskStatus: builder.mutation({
+            query: ({ taskId, status = 'completed' }) => ({
+                url: `/api/addtaskassign/${taskId}/status`,
+                method: 'PUT',
+                body: { taskStatus: status },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
         // Create chat message with sender and receiver
         addTaskChat: builder.mutation({
             query: ({ taskId, senderId, receiverId, userName, message, time }) => ({
@@ -143,10 +238,36 @@ export const api = createApi({
             }),
             providesTags: ['Users'],
         }),
+        getAllCheckins: builder.query({
+            query: () => ({
+                url: '/api/checkin/all',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getTodayCheckin: builder.query({
+            query: (userId) => ({
+                url: `/api/checkin/${userId}/today`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
     }),
 })
 
 export const {
+    useCreateLeaveMutation,
+    useGetUserLeavesQuery,
+    useGetAllLeavesQuery,
+    useRejectLeaveMutation,
+    useAddFestiveNoteMutation,
+    useUpdateFestiveMutation,
+    useGetFestiveNotesByUserQuery,
+    useCheckInMutation,
+    useCheckoutMutation,
+    useCheckInStatusQuery,
+    useCheckoutStatusQuery,
+    useLazyCheckoutStatusQuery,
     useAddUserDetailsMutation,
     useGenerateUserCredentialMutation,
     useSignInUserMutation,
@@ -157,10 +278,13 @@ export const {
     useAddTaskAssignMutation,
     useGetTaskAssignQuery,
     useArchiveTaskMutation,
+    useUpdateTaskStatusMutation,
     useAddTaskChatMutation,
     useGetTaskChatMessagesQuery,
     useGetUserChatMessagesQuery,
-    useGetAllUsersQuery
+    useGetAllUsersQuery,
+    useGetAllCheckinsQuery,
+    useGetTodayCheckinQuery
 } = api
 
 

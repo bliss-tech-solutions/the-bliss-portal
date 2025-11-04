@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TaskChat.css';
-import { Card, Avatar, Input, Spin, Button } from 'antd';
+import { Card, Avatar, Input, Spin, Button, Popover, Modal } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useGetUserChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useSocket } from '../../../contexts/SocketContext';
-import { BsSend, BsEmojiSmile, BsX } from 'react-icons/bs';
+import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
 import EmojiPicker from 'emoji-picker-react';
+import { uploadToCloudinary, isCloudinaryImageUrl, isCloudinaryVideoUrl, isCloudinaryFileUrl, toAttachmentUrl, toPdfThumbnail } from '../../../utils/cloudinary';
 
 const TaskChat = ({
     taskId,
@@ -27,6 +28,36 @@ const TaskChat = ({
     const [chatMessage, setChatMessage] = useState('');
     const [taskChatMessages, setTaskChatMessages] = useState([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [preview, setPreview] = useState({ open: false, url: '', type: 'image' });
+    const [batchPicker, setBatchPicker] = useState({ open: false, items: [] }); // items: {id, file, url, type, progress, uploadedUrl}
+    const imageInputRef = useRef(null);
+    const videoInputRef = useRef(null);
+    const mediaMultiInputRef = useRef(null);
+    const docInputRef = useRef(null);
+
+    // Size limits (in MB)
+    const MAX_IMAGE_MB = 10;        // ~10MB
+    const MAX_VIDEO_MB = 100;       // ~100MB
+    const MAX_DOC_MB = 25;          // ~25MB
+
+    const bytesToMb = (bytes) => bytes / (1024 * 1024);
+    const validateFileSize = (file, type) => {
+        const sizeMb = bytesToMb(file.size);
+        if (type === 'image' && sizeMb > MAX_IMAGE_MB) {
+            showError(`Image too large. Max ${MAX_IMAGE_MB} MB`);
+            return false;
+        }
+        if (type === 'video' && sizeMb > MAX_VIDEO_MB) {
+            showError(`Video too large. Max ${MAX_VIDEO_MB} MB`);
+            return false;
+        }
+        if (type === 'raw' && sizeMb > MAX_DOC_MB) {
+            showError(`Document too large. Max ${MAX_DOC_MB} MB`);
+            return false;
+        }
+        return true;
+    };
 
     // Fetch user's chat messages from API
     const { data: chatMessagesData, isLoading: isChatLoading, error: chatError, refetch: refetchChat } = useGetUserChatMessagesQuery(userId);
@@ -124,8 +155,9 @@ const TaskChat = ({
         };
     }, [showEmojiPicker]);
 
-    const handleSendMessage = async () => {
-        if (!chatMessage.trim() || !taskId || !receiverId || isSendingChat) {
+    const handleSendMessage = async (overrideText) => {
+        const textToSend = (overrideText ?? chatMessage).trim();
+        if (!textToSend || !taskId || !receiverId || isSendingChat) {
             return;
         }
 
@@ -151,7 +183,7 @@ const TaskChat = ({
                 senderId: userId,
                 receiverId,
                 userName,
-                message: chatMessage,
+                message: textToSend,
                 time: currentTime,
                 createdAt: new Date().toISOString()
             };
@@ -167,7 +199,9 @@ const TaskChat = ({
             // Send to API for persistence
             await addTaskChat(messageData).unwrap();
 
-            setChatMessage('');
+            if (overrideText === undefined) {
+                setChatMessage('');
+            }
             // showSuccess('Message sent successfully!');
 
             // Call optional callback
@@ -188,6 +222,73 @@ const TaskChat = ({
 
     const toggleEmojiPicker = () => {
         setShowEmojiPicker(!showEmojiPicker);
+    };
+
+    const handlePickImage = () => imageInputRef.current?.click();
+    const handlePickVideo = () => videoInputRef.current?.click();
+    const handlePickDoc = () => docInputRef.current?.click();
+
+    const handleUpload = async (file, type) => {
+        try {
+            setIsUploading(true);
+            if (!validateFileSize(file, type)) {
+                setIsUploading(false);
+                return;
+            }
+            const res = await uploadToCloudinary(file, type);
+            const url = res.secure_url;
+            if (!url) throw new Error('No secure_url from Cloudinary');
+
+            // Directly send as a regular message with the URL (backend unchanged)
+            await handleSendMessage(url);
+        } catch (e) {
+            showError(e?.message || 'Upload failed');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const onSelectBatchFiles = (fileList) => {
+        if (!fileList || !fileList.length) return;
+        const items = Array.from(fileList)
+            .filter((f) => {
+                const t = f.type.startsWith('video') ? 'video' : 'image';
+                return validateFileSize(f, t);
+            })
+            .map((f, idx) => ({
+                id: `${Date.now()}-${idx}`,
+                file: f,
+                url: URL.createObjectURL(f),
+                type: f.type.startsWith('video') ? 'video' : 'image',
+                progress: 0,
+                uploadedUrl: ''
+            }));
+        setBatchPicker({ open: true, items });
+    };
+
+    const uploadBatchAndSend = async () => {
+        setIsUploading(true);
+        try {
+            const items = [...batchPicker.items];
+            for (let i = 0; i < items.length; i++) {
+                const it = items[i];
+                // Upload
+                const res = await uploadToCloudinary(it.file, it.type);
+                it.uploadedUrl = res.secure_url;
+                it.progress = 100;
+                setBatchPicker(prev => ({ open: true, items: [...items] }));
+                // Send after each upload to preserve order
+                if (it.uploadedUrl) {
+                    await handleSendMessage(it.uploadedUrl);
+                }
+            }
+            // cleanup
+            setBatchPicker({ open: false, items: [] });
+        } catch (e) {
+            showError(e?.message || 'Upload failed');
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     // Function to detect and wrap emojis in spans for styling
@@ -229,6 +330,12 @@ const TaskChat = ({
 
         return taskChatMessages.map((msg) => {
             const isSent = msg.senderId === userId;
+            // Detect PDFs first to avoid misclassifying /image/upload/*.pdf as an image
+            const isPdf = /\.pdf$/i.test(msg.message);
+            const asImage = !isPdf && isCloudinaryImageUrl(msg.message);
+            const asVideo = !isPdf && !asImage && isCloudinaryVideoUrl(msg.message);
+            const asFile = isPdf || (!asImage && !asVideo && isCloudinaryFileUrl(msg.message));
+            const pdfThumb = isPdf ? toPdfThumbnail(msg.message, 260) : null;
 
             return (
                 <div
@@ -246,12 +353,58 @@ const TaskChat = ({
                     )}
                     <div className="message-content">
                         <div className="message-bubble">
-                            <p
-                                className="message-text"
-                                dangerouslySetInnerHTML={{
-                                    __html: formatMessageWithEmojis(msg.message)
-                                }}
-                            />
+                            {asImage ? (
+                                <img
+                                    src={msg.message}
+                                    alt="chat-img"
+                                    style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
+                                    onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
+                                />
+                            ) : asVideo ? (
+                                <video
+                                    src={msg.message}
+                                    controls
+                                    style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
+                                    onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
+                                />
+                            ) : asFile ? (
+                                isPdf ? (
+                                    // Try inline preview via <object>. If browser can't render, it falls back to the link
+                                    <object data={msg.message} type="application/pdf" width={260} height={360} style={{ borderRadius: 8 }}>
+                                        {pdfThumb ? (
+                                            <a href={msg.message} target="_blank" rel="noreferrer">
+                                                <img src={pdfThumb} alt="PDF preview" style={{ maxWidth: 260, borderRadius: 8 }} />
+                                            </a>
+                                        ) : (
+                                            <a
+                                                href={toAttachmentUrl(msg.message)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                style={{ color: 'inherit', textDecoration: 'underline' }}
+                                            >
+                                                Open PDF
+                                            </a>
+                                        )}
+                                    </object>
+                                ) : (
+                                    <a
+                                        href={toAttachmentUrl(msg.message)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        download
+                                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                                    >
+                                        Open document
+                                    </a>
+                                )
+                            ) : (
+                                <p
+                                    className="message-text"
+                                    dangerouslySetInnerHTML={{
+                                        __html: formatMessageWithEmojis(msg.message)
+                                    }}
+                                />
+                            )}
                             <div className="message-time">
                                 {msg.time || new Date(msg.createdAt).toLocaleString('en-US', {
                                     hour: 'numeric',
@@ -317,28 +470,72 @@ const TaskChat = ({
                     placeholder={placeholder}
                     value={chatMessage}
                     onChange={(e) => setChatMessage(e.target.value)}
-                    onPressEnter={handleSendMessage}
+                    onPressEnter={() => handleSendMessage()}
                     className="comment-input"
                     disabled={isSendingChat}
                     addonBefore={
-                        <Button
-                            type="text"
-                            icon={<BsEmojiSmile />}
-                            onClick={toggleEmojiPicker}
-                            className="emoji-button"
-                            style={{
-                                color: 'var(--brand-color)',
-                                border: 'none',
-                                background: 'transparent'
-                            }}
-                        />
+                        <div className="chat-input-tools">
+                            <Button
+                                type="text"
+                                icon={<BsEmojiSmile />}
+                                onClick={toggleEmojiPicker}
+                                className="emoji-button"
+                                style={{
+                                    color: 'var(--brand-color)',
+                                    border: 'none',
+                                    background: 'transparent'
+                                }}
+                            />
+                            <Popover
+                                trigger="click"
+                                placement="topLeft"
+                                overlayClassName="chat-attach-popover"
+                                content={(
+                                    <div className="attach-menu">
+                                        <Button
+                                            type="text"
+                                            className="attach-menu-item"
+                                            onClick={handlePickImage}
+                                        >
+                                            Photo
+                                        </Button>
+                                        <Button
+                                            type="text"
+                                            className="attach-menu-item"
+                                            onClick={handlePickVideo}
+                                        >
+                                            Video
+                                        </Button>
+                                        <Button
+                                            type="text"
+                                            className="attach-menu-item"
+                                            onClick={handlePickDoc}
+                                        >
+                                            Document
+                                        </Button>
+                                        {/* Multiple option removed: Photo/Video now support multi-select with preview */}
+                                    </div>
+                                )}
+                            >
+                                <Button
+                                    type="text"
+                                    icon={<BsPaperclip />}
+                                    className="attach-button"
+                                    style={{
+                                        color: 'var(--primary-text)',
+                                        border: 'none',
+                                        background: 'transparent'
+                                    }}
+                                />
+                            </Popover>
+                        </div>
                     }
                     suffix={
-                        isSendingChat ? (
+                        (isSendingChat || isUploading) ? (
                             <Spin size="small" />
                         ) : (
                             <BsSend
-                                onClick={handleSendMessage}
+                                onClick={() => handleSendMessage()}
                                 style={{
                                     cursor: chatMessage.trim() ? 'pointer' : 'not-allowed',
                                     fontSize: '16px',
@@ -350,7 +547,102 @@ const TaskChat = ({
                         )
                     }
                 />
+                {/* Hidden file inputs */}
+                <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length) onSelectBatchFiles(files);
+                        e.target.value = '';
+                    }}
+                />
+                <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                        const files = e.target.files;
+                        if (files && files.length) onSelectBatchFiles(files);
+                        e.target.value = '';
+                    }}
+                />
+                <input
+                    ref={docInputRef}
+                    type="file"
+                    accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                    style={{ display: 'none' }}
+                    onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            // Upload PDFs and office docs as 'image' resource to allow inline viewing on Cloudinary
+                            await handleUpload(file, 'image');
+                        }
+                        e.target.value = '';
+                    }}
+                />
             </div>
+            {/* Batch preview modal */}
+            <Modal
+                open={batchPicker.open}
+                onCancel={() => setBatchPicker({ open: false, items: [] })}
+                footer={[
+                    <Button key="cancel" onClick={() => setBatchPicker({ open: false, items: [] })}>Cancel</Button>,
+                    <Button key="send" type="primary" loading={isUploading} onClick={uploadBatchAndSend} disabled={batchPicker.items.length === 0}>Send</Button>
+                ]}
+                title="Send media"
+                centered
+                width={720}
+                zIndex={1000}
+                bodyStyle={{ background: 'var(--card-bg)' }}
+            >
+                <div className="batch-grid">
+                    {batchPicker.items.map(item => (
+                        <div key={item.id} className="batch-item">
+                            {item.type === 'image' ? (
+                                <img
+                                    src={item.url}
+                                    alt="sel"
+                                    style={{ cursor: 'zoom-in' }}
+                                    onClick={() => setPreview({ open: true, url: item.url, type: 'image' })}
+                                />
+                            ) : (
+                                <video
+                                    src={item.url}
+                                    style={{ cursor: 'zoom-in' }}
+                                    onClick={() => setPreview({ open: true, url: item.url, type: 'video' })}
+                                />
+                            )}
+                            {isUploading && (
+                                <div className="batch-progress">
+                                    <div className="bar" style={{ width: `${item.progress}%` }} />
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </Modal>
+            {/* Fullscreen preview */}
+            <Modal
+                open={preview.open}
+                onCancel={() => setPreview({ open: false, url: '', type: 'image' })}
+                footer={null}
+                centered
+                width={900}
+                zIndex={1100}
+                bodyStyle={{ textAlign: 'center', background: 'var(--card-bg)' }}
+            >
+                {preview.type === 'image' ? (
+                    <img src={preview.url} alt="preview" style={{ maxWidth: '100%', borderRadius: 8 }} />
+                ) : (
+                    <video src={preview.url} style={{ maxWidth: '100%', borderRadius: 8 }} controls autoPlay />
+                )}
+            </Modal>
         </Card>
     );
 };

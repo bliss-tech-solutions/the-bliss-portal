@@ -142,7 +142,7 @@
     gap: 8px;
 }
 
-.user-action-btn {
+/* .user-action-btn {
     color: var(--primary-text) !important;
     font-size: 13px;
     padding: 4px 12px;
@@ -157,7 +157,7 @@
 
 .user-action-btn .anticon {
     font-size: 14px;
-}
+} */
 
 /* Empty State */
 .user-empty-state {

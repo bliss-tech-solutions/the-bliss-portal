@@ -1,0 +1,125 @@
+.office-closing-reminder-modal .ant-modal-content {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.office-closing-reminder-modal .ant-modal-body {
+    padding: 0;
+}
+
+.office-closing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 32px;
+    text-align: center;
+    background: #ffffff;
+}
+
+/* Icon Container */
+.reminder-icon-container {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clock-icon {
+    font-size: 64px;
+    color: #1890ff;
+}
+
+/* Reminder Message */
+.reminder-message {
+    margin-bottom: 32px;
+    width: 100%;
+}
+
+.reminder-title {
+    margin: 0 0 16px 0 !important;
+    text-align: center;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.reminder-text {
+    margin: 0 0 12px 0 !important;
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.65);
+    text-align: center;
+}
+
+.reminder-subtext {
+    margin: 0 !important;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    max-width: 100%;
+}
+
+/* Action Buttons */
+.reminder-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Dark Theme Support */
+[data-theme='dark'] .office-closing-content,
+.theme-dark .office-closing-content {
+    background: var(--bg-color, #1f1f1f);
+}
+
+[data-theme='dark'] .reminder-title,
+.theme-dark .reminder-title {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .reminder-text,
+.theme-dark .reminder-text {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme='dark'] .clock-icon,
+.theme-dark .clock-icon {
+    color: #1890ff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .office-closing-content {
+        padding: 32px 24px;
+    }
+
+    .clock-icon {
+        font-size: 56px;
+    }
+
+    .reminder-title {
+        font-size: 18px !important;
+    }
+
+    .reminder-text {
+        font-size: 15px !important;
+    }
+
+    .reminder-subtext {
+        font-size: 13px !important;
+    }
+
+    .reminder-actions {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .reminder-actions .ant-space {
+        width: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+    }
+
+    .reminder-actions .ant-btn {
+        width: 100%;
+    }
+}

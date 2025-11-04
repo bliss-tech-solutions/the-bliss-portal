@@ -1,0 +1,48 @@
+.checkin-reminder-modal .ant-modal-content {
+    border-radius: 10px;
+}
+
+.checkin-reminder-content {
+    background: var(--card-bg);
+    color: var(--primary-text);
+    padding: 28px 24px;
+    text-align: center;
+}
+
+.checkin-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.checkin-main-icon {
+    font-size: 48px;
+    color: var(--brand-color);
+}
+
+.checkin-title {
+    margin: 0 0 8px 0 !important;
+    color: var(--primary-text) !important;
+}
+
+.checkin-subtext {
+    margin: 0 0 20px 0 !important;
+    color: var(--secondary-text) !important;
+}
+
+.checkin-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.checkin-hint {
+    margin-top: 16px;
+}
+
+[data-theme='dark'] .checkin-main-icon,
+.theme-dark .checkin-main-icon {
+    color: var(--brand-color);
+}
+
+

@@ -1,0 +1,305 @@
+.festive-calendar-container {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+}
+
+.fc-header {
+    margin-bottom: 24px;
+}
+
+.fc-subtitle {
+    color: var(--secondary-text);
+    margin: 0;
+    font-size: 14px;
+}
+
+.fc-calendar-wrapper {
+    margin: 0 auto;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.fc-calendar {
+    background-color: transparent !important;
+}
+
+.fc-calendar .ant-picker-calendar {
+    background-color: transparent !important;
+}
+
+.fc-calendar .ant-picker-calendar-header {
+    padding: 0 !important;
+}
+
+.fc-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fc-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fc-month-select,
+.fc-year-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--primary-text);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.fc-month-select:hover,
+.fc-year-select:hover {
+    border-color: var(--accent-color);
+}
+
+.fc-month-select:focus,
+.fc-year-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.fc-dots-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.fc-task-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.fc-task-dot:hover {
+    transform: scale(1.2);
+}
+
+.fc-task-more {
+    font-size: 10px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+.fc-calendar .ant-picker-cell {
+    border: 1px solid var(--border-color) !important;
+}
+
+.fc-calendar .ant-picker-cell:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.fc-calendar .ant-picker-cell-selected .fc-date-number {
+    color: #ffffff;
+}
+
+.fc-calendar .ant-picker-cell-today {
+    border: 2px solid var(--accent-color) !important;
+}
+
+.fc-calendar .ant-picker-cell-today .fc-date-number {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.fc-calendar .ant-picker-cell-in-view {
+    background-color: var(--card-bg);
+}
+
+.fc-calendar .ant-picker-cell-disabled {
+    background-color: var(--tertiary-bg);
+    opacity: 0.5;
+}
+
+.fc-tasks-popover {
+    min-width: 200px;
+}
+
+.fc-task-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fc-task-item:last-child {
+    border-bottom: none;
+}
+
+.fc-task-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.fc-task-modal .ant-modal-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.fc-task-modal .ant-modal-title {
+    color: var(--primary-text) !important;
+}
+
+.fc-task-modal .ant-modal-body {
+    background-color: var(--primary-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.fc-task-modal .ant-modal-footer {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.fc-current-tasks {
+    margin-bottom: 24px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.fc-task-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.fc-task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.fc-task-title {
+    font-weight: 500;
+    color: var(--primary-text);
+}
+
+.fc-task-description {
+    color: var(--secondary-text);
+    font-size: 13px;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.fc-limit-warning {
+    color: var(--warning-color);
+    font-size: 13px;
+    margin: 8px 0 0 0;
+    font-style: italic;
+}
+
+.fc-task-form .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+}
+
+.fc-task-form .ant-input,
+.fc-task-form .ant-input:focus,
+.fc-task-form textarea {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.fc-task-form .ant-input::placeholder,
+.fc-task-form textarea::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.fc-task-form .ant-input:hover,
+.fc-task-form textarea:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.fc-color-picker {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fc-color-option {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.fc-color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.fc-color-option.fc-color-selected {
+    border: 3px solid var(--accent-color) !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+table tbody tr td .ant-picker-cell-inner {
+    border-top: none !important;
+}
+
+@media (max-width: 768px) {
+    .festive-calendar-container {
+        padding: 16px;
+    }
+    .fc-calendar-wrapper {
+        padding: 12px;
+    }
+    .fc-calendar-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    .fc-header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .fc-task-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+.fc-current-tasks::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fc-current-tasks::-webkit-scrollbar-track {
+    background: var(--tertiary-bg);
+    border-radius: 3px;
+}
+
+.fc-current-tasks::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.fc-current-tasks::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-text);
+}
+
+

@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './AllUserTaskEntries.css';
-import { Card, Tag, Button, Row, Col, Drawer, Spin } from 'antd';
+import { Card, Tag, Button, Row, Col, Drawer, Spin, Popconfirm } from 'antd';
 import { useSelector } from 'react-redux';
-import { selectTheme } from '../../../../store/slices/themeSlice';
-import { selectUserId, selectUser } from '../../../../store/slices/authSlice';
-import { useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../../store/api';
-import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsClock, BsChat } from 'react-icons/bs';
+import { selectTheme } from '../../../../../store/slices/themeSlice';
+import { selectUserId, selectUser } from '../../../../../store/slices/authSlice';
+import { useGetTaskAssignQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation } from '../../../../../store/api';
+import { useNotification } from '../../../../../contexts/NotificationContext';
+import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
-import TaskChat from '../../../PortalCommonComponents/TaskChat/TaskChat';
+import TaskChat from '../../../../PortalCommonComponents/TaskChat/TaskChat';
 
 const AllUserTaskEntries = () => {
     const theme = useSelector(selectTheme);
@@ -17,6 +17,7 @@ const AllUserTaskEntries = () => {
     const user = useSelector(selectUser);
     const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [confirmTaskId, setConfirmTaskId] = useState(null);
 
     // Fetch user's assigned tasks from API
     const { data: tasksData, isLoading, error } = useGetTaskAssignQuery(userId);
@@ -25,6 +26,7 @@ const AllUserTaskEntries = () => {
     const { data: allUsersData } = useGetAllUsersQuery();
 
     const { showSuccess, showError } = useNotification();
+    const [updateTaskStatus, { isLoading: updatingStatus }] = useUpdateTaskStatusMutation();
 
     const getPriorityColor = (priority) => {
         switch (priority?.toLowerCase()) {
@@ -86,12 +88,22 @@ const AllUserTaskEntries = () => {
         );
     }
 
-    // Filter out archived tasks on frontend (temporary solution)
-    const tasks = tasksData?.data?.filter(task => task.isArchived !== true) || [];
+    // Filter out archived tasks and sort latest first
+    const tasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const handleViewTask = (task) => {
         setSelectedTask(task);
         setViewDrawerVisible(true);
+    };
+
+    const handleMarkCompleted = async (task) => {
+        try {
+            await updateTaskStatus({ taskId: task._id, status: 'completed' }).unwrap();
+            showSuccess('Task marked as completed');
+        } catch (e) {
+            showError(e?.data?.message || 'Failed to update task status');
+        }
     };
 
     const handleCloseDrawer = () => {
@@ -145,6 +157,10 @@ const AllUserTaskEntries = () => {
                                         <div className="user-task-chat">
                                             <BsChat className="icon" />
                                             <span>{task.chatCount || task.chatMessageCount || 0}</span>
+                                            <BsPerson className="icon" style={{ marginLeft: 12 }} />
+                                            <span style={{ color: 'var(--secondary-text)' }}>
+                                                {getAssignerName(task.userId)}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="user-task-actions">
@@ -156,6 +172,26 @@ const AllUserTaskEntries = () => {
                                         >
                                             View
                                         </Button>
+                                        <Popconfirm
+                                            title="Mark task as completed?"
+                                            okText="Yes, complete"
+                                            cancelText="Cancel"
+                                            placement="topRight"
+                                            open={confirmTaskId === task._id}
+                                            onOpenChange={(open) => setConfirmTaskId(open ? task._id : null)}
+                                            onConfirm={() => { setConfirmTaskId(null); handleMarkCompleted(task); }}
+                                            onCancel={() => setConfirmTaskId(null)}
+                                            disabled={task.taskStatus === 'completed'}
+                                        >
+                                            <Button
+                                                type="primary"
+                                                style={{ color: 'white' }}
+                                                className="user-action-btn"
+                                                disabled={task.taskStatus === 'completed' || updatingStatus}
+                                            >
+                                                {task.taskStatus === 'completed' ? 'Completed' : 'Mark Completed'}
+                                            </Button>
+                                        </Popconfirm>
                                     </div>
                                 </div>
                             </Col>

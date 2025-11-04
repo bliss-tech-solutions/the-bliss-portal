@@ -1,13 +1,21 @@
 // Navigation Configuration with Role-Based Access Control
 import { DashboardOutlined, UserOutlined } from '@ant-design/icons';
 import { BiTask } from "react-icons/bi";
-
+import { SlCalender } from "react-icons/sl";
+import { FileTextOutlined } from '@ant-design/icons';
+import { FaCalendarAlt } from "react-icons/fa";
+import { CalendarOutlined } from '@ant-design/icons';
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
 import ProfileUpdate from '../PortalCommonComponents/ProfileUpdate/ProfileUpdate';
 import ExecutionTaskAssignPanel from '../RoutesComponents/ExecutionTaskAssignPanel/ExecutionTaskAssignPanel';
-import UserTaskAssignmentPanel from '../RoutesComponents/UserTaskAssignmentPanel/UserTaskAssignmentPanel';
+import UserTaskAssignmentPanel from '../RoutesComponents/UserTaskAssignmentPanel/TaskManagePanelUser/UserTaskAssignmentPanel';
+import UserAttendanceData from '../RoutesComponents/HRWorkComponent/UserAttendanceData/UserAttendanceData';
+import FestiveCalender from '../RoutesComponents/HRWorkComponent/FestiveCalender/FestiveCalender';
+import DocumentGenerator from '../RoutesComponents/HRWorkComponent/DocumentGenerator/DocumentGenerator';
+import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/TaskAndLeaveCalender/TaskAndLeaveCalender';
 // Navigation Configuration
+
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -41,6 +49,38 @@ export const navigationConfig = [
         routeName: "/user-task-assignment-panel",
         roles: ["user"],
         component: UserTaskAssignmentPanel,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "User Attendance Data",
+        icon: SlCalender,
+        routeName: "/user-attendance-data",
+        roles: ["HR"],
+        component: UserAttendanceData,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Festive Calender",
+        icon: FaCalendarAlt,
+        routeName: "/festive-calender",
+        roles: ["HR"],
+        component: FestiveCalender,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Document Generator",
+        icon: FileTextOutlined,
+        routeName: "/document-generator",
+        roles: ["HR"],
+        component: DocumentGenerator,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Task and Leave Calender",
+        icon: CalendarOutlined,
+        routeName: "/task-and-leave-calender",
+        roles: ["user"],
+        component: TaskAndLeaveCalender,
         showInSidebar: true
     }
 ];

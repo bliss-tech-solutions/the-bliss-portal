@@ -135,11 +135,12 @@ const UserVerificationForm = () => {
                                                                         form.setFieldsValue({ position: undefined }); // Clear position when role changes
                                                                     }}
                                                                 >
-                                                                    <Select.Option value="Execution">Execution</Select.Option>
-                                                                    <Select.Option value="user">user</Select.Option>
+                                                                    <Select.Option value="Execution">Execution (User Manager)</Select.Option>
+                                                                    <Select.Option value="user">User (Graphics Designer, Developer, Content Writer, Video Editor) etc.</Select.Option>
+                                                                    <Select.Option value="HR">HR</Select.Option>
                                                                 </Select>
                                                             </Form.Item>
-                                                            {selectedRole && (
+                                                            {selectedRole && getPositionOptions(selectedRole).length > 0 && (
                                                                 <Form.Item label="Position" name="position" rules={[{ required: true, message: "Required" }]}>
                                                                     <Select placeholder="Select position" size="large">
                                                                         {getPositionOptions(selectedRole).map(option => (

@@ -230,24 +230,27 @@ const ExecutionTaskAssignPanel = () => {
                 );
             case '2':
                 return (
-                    <div>
-                        <p>Tasks that are waiting for approval or review.</p>
-                        <p>These tasks require your immediate attention.</p>
-                    </div>
+                    <AllTaskEntries
+                        searchTerm={searchTerm}
+                        selectedDateRange={selectedDateRange}
+                        statusFilter="pending"
+                    />
                 );
             case '3':
                 return (
-                    <div>
-                        <p>Tasks that are currently being worked on.</p>
-                        <p>Track the progress and status of active tasks.</p>
-                    </div>
+                    <AllTaskEntries
+                        searchTerm={searchTerm}
+                        selectedDateRange={selectedDateRange}
+                        statusFilter="pending"
+                    />
                 );
             case '4':
                 return (
-                    <div>
-                        <p>Tasks that have been finished successfully.</p>
-                        <p>Review completed tasks and their outcomes.</p>
-                    </div>
+                    <AllTaskEntries
+                        searchTerm={searchTerm}
+                        selectedDateRange={selectedDateRange}
+                        statusFilter="completed"
+                    />
                 );
             default:
                 return <div>No content available.</div>;
@@ -302,8 +305,7 @@ const ExecutionTaskAssignPanel = () => {
 
                 {/* Filter Section */}
                 {showFilters && (
-                    <div className="filters-section" style={{
-                        marginTop: '16px',
+                    <div className="filters-section MarginBottomSmall" style={{
                         padding: '16px',
                         backgroundColor: 'var(--secondary-bg)',
                         borderRadius: '8px',

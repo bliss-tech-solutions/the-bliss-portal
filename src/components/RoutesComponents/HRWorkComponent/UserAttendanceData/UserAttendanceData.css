@@ -1,0 +1,121 @@
+.ua-container {
+    /* padding: 16px; */
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+.ua-title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+
+.ua-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    width: 100%;
+}
+
+.ua-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-text);
+}
+
+.ua-col-icon {
+    color: var(--secondary-text);
+}
+
+/* Column Resizer */
+.ua-resizer {
+    position: absolute;
+    right: -6px;
+    top: 0;
+    width: 12px;
+    height: 100%;
+    cursor: col-resize;
+    transition: background-color 0.2s ease;
+}
+
+.ua-resizer:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Table Theme Styling */
+.ua-container .ant-table {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.ua-container .ant-table-thead > tr > th {
+    background-color: var(--secondary-bg) !important;
+    color: var(--primary-text) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ua-container .ant-table-tbody > tr > td {
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.ua-container .ant-table-tbody > tr:hover > td {
+    background-color: var(--hover-bg) !important;
+}
+
+.ua-container .ant-table-tbody > tr {
+    background-color: var(--card-bg) !important;
+}
+
+.ua-container .ant-table-tbody > tr.ant-table-row-selected > td {
+    background-color: var(--hover-bg) !important;
+}
+
+.ua-container .ant-table-bordered .ant-table-thead > tr > th,
+.ua-container .ant-table-bordered .ant-table-tbody > tr > td {
+    border-color: var(--border-color) !important;
+}
+
+/* Button Links in Table */
+.ua-container .ant-btn-link {
+    color: var(--accent-color) !important;
+}
+
+.ua-container .ant-btn-link:hover {
+    color: var(--brand-color) !important;
+}
+
+/* Pagination Theme */
+.ua-container .ant-pagination {
+    color: var(--primary-text) !important;
+}
+
+.ua-container .ant-pagination-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ua-container .ant-pagination-item a {
+    color: var(--primary-text) !important;
+}
+
+.ua-container .ant-pagination-item:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.ua-container .ant-pagination-item:hover a {
+    color: var(--accent-color) !important;
+}
+
+.ua-container .ant-pagination-item-active {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.ua-container .ant-pagination-item-active a {
+    color: #ffffff !important;
+}

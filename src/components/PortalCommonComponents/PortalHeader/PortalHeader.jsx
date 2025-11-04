@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./PortalHeader.css";
-import { Row, Col, Dropdown, Badge, Avatar, Space, Button, Spin } from "antd";
+import { Row, Col, Dropdown, Badge, Avatar, Space, Button, Spin, Modal, Input } from "antd";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { selectCurrentHeaderLogo, toggleTheme, selectTheme } from "../../../store/slices/themeSlice";
 import { logout } from "../../../store/slices/authSlice";
 import { useNotification } from "../../../contexts/NotificationContext";
-import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined } from "@ant-design/icons";
+import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined, ExportOutlined } from "@ant-design/icons";
+import { useCheckoutMutation } from '../../../store/api';
 
 const PortalHeader = () => {
     const dispatch = useDispatch();
@@ -22,6 +23,10 @@ const PortalHeader = () => {
     });
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const isDarkMode = theme === 'dark';
+    const userId = useSelector((state) => state.auth?.userId || state.auth?.user?._id || state.auth?.user?.id);
+    const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+    const [checkoutReason, setCheckoutReason] = useState('');
+    const [checkout, { isLoading: isCheckoutLoading }] = useCheckoutMutation();
 
     const handleThemeToggle = () => {
         dispatch(toggleTheme());
@@ -202,84 +207,122 @@ const PortalHeader = () => {
     }, []);
 
     return (
-        <div id="PortalHeader" className="portal-header">
-            <div className="PortalContainer h-100">
-                <div className="h-100">
-                    <Row className="h-100">
-                        <Col lg={18}>
-                            <div className="PortalGreetingsContainer">
-                                <div className="PortalGreetingsText">
-                                    <div>
-                                        <p>{greeting},&nbsp;<span className="PortalGreetingsName">{fullName}</span></p>
-                                    </div>
-                                    <div className="ShowCurrentDateAndTime">
-                                        <div className="date-container">
-                                            <div className="date-info">
-                                                <CalendarOutlined className="date-icon" />
-                                                <span className="date-text">
-                                                    {currentDate.date}
-                                                </span>
+        <>
+            <div id="PortalHeader" className="portal-header">
+                <div className="PortalContainer h-100">
+                    <div className="h-100">
+                        <Row className="h-100">
+                            <Col lg={18}>
+                                <div className="PortalGreetingsContainer">
+                                    <div className="PortalGreetingsText">
+                                        <div>
+                                            <p>{greeting},&nbsp;<span className="PortalGreetingsName">{fullName}</span></p>
+                                        </div>
+                                        <div className="ShowCurrentDateAndTime">
+                                            <div className="date-container">
+                                                <div className="date-info">
+                                                    <CalendarOutlined className="date-icon" />
+                                                    <span className="date-text">
+                                                        {currentDate.date}
+                                                    </span>
+                                                </div>
+
                                             </div>
+                                        </div>
+                                        <div>
+                                            <Button size="small" icon={<ExportOutlined />} onClick={() => setCheckoutModalOpen(true)}>
+                                                Check Out
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </Col>
-                        <Col lg={6}>
-                            <div className="PortalProfileDetailsContainer">
-                                <Space size="middle" className="portal-header-actions">
-                                    {/* Theme Toggle */}
-                                    <Button
-                                        type="text"
-                                        icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
-                                        onClick={handleThemeToggle}
-                                        className="portal-theme-button"
-                                    >
-                                        {isDarkMode ? 'Light' : 'Dark'}
-                                    </Button>
-
-                                    {/* Notification Icon */}
-                                    <Dropdown
-                                        menu={{ items: notificationItems }}
-                                        placement="bottomRight"
-                                        trigger={['click']}
-                                        overlayClassName="portal-notification-dropdown"
-                                    >
-                                        <Button type="text" className="portal-notification-button">
-                                            <Badge count={3} size="small">
-                                                <BellOutlined className="portal-header-icon" />
-                                            </Badge>
+                            </Col>
+                            <Col lg={6}>
+                                <div className="PortalProfileDetailsContainer">
+                                    <Space size="middle" className="portal-header-actions">
+                                        {/* Theme Toggle */}
+                                        <Button
+                                            type="text"
+                                            icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+                                            onClick={handleThemeToggle}
+                                            className="portal-theme-button"
+                                        >
+                                            {isDarkMode ? 'Light' : 'Dark'}
                                         </Button>
-                                    </Dropdown>
 
-                                    {/* Profile Dropdown */}
-                                    <Dropdown
-                                        menu={{
-                                            items: profileItems,
-                                            onClick: ({ key }) => {
-                                                if (key === 'logout') {
-                                                    handleLogout();
-                                                } else if (key === 'edit-profile') {
-                                                    navigate('/profile-settings');
+                                        {/* Notification Icon */}
+                                        <Dropdown
+                                            menu={{ items: notificationItems }}
+                                            placement="bottomRight"
+                                            trigger={['click']}
+                                            overlayClassName="portal-notification-dropdown"
+                                        >
+                                            <Button type="text" className="portal-notification-button">
+                                                <Badge count={3} size="small">
+                                                    <BellOutlined className="portal-header-icon" />
+                                                </Badge>
+                                            </Button>
+                                        </Dropdown>
+
+                                        {/* Profile Dropdown */}
+                                        <Dropdown
+                                            menu={{
+                                                items: profileItems,
+                                                onClick: ({ key }) => {
+                                                    if (key === 'logout') {
+                                                        handleLogout();
+                                                    } else if (key === 'edit-profile') {
+                                                        navigate('/profile-settings');
+                                                    }
                                                 }
-                                            }
-                                        }}
-                                        placement="bottomRight"
-                                        trigger={['click']}
-                                        overlayClassName="portal-profile-dropdown"
-                                    >
-                                        <Button type="text" className="portal-profile-button">
-                                            <Avatar size="small" icon={<UserOutlined />} />
-                                            <span className="portal-profile-name">{firstName}</span>
-                                        </Button>
-                                    </Dropdown>
-                                </Space>
-                            </div>
-                        </Col>
-                    </Row>
+                                            }}
+                                            placement="bottomRight"
+                                            trigger={['click']}
+                                            overlayClassName="portal-profile-dropdown"
+                                        >
+                                            <Button type="text" className="portal-profile-button">
+                                                <Avatar size="small" icon={<UserOutlined />} />
+                                                <span className="portal-profile-name">{firstName}</span>
+                                            </Button>
+                                        </Dropdown>
+                                    </Space>
+                                </div>
+                            </Col>
+                        </Row>
+                    </div>
                 </div>
             </div>
-        </div>
+            <Modal
+                title="Confirm Check-Out"
+                open={checkoutModalOpen}
+                onOk={async () => {
+                    try {
+                        await checkout({ userId, checkOutReason: checkoutReason || '' }).unwrap();
+                        setCheckoutModalOpen(false);
+                        setCheckoutReason('');
+                        success('Checked out successfully');
+                        // Immediately log the user out
+                        dispatch(logout());
+                        navigate('/');
+                    } catch (e) {
+                        // Optional: surface error via notification
+                    }
+                }}
+                onCancel={() => setCheckoutModalOpen(false)}
+                okText="Check Out"
+                confirmLoading={isCheckoutLoading}
+                cancelText="Cancel"
+                centered
+            >
+                <p>You can optionally add a reason for checking out.</p>
+                <Input.TextArea
+                    rows={3}
+                    placeholder="Reason (optional)"
+                    value={checkoutReason}
+                    onChange={(e) => setCheckoutReason(e.target.value)}
+                />
+            </Modal>
+        </>
     )
 }
 

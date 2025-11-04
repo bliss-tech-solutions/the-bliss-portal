@@ -1,0 +1,48 @@
+.offer-letter-generator .ant-card {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    border-color: var(--border-color) !important;
+}
+
+.offer-letter-generator .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+}
+
+.offer-letter-generator .ant-input,
+.offer-letter-generator .ant-input-affix-wrapper,
+.offer-letter-generator .ant-input-textarea,
+.offer-letter-generator .ant-input-textarea textarea,
+.offer-letter-generator .ant-picker,
+.offer-letter-generator .ant-select-selector {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.offer-letter-generator .ant-input::placeholder,
+.offer-letter-generator .ant-input-textarea textarea::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.offer-letter-generator .ant-input:hover,
+.offer-letter-generator .ant-input-affix-wrapper:hover,
+.offer-letter-generator .ant-input-textarea textarea:hover,
+.offer-letter-generator .ant-picker:hover,
+.offer-letter-generator .ant-select-selector:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.offer-letter-generator .ant-picker-input>input,
+.offer-letter-generator .ant-select-selection-item,
+.offer-letter-generator .ant-select-selection-placeholder {
+    color: var(--primary-text) !important;
+}
+
+.offer-letter-generator .ant-btn-primary {
+    background-color: var(--button-primary) !important;
+    color: var(--button-text) !important;
+}
+
+.offer-letter-generator .ant-btn-primary:hover {
+    background-color: var(--button-primary-hover) !important;
+}

@@ -31,7 +31,7 @@ h6 {
   margin: 0px !important;
 }
 
-p{
+p {
   font-weight: 300;
 }
 
@@ -58,11 +58,11 @@ a {
 }
 
 .MarginBottomSmall {
-  margin-bottom: 10px;
+  margin-bottom: 10px !important;
 }
 
 .MarginBottomMedium {
-  margin-bottom: 20px;
+  margin-bottom: 20px !important;
 }
 
 .ant-input,
@@ -85,15 +85,7 @@ a {
   padding: 20px;
 }
 
-.ant-card-head{
+.ant-card-head {
   background: var(--secondary-bg) !important;
-}
-
-.MarginBottomSmall{
-  margin-bottom: 10px !important;
-}
-
-.MarginBottomMedium{
-  margin-bottom: 20px !important;
 }
 

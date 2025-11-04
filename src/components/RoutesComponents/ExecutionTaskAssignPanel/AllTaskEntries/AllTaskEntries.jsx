@@ -7,12 +7,12 @@ import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser } from '../../../../store/slices/authSlice';
 import { useGetTaskAssignQuery, useArchiveTaskMutation } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsClock, BsChat } from 'react-icons/bs';
+import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye, AiOutlineEdit, AiOutlineDelete, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../../PortalCommonComponents/TaskChat/TaskChat';
 
-const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
+const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilter = 'all' }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
     const theme = useSelector(selectTheme);
@@ -37,6 +37,23 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
     // Archive task mutation
     const [archiveTask, { isLoading: isArchiving }] = useArchiveTaskMutation();
 
+    // Derive a best-effort assignee display name from task object
+    const getAssigneeDisplay = (task) => {
+        // Preferred fields if backend provides explicit names
+        if (task.assignedToName) return task.assignedToName;
+        if (task.receiverUserName) return task.receiverUserName;
+        if (task.receiverName) return task.receiverName;
+        if (task.assignedTo) return task.assignedTo; // could already be a name
+        if (task.userName) return task.userName; // creator name (fallback)
+
+        // Fallback to inferred user id fields when names are absent
+        // If current user created it, show receiver id; otherwise show creator id
+        if (task.userId === userId && task.receiverUserId) return task.receiverUserId;
+        if (task.userId && task.userId !== userId) return task.userId;
+
+        return 'Unknown';
+    };
+
     if (isLoading) {
         return (
             <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -57,27 +74,41 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
     const filteredTasks = tasksData?.data?.filter(task => {
         // First filter out archived tasks
         if (task.isArchived === true) return false;
-        
+
+        // Status filter: 'completed' or 'pending' or 'all'
+        if (statusFilter && statusFilter !== 'all') {
+            const status = (task.taskStatus || 'pending').toLowerCase();
+            if (statusFilter === 'completed' && status !== 'completed') return false;
+            if ((statusFilter === 'pending' || statusFilter === 'in-progress') && status === 'completed') return false;
+        }
+
         // Apply search filter
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
             const matchesTaskName = task.taskName?.toLowerCase().includes(searchLower);
             const matchesClientName = task.clientName?.toLowerCase().includes(searchLower);
-            
+
             if (!matchesTaskName && !matchesClientName) return false;
         }
-        
+
         // Apply date filter (dummy for now)
         if (selectedDateRange && selectedDateRange[0] && selectedDateRange[1]) {
             const taskDate = new Date(task.createdAt);
             const startDate = selectedDateRange[0].toDate();
             const endDate = selectedDateRange[1].toDate();
-            
+
             if (taskDate < startDate || taskDate > endDate) return false;
         }
-        
+
         return true;
     }) || [];
+
+    // Sort latest first (by createdAt desc)
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+        const da = new Date(a.createdAt).getTime();
+        const db = new Date(b.createdAt).getTime();
+        return db - da;
+    });
 
     // Debug: Log filtered tasks (remove in production)
     console.log('📋 Filtered tasks loaded:', filteredTasks.length);
@@ -96,6 +127,12 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
             default:
                 return 'default';
         }
+    };
+
+    const getStatusColor = (status) => {
+        const s = (status || 'pending').toLowerCase();
+        if (s === 'completed' || s === 'complete') return 'green';
+        return 'default';
     };
 
     const formatDateTime = (dateString) => {
@@ -147,12 +184,12 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
 
     return (
         <div className="all-task-entries">
-            {filteredTasks.length === 0 ? (
+            {sortedTasks.length === 0 ? (
                 <div className="empty-state">
                     {searchTerm || selectedDateRange ? 'No tasks match your filters.' : 'No tasks found. Create your first task!'}
                 </div>
             ) : (
-                filteredTasks.map((task) => (
+                sortedTasks.map((task) => (
                     <Card
                         key={task._id}
                         className="task-entry-card"
@@ -169,6 +206,9 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
                                         <Tag color={getPriorityColor(task.priority)}>
                                             {task.priority?.toUpperCase()}
                                         </Tag>
+                                        <Tag color={getStatusColor(task.taskStatus)} style={{ marginLeft: 8 }}>
+                                            {(task.taskStatus || 'pending').toUpperCase()}
+                                        </Tag>
                                     </div>
                                 </div>
                             </Col>
@@ -184,9 +224,13 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
                                         <div className="task-time-spend">
                                             <span>Time: {task.timeSpend}</span>
                                         </div>
-                                        <div className="task-chat">
+                                    <div className="task-chat">
                                             <BsChat className="icon" />
                                             <span>{task.chatCount || task.chatMessageCount || 0}</span>
+                                        <BsPerson className="icon" style={{ marginLeft: 12 }} />
+                                        <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
+                                                {getAssigneeDisplay(task)}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="task-actions">
@@ -259,6 +303,9 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
                                 <Tag color={getPriorityColor(selectedTask.priority)} className="priority-tag-pill">
                                     {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)} Priority
                                 </Tag>
+                                <Tag color={getStatusColor(selectedTask.taskStatus)} className="priority-tag-pill" style={{ marginLeft: 8 }}>
+                                    {(selectedTask.taskStatus || 'pending').replace(/^./, c => c.toUpperCase())}
+                                </Tag>
                                 <div className="date-badge">
                                     <BsClock />
                                     <span>
@@ -329,13 +376,13 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null }) => {
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <AiOutlineExclamationCircle style={{ color: '#ff4d4f', fontSize: '20px' }} />
-                        <span>Archive Task</span>
+                        <span>Delete Task</span>
                     </div>
                 }
                 open={archiveModalVisible}
                 onOk={handleConfirmArchive}
                 onCancel={handleCancelArchive}
-                okText="Archive"
+                okText="Delete"
                 cancelText="Cancel"
                 okButtonProps={{
                     danger: true,

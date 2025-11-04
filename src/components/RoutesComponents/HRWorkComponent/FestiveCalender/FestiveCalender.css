@@ -1,0 +1,1065 @@
+/* Hide calendar header since we're using Card title */
+.festive-calendar-page .fc-header {
+    display: none;
+}
+
+/* Tasks Container */
+.festive-calendar-page .festive-tasks-container .ant-card-body {
+    padding: 16px;
+}
+
+.festive-calendar-page .festive-tasks-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.festive-calendar-page .festive-task-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-task-item:last-child {
+    border-bottom: none;
+}
+
+.festive-calendar-page .festive-task-item:hover {
+    background-color: var(--hover-bg);
+    margin: 0 -8px;
+    padding: 12px 8px;
+    border-radius: 4px;
+}
+
+.festive-calendar-page .festive-task-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* Leaves Container */
+.festive-calendar-page .festive-leaves-container .ant-card-body {
+    padding: 16px;
+}
+
+.festive-calendar-page .festive-leaves-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.festive-calendar-page .festive-leave-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-leave-item:last-child {
+    border-bottom: none;
+}
+
+.festive-calendar-page .festive-leave-item {
+    transition: background-color 0.2s ease;
+}
+
+.festive-calendar-page .festive-leave-item:hover {
+    background-color: var(--hover-bg);
+    margin: 0 -8px;
+    padding: 12px 8px;
+    border-radius: 4px;
+}
+
+/* View Button */
+.festive-calendar-page .festive-leaves-view-button {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Scrollbar Styling for both containers */
+.festive-calendar-page .festive-tasks-list::-webkit-scrollbar,
+.festive-calendar-page .festive-leaves-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.festive-calendar-page .festive-tasks-list::-webkit-scrollbar-track,
+.festive-calendar-page .festive-leaves-list::-webkit-scrollbar-track {
+    background: var(--tertiary-bg);
+    border-radius: 3px;
+}
+
+.festive-calendar-page .festive-tasks-list::-webkit-scrollbar-thumb,
+.festive-calendar-page .festive-leaves-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.festive-calendar-page .festive-tasks-list::-webkit-scrollbar-thumb:hover,
+.festive-calendar-page .festive-leaves-list::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-text);
+}
+
+/* Calendar Container Styles */
+.festive-calendar-page .fc-header {
+    display: none;
+}
+
+.festive-calendar-container {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+.fc-subtitle {
+    color: var(--secondary-text);
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Calendar Wrapper */
+.fc-calendar-wrapper {
+    margin: 0 auto;
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 0;
+}
+
+.fc-calendar {
+    background-color: transparent !important;
+}
+
+.fc-calendar .ant-picker-calendar {
+    background-color: transparent !important;
+}
+
+.fc-calendar .ant-picker-calendar-header {
+    padding: 0 !important;
+}
+
+/* Custom Calendar Header */
+.fc-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fc-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fc-month-select,
+.fc-year-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--primary-text);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.fc-month-select:hover,
+.fc-year-select:hover {
+    border-color: var(--accent-color);
+}
+
+.fc-month-select:focus,
+.fc-year-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Date Cell Styling */
+.fc-dots-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.fc-task-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.fc-task-dot:hover {
+    transform: scale(1.2);
+}
+
+.fc-task-more {
+    font-size: 10px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+/* Calendar Day Cells */
+.fc-calendar .ant-picker-cell {
+    border: 1px solid var(--border-color) !important;
+}
+
+.fc-calendar .ant-picker-cell:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+.fc-calendar .ant-picker-cell-selected .fc-date-number {
+    color: #ffffff;
+}
+
+.fc-calendar .ant-picker-cell-today {
+    border: 2px solid var(--accent-color) !important;
+}
+
+.fc-calendar .ant-picker-cell-today .fc-date-number {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.fc-calendar .ant-picker-cell-in-view {
+    background-color: var(--card-bg);
+}
+
+.fc-calendar .ant-picker-cell-disabled {
+    background-color: var(--tertiary-bg);
+    opacity: 0.5;
+}
+
+/* Tasks Popover */
+.fc-tasks-popover {
+    min-width: 200px;
+}
+
+.fc-task-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.fc-task-item:last-child {
+    border-bottom: none;
+}
+
+.fc-task-color-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Modal Styling */
+.fc-task-modal .ant-modal-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.fc-task-modal .ant-modal-title {
+    color: var(--primary-text) !important;
+}
+
+.fc-task-modal .ant-modal-body {
+    background-color: var(--primary-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.fc-task-modal .ant-modal-footer {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* Current Tasks Display */
+.fc-current-tasks {
+    margin-bottom: 24px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.fc-task-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.fc-task-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.fc-task-title {
+    font-weight: 500;
+    color: var(--primary-text);
+}
+
+.fc-task-description {
+    color: var(--secondary-text);
+    font-size: 13px;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.fc-limit-warning {
+    color: var(--warning-color);
+    font-size: 13px;
+    margin: 8px 0 0 0;
+    font-style: italic;
+}
+
+/* Task Form */
+.fc-task-form .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+}
+
+.fc-task-form .ant-input,
+.fc-task-form .ant-input:focus,
+.fc-task-form textarea {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.fc-task-form .ant-input::placeholder,
+.fc-task-form textarea::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.fc-task-form .ant-input:hover,
+.fc-task-form textarea:hover {
+    border-color: var(--accent-color) !important;
+}
+
+/* Color Picker */
+.fc-color-picker {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fc-color-option {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.fc-color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px var(--shadow);
+}
+
+.fc-color-option.fc-color-selected {
+    border: 3px solid var(--accent-color) !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+table tbody tr td .ant-picker-cell-inner {
+    border-top: none !important;
+}
+
+/* Drawer Styling */
+.festive-calendar-page .festive-leaves-drawer .ant-drawer-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-leaves-drawer .ant-drawer-title {
+    color: var(--primary-text);
+}
+
+.festive-calendar-page .festive-leaves-drawer .ant-drawer-body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    padding: 16px;
+    position: relative;
+}
+
+.festive-calendar-page .festive-leaves-drawer .ant-tabs-tab {
+    color: var(--secondary-text);
+}
+
+.festive-calendar-page .festive-leaves-drawer .ant-tabs-tab-active {
+    color: var(--accent-color);
+}
+
+.festive-calendar-page .festive-leaves-drawer .ant-tabs-ink-bar {
+    background: var(--accent-color);
+}
+
+/* Table Styling */
+.festive-calendar-page .festive-leaves-table {
+    background-color: var(--card-bg);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-table-thead>tr>th {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-table-tbody>tr>td {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-pagination {
+    color: var(--primary-text);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-pagination-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-pagination-item a {
+    color: var(--primary-text);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-pagination-item-active {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.festive-calendar-page .festive-leaves-table .ant-pagination-item-active a {
+    color: #fff;
+}
+
+/* Date Modal Styling */
+.festive-calendar-page .festive-date-modal .ant-modal-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-date-modal .ant-modal-title {
+    color: var(--primary-text);
+}
+
+.festive-calendar-page .festive-date-modal .ant-modal-body {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+.festive-calendar-page .festive-date-modal-content {
+    padding: 8px 0;
+}
+
+.festive-calendar-page .festive-modal-dates-list {
+    padding-right: 8px;
+}
+
+/* Scrollbar for dates list */
+.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-track {
+    background: var(--tertiary-bg);
+    border-radius: 3px;
+}
+
+.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-text);
+}
+
+/* Date Row */
+.festive-calendar-page .festive-modal-date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    gap: 16px;
+}
+
+.festive-calendar-page .festive-modal-date-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background-color: var(--accent-color);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+}
+
+.festive-calendar-page .festive-modal-date-row:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateX(2px);
+}
+
+.festive-calendar-page .festive-modal-date-row.selected {
+    border-color: var(--accent-color);
+    background: linear-gradient(90deg, rgba(24, 144, 255, 0.05) 0%, var(--card-bg) 100%);
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+}
+
+.festive-calendar-page .festive-modal-date-row.selected::before {
+    width: 4px;
+}
+
+.festive-calendar-page .festive-modal-date-row.action-approve {
+    border-color: #52c41a;
+    background: linear-gradient(90deg, rgba(82, 196, 26, 0.05) 0%, var(--card-bg) 100%);
+}
+
+.festive-calendar-page .festive-modal-date-row.action-approve::before {
+    width: 4px;
+    background-color: #52c41a;
+}
+
+.festive-calendar-page .festive-modal-date-row.action-reject {
+    border-color: #ff4d4f;
+    background: linear-gradient(90deg, rgba(255, 77, 79, 0.05) 0%, var(--card-bg) 100%);
+}
+
+.festive-calendar-page .festive-modal-date-row.action-reject::before {
+    width: 4px;
+    background-color: #ff4d4f;
+}
+
+.festive-calendar-page .festive-date-left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1;
+}
+
+.festive-calendar-page .festive-date-top {
+    display: flex;
+    align-items: center;
+}
+
+.festive-calendar-page .festive-date-separator {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+    transition: all 0.3s ease;
+}
+
+.festive-calendar-page .festive-modal-date-row.selected .festive-date-separator {
+    background-color: var(--accent-color);
+    height: 2px;
+}
+
+.festive-calendar-page .festive-modal-date-row.action-approve .festive-date-separator {
+    background-color: #52c41a;
+    height: 2px;
+}
+
+.festive-calendar-page .festive-modal-date-row.action-reject .festive-date-separator {
+    background-color: #ff4d4f;
+    height: 2px;
+}
+
+.festive-calendar-page .festive-date-reason-section {
+    display: flex;
+    align-items: center;
+    padding-top: 4px;
+    z-index: 1;
+}
+
+.festive-calendar-page .festive-date-btn {
+    min-width: 180px;
+    height: 40px;
+    border-radius: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.festive-calendar-page .festive-date-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.festive-calendar-page .festive-date-btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.festive-calendar-page .festive-date-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.festive-calendar-page .festive-check-icon {
+    margin-right: 8px;
+    font-weight: bold;
+    animation: checkmark 0.3s ease-in-out;
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0) rotate(45deg);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2) rotate(45deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* Date Actions Section */
+.festive-calendar-page .festive-date-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 8px;
+    z-index: 1;
+    opacity: 0.5;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.festive-calendar-page .festive-modal-date-row:hover .festive-date-actions {
+    opacity: 0.8;
+}
+
+.festive-calendar-page .festive-date-actions.visible {
+    opacity: 1;
+}
+
+.festive-calendar-page .festive-action-btn {
+    min-width: 80px;
+    height: 32px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.festive-calendar-page .festive-action-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.festive-calendar-page .festive-action-btn:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+.festive-calendar-page .festive-action-btn.approve {
+    background-color: transparent;
+    border-color: #52c41a;
+    color: #52c41a;
+}
+
+.festive-calendar-page .festive-action-btn.approve:hover:not(:disabled) {
+    background-color: rgba(82, 196, 26, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(82, 196, 26, 0.2);
+}
+
+.festive-calendar-page .festive-action-btn.approve.active {
+    background-color: #52c41a;
+    border-color: #52c41a;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+    animation: pulse-green 0.3s ease-in-out;
+}
+
+@keyframes pulse-green {
+
+    0%,
+    100% {
+        box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 4px 16px rgba(82, 196, 26, 0.5);
+    }
+}
+
+.festive-calendar-page .festive-action-btn.reject {
+    background-color: transparent;
+    border-color: #ff4d4f;
+    color: #ff4d4f;
+}
+
+.festive-calendar-page .festive-action-btn.reject:hover:not(:disabled) {
+    background-color: rgba(255, 77, 79, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 77, 79, 0.2);
+}
+
+.festive-calendar-page .festive-action-btn.reject.active {
+    background-color: #ff4d4f;
+    border-color: #ff4d4f;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+    animation: pulse-red 0.3s ease-in-out;
+}
+
+@keyframes pulse-red {
+
+    0%,
+    100% {
+        box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 4px 16px rgba(255, 77, 79, 0.5);
+    }
+}
+
+.festive-calendar-page .festive-action-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Selection Summary */
+.festive-calendar-page .festive-selection-summary {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px solid var(--border-color);
+    text-align: center;
+}
+
+
+.festive-calendar-page .festive-drawer-leave-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.festive-calendar-page .festive-drawer-leave-item:last-child {
+    border-bottom: none;
+}
+
+.festive-calendar-page .festive-drawer-leave-item:hover {
+    background-color: var(--hover-bg);
+    margin: 0 -8px;
+    padding: 12px 8px;
+    border-radius: 4px;
+}
+
+/* Drawer Content */
+.festive-calendar-page .festive-drawer-content {
+    min-height: 100%;
+    padding-bottom: 80px;
+}
+
+/* Cards Container */
+.festive-calendar-page .festive-leaves-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+/* Leave Card */
+.festive-calendar-page .festive-leave-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.festive-calendar-page .festive-leave-card:hover {
+    box-shadow: 0 2px 8px var(--shadow);
+    border-color: var(--accent-color);
+}
+
+/* Card Header */
+.festive-calendar-page .festive-leave-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Dates Section */
+.festive-calendar-page .festive-leave-dates-section {
+    margin-top: 12px;
+}
+
+.festive-calendar-page .festive-dates-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.festive-calendar-page .festive-date-button-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.festive-calendar-page .festive-date-btn {
+    min-width: 80px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.festive-calendar-page .festive-date-btn.selected {
+    font-weight: 600;
+}
+
+.festive-calendar-page .festive-action-btn {
+    min-width: 70px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.festive-calendar-page .festive-action-btn.approve {
+    background-color: var(--success-color, #52c41a);
+    border-color: var(--success-color, #52c41a);
+    color: #fff;
+}
+
+.festive-calendar-page .festive-action-btn.reject {
+    background-color: var(--error-color, #ff4d4f);
+    border-color: var(--error-color, #ff4d4f);
+    color: #fff;
+}
+
+/* Submit Section */
+.festive-calendar-page .festive-drawer-submit-section {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 24px;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -2px 8px var(--shadow);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 10;
+}
+
+.festive-calendar-page .festive-submit-btn {
+    min-width: 120px;
+    height: 40px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+/* Leave Reason Card in Modal */
+.festive-calendar-page .festive-leave-reason-card {
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.festive-calendar-page .festive-leave-reason-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background-color: var(--accent-color);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+}
+
+.festive-calendar-page .festive-leave-reason-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.festive-calendar-page .festive-leave-reason-card.selected {
+    border-color: var(--accent-color);
+    background: linear-gradient(90deg, rgba(24, 144, 255, 0.05) 0%, var(--card-bg) 100%);
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+}
+
+.festive-calendar-page .festive-leave-reason-card.selected::before {
+    width: 4px;
+}
+
+.festive-calendar-page .festive-leave-reason-card.action-approve {
+    border-color: #52c41a;
+    background: linear-gradient(90deg, rgba(82, 196, 26, 0.05) 0%, var(--card-bg) 100%);
+}
+
+.festive-calendar-page .festive-leave-reason-card.action-approve::before {
+    width: 4px;
+    background-color: #52c41a;
+}
+
+.festive-calendar-page .festive-leave-reason-card.action-reject {
+    border-color: #ff4d4f;
+    background: linear-gradient(90deg, rgba(255, 77, 79, 0.05) 0%, var(--card-bg) 100%);
+}
+
+.festive-calendar-page .festive-leave-reason-card.action-reject::before {
+    width: 4px;
+    background-color: #ff4d4f;
+}
+
+.Leave-Reason-Content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    z-index: 1;
+    position: relative;
+}
+
+.Leave-Reason-Content > div:first-child {
+    flex: 1;
+}
+
+.festive-calendar-page .festive-reason-header {
+    margin-bottom: 8px;
+}
+
+.festive-calendar-page .festive-reason-content {
+    padding: 8px 0;
+    line-height: 1.6;
+}
+
+.Approved-Rejected-Buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    min-width: 100px;
+}
+
+.ButtonClickStatus {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+}
+
+.festive-calendar-page .festive-modal-dates-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+    .festive-calendar-page .festive-tasks-list,
+    .festive-calendar-page .festive-leaves-list {
+        max-height: 300px;
+    }
+
+    .festive-calendar-page .festive-leaves-drawer {
+        width: 100% !important;
+    }
+
+    .festive-calendar-page .festive-drawer-submit-section {
+        width: 100%;
+    }
+
+    .festive-calendar-page .festive-dates-buttons {
+        gap: 8px;
+    }
+
+    .festive-calendar-page .festive-date-button-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .festive-calendar-page .festive-leave-card-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .festive-calendar-page .festive-modal-date-row {
+        gap: 10px;
+    }
+
+    .festive-calendar-page .festive-date-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .Leave-Reason-Content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .Approved-Rejected-Buttons {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-end;
+        align-items: center;
+    }
+
+    .fc-calendar-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .fc-header-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .fc-task-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
