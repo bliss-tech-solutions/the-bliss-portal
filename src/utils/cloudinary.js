@@ -10,6 +10,15 @@ export async function uploadToCloudinary(file, resourceType = 'image') {
         throw new Error('Cloudinary env variables are missing');
     }
 
+    if (!file) {
+        throw new Error('File is required for upload');
+    }
+
+    // Ensure file is a File instance
+    if (!(file instanceof File)) {
+        throw new Error('Invalid file object');
+    }
+
     const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
     const formData = new FormData();
     formData.append('file', file);

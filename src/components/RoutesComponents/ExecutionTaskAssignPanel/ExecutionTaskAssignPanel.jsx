@@ -11,6 +11,7 @@ import { useAddTaskAssignMutation, useGetAllUsersQuery } from "../../../store/ap
 import { useNotification } from "../../../contexts/NotificationContext";
 import { emitTaskAdded, onTaskAdded, offTaskAdded } from "../../../utils/socket";
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
+import { uploadToCloudinary } from "../../../utils/cloudinary";
 
 const { TextArea } = Input;
 
@@ -27,6 +28,8 @@ const ExecutionTaskAssignPanel = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDateRange, setSelectedDateRange] = useState(null);
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
 
     const theme = useSelector(selectTheme);
     const userId = useSelector(selectUserId);
@@ -82,10 +85,82 @@ const ExecutionTaskAssignPanel = () => {
         setDrawerVisible(false);
         form.resetFields();
         setFileList([]);
+        setUploadedImageUrls([]);
     };
 
-    const handleFileChange = ({ fileList: newFileList }) => {
-        setFileList(newFileList);
+    const handleFileChange = async ({ fileList: newFileList, file }) => {
+        // If a new file is being added
+        if (file && file.status === undefined) {
+            // Get the actual file object - Ant Design Upload structure
+            const fileToUpload = file.originFileObj || file;
+
+            // Validate file object
+            if (!fileToUpload) {
+                showError('Invalid file selected');
+                setFileList(prev => prev.filter(f => f.uid !== file.uid));
+                return;
+            }
+
+            // Check if it's a File instance
+            if (!(fileToUpload instanceof File)) {
+                console.error('File object is not a File instance:', fileToUpload);
+                showError('Invalid file format');
+                setFileList(prev => prev.filter(f => f.uid !== file.uid));
+                return;
+            }
+
+            // Set uploading status
+            file.status = 'uploading';
+            const updatedList = [...newFileList];
+            setFileList(updatedList);
+
+            try {
+                setUploadingImages(true);
+                console.log('Uploading file:', fileToUpload.name, fileToUpload.type);
+
+                // Upload to Cloudinary as raw document
+                const result = await uploadToCloudinary(fileToUpload, 'raw');
+
+                if (!result || !result.secure_url) {
+                    throw new Error('Invalid response from Cloudinary');
+                }
+
+                const documentUrl = result.secure_url;
+                console.log('Upload successful:', documentUrl);
+
+                // Update file list with uploaded URL
+                const finalFileList = updatedList.map(f => {
+                    if (f.uid === file.uid) {
+                        return {
+                            ...f,
+                            status: 'done',
+                            url: documentUrl,
+                            response: { secure_url: documentUrl }
+                        };
+                    }
+                    return f;
+                });
+
+                setFileList(finalFileList);
+                setUploadedImageUrls(prev => [...prev, documentUrl]);
+                setUploadingImages(false);
+            } catch (error) {
+                console.error('Error uploading document:', error);
+                showError('Failed to upload document: ' + (error.message || 'Unknown error'));
+                setUploadingImages(false);
+                // Remove failed file from list
+                setFileList(prev => prev.filter(f => f.uid !== file.uid));
+            }
+        } else if (file && file.status === 'removed') {
+            // Remove URL from uploadedImageUrls when file is removed
+            const removedUrl = file.url || file.response?.secure_url;
+            if (removedUrl) {
+                setUploadedImageUrls(prev => prev.filter(url => url !== removedUrl));
+            }
+            setFileList(newFileList);
+        } else {
+            setFileList(newFileList);
+        }
     };
 
     // Dynamic positions based on ALL users from API - show OTHER roles' positions
@@ -178,6 +253,8 @@ const ExecutionTaskAssignPanel = () => {
         onChange: handleFileChange,
         beforeUpload: () => false,
         multiple: true,
+        listType: "text",
+        accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
     };
 
     const handleAddTask = async (values) => {
@@ -191,7 +268,8 @@ const ExecutionTaskAssignPanel = () => {
                 priority: values.priority,
                 timeSpend: values.timeSpend || '',
                 description: values.description || '',
-                chatMessages: [] // Empty array for new tasks
+                chatMessages: [], // Empty array for new tasks
+                taskImages: uploadedImageUrls // ✅ Include uploaded Cloudinary URLs
             };
 
             console.log('📤 Sending Task Data with Receiver:', {
@@ -209,6 +287,7 @@ const ExecutionTaskAssignPanel = () => {
             showSuccess('Task added successfully!');
             form.resetFields();
             setFileList([]);
+            setUploadedImageUrls([]);
             setSelectedReceiverUserId(null); // Reset receiver
             setSelectedPosition(null); // Reset position
             setAvailableUsers([]); // Reset users list
@@ -460,11 +539,13 @@ const ExecutionTaskAssignPanel = () => {
                         <Row gutter={[16, 0]}>
                             <Col xs={24} sm={24} md={12} lg={12}>
                                 <Form.Item
-                                    label="Task Images"
+                                    label="Task Documents"
                                     name="taskImages"
                                 >
-                                    <Upload {...uploadProps} listType="picture">
-                                        <Button icon={<BsUpload />} block>Upload Images</Button>
+                                    <Upload {...uploadProps}>
+                                        <Button icon={<BsUpload />} loading={uploadingImages}>
+                                            {uploadingImages ? 'Uploading...' : 'Upload Documents'}
+                                        </Button>
                                     </Upload>
                                 </Form.Item>
                             </Col>

@@ -11,15 +11,15 @@ const OfficeClosingReminder = () => {
     const checkIntervalRef = useRef(null);
     const lastShownDateRef = useRef(null);
 
-    // Check if current time matches office closing time (6:20 PM = 18:20)
+    // Check if current time matches office closing time (7:05 PM = 19:05)
     const checkClosingTime = () => {
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
         const today = now.toDateString();
 
-        // Check if time is 6:20 PM (18:20) and not already shown today
-        if (hours === 18 && minutes === 20) {
+        // Check if time is 7:05 PM (19:05) and not already shown today
+        if (hours === 19 && minutes === 5) {
             if (lastShownDateRef.current !== today) {
                 setIsModalVisible(true);
                 lastShownDateRef.current = today;
@@ -94,7 +94,7 @@ const OfficeClosingReminder = () => {
                         Office Hours Closing Time
                     </Title>
                     <Paragraph className="reminder-text">
-                        It's <Text strong>6:20 PM</Text> - time to wrap up and head home.
+                        It's <Text strong>7:05 PM</Text> - time to wrap up and head home.
                     </Paragraph>
                     <Paragraph className="reminder-subtext" type="secondary">
                         You've done amazing work today. Time to relax, recharge, and enjoy your evening.
