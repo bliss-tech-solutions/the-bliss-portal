@@ -5,18 +5,19 @@ import { useSelector } from 'react-redux';
 import { selectUserId } from '../../../../store/slices/authSlice';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser } from '../../../../store/slices/authSlice';
-import { useGetTaskAssignQuery, useArchiveTaskMutation } from '../../../../store/api';
+import { useGetTasksByAssignerQuery, useArchiveTaskMutation } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
+import { BsClock, BsChat, BsPerson, BsCalendarDate } from 'react-icons/bs';
 import { AiOutlineEye, AiOutlineEdit, AiOutlineDelete, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
+import { HiOutlineClock } from 'react-icons/hi';
 import TaskChat from '../../../PortalCommonComponents/TaskChat/TaskChat';
 
 const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilter = 'all' }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
     const theme = useSelector(selectTheme);
-    const { data: tasksData, isLoading, error } = useGetTaskAssignQuery(userId);
+    const { data: tasksData, isLoading, error } = useGetTasksByAssignerQuery(userId);
 
     const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -48,6 +49,10 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
         // Fallback to inferred user id fields when names are absent
         // If current user created it, show receiver id; otherwise show creator id
+        // Use new field names: receiverId (instead of receiverUserId)
+        if (task.assignerId === userId && task.receiverId) return task.receiverId;
+        if (task.assignerId && task.assignerId !== userId) return task.assignerId;
+        // Legacy support for old field names
         if (task.userId === userId && task.receiverUserId) return task.receiverUserId;
         if (task.userId && task.userId !== userId) return task.userId;
 
@@ -70,10 +75,24 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
         );
     }
 
+    // Normalize shapes and extract tasks
+    const extractTasksArray = () => {
+        const d = tasksData?.data;
+        if (!d) return [];
+        if (Array.isArray(d)) {
+            if (d.length > 0 && Array.isArray(d[0]?.tasks)) {
+                return d.flatMap(doc => doc.tasks || []);
+            }
+            return d;
+        }
+        if (Array.isArray(d?.tasks)) return d.tasks;
+        return [];
+    };
+
     // Filter out archived tasks and apply search/date filters
-    const filteredTasks = tasksData?.data?.filter(task => {
+    const filteredTasks = extractTasksArray()?.filter(task => {
         // First filter out archived tasks
-        if (task.isArchived === true) return false;
+        if (task?.isArchived === true) return false;
 
         // Status filter: 'completed' or 'pending' or 'all'
         if (statusFilter && statusFilter !== 'all') {
@@ -93,7 +112,7 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
         // Apply date filter (dummy for now)
         if (selectedDateRange && selectedDateRange[0] && selectedDateRange[1]) {
-            const taskDate = new Date(task.createdAt);
+            const taskDate = new Date(task?.createdAt || task?.date || 0);
             const startDate = selectedDateRange[0].toDate();
             const endDate = selectedDateRange[1].toDate();
 
@@ -113,7 +132,7 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
     // Debug: Log filtered tasks (remove in production)
     console.log('📋 Filtered tasks loaded:', filteredTasks.length);
     if (filteredTasks.length > 0) {
-        console.log('📋 First filtered task receiverUserId:', filteredTasks[0].receiverUserId);
+        console.log('📋 First filtered task receiverId:', filteredTasks[0].receiverId || filteredTasks[0].receiverUserId);
     }
 
     const getPriorityColor = (priority) => {
@@ -182,6 +201,41 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
         setTaskToArchive(null);
     };
 
+    // Extract slots from slotsBook structure
+    const extractTaskSlots = (task) => {
+        if (!task?.slotsBook || !Array.isArray(task.slotsBook) || task.slotsBook.length === 0) {
+            return [];
+        }
+
+        const slots = [];
+        task.slotsBook.forEach(yearData => {
+            yearData.months?.forEach(monthData => {
+                monthData.monthDates?.forEach(dateData => {
+                    dateData.slotTime?.forEach(slot => {
+                        slots.push({
+                            ...slot,
+                            date: `${yearData.year}-${String(monthData.month).padStart(2, '0')}-${String(dateData.monthDate).padStart(2, '0')}`
+                        });
+                    });
+                });
+            });
+        });
+
+        return slots;
+    };
+
+    // Format date display
+    const formatTaskDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
     return (
         <div className="all-task-entries">
             {sortedTasks.length === 0 ? (
@@ -224,11 +278,11 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                                         <div className="task-time-spend">
                                             <span>Time: {task.timeSpend}</span>
                                         </div>
-                                    <div className="task-chat">
+                                        <div className="task-chat">
                                             <BsChat className="icon" />
                                             <span>{task.chatCount || task.chatMessageCount || 0}</span>
-                                        <BsPerson className="icon" style={{ marginLeft: 12 }} />
-                                        <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
+                                            <BsPerson className="icon" style={{ marginLeft: 12 }} />
+                                            <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
                                                 {getAssigneeDisplay(task)}
                                             </span>
                                         </div>
@@ -290,85 +344,140 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                 closable={false}
                 className="custom-drawer"
             >
-                {selectedTask && (
-                    <div className={`drawer-content theme-${theme}`}>
-                        {/* Task Name */}
-                        <div className='user-task-name-and-priority-row MarginBottomSmall'>
-                            <div className="task-name-section">
-                                <h2>{selectedTask.taskName}</h2>
-                            </div>
-
-                            {/* Priority and Date Row */}
-                            <div className="priority-date-row">
-                                <Tag color={getPriorityColor(selectedTask.priority)} className="priority-tag-pill">
-                                    {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)} Priority
-                                </Tag>
-                                <Tag color={getStatusColor(selectedTask.taskStatus)} className="priority-tag-pill" style={{ marginLeft: 8 }}>
-                                    {(selectedTask.taskStatus || 'pending').replace(/^./, c => c.toUpperCase())}
-                                </Tag>
-                                <div className="date-badge">
-                                    <BsClock />
-                                    <span>
-                                        {new Date(selectedTask.createdAt).toLocaleDateString('en-US', {
-                                            month: 'short',
-                                            day: 'numeric'
-                                        })} - {new Date(selectedTask.updatedAt).toLocaleDateString('en-US', {
-                                            day: 'numeric'
-                                        })}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Time Spend Banner */}
-                        <div className="time-spend-container MarginBottomMedium">
-                            <div className="time-icon-wrapper">
-                                <BsClock className="time-icon" />
-                            </div>
-                            <span className="time-label">Time Spent on this project</span>
-                            <div className="time-value-wrapper">
-                                <h2 className="time-value">{selectedTask.timeSpend}</h2>
-                                <div className="time-info-icon">ⓘ</div>
-                            </div>
-                        </div>
-
-                        {/* Description Section */}
-                        <Card title="Description" className='description-card'>
-                            <p className="description-text">{selectedTask.description || 'No description provided.'}</p>
-                        </Card>
-
-                        {/* Attachments Section (if images available) */}
-                        {selectedTask.taskImages && selectedTask.taskImages.length > 0 && (
-                            <Card title="Attachments" className='attachments-card'>
-                                <div className="attachments-list">
-                                    {selectedTask.taskImages.map((image, index) => (
-                                        <div key={index} className="attachment-item">
-                                            <Image src={image} alt="Attachment" />
-                                            <div className="attachment-actions">
-                                                <Button type="text" icon={<AiOutlineEye />}>View</Button>
-                                                <Button type="text">Download</Button>
+                {selectedTask && (() => {
+                    const taskSlots = extractTaskSlots(selectedTask);
+                    return (
+                        <div className={`drawer-content theme-${theme}`}>
+                            {/* Task Header Section - Redesigned */}
+                            <div className="task-detail-header-section">
+                                <div className="task-header-main">
+                                    <div className="task-title-with-icon">
+                                        <div className="task-title-icon-wrapper">
+                                            <BsChat className="task-title-icon" />
+                                        </div>
+                                        <div className="task-title-content">
+                                            <h1 className="task-detail-title">{selectedTask.taskName}</h1>
+                                            <div className="task-meta-info">
+                                                <span className="client-name">
+                                                    <BsPerson className="meta-icon" />
+                                                    {selectedTask.clientName}
+                                                </span>
+                                                {selectedTask.position && (
+                                                    <span className="position-badge">
+                                                        {selectedTask.position}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        )}
+                                    </div>
 
-                        {/* Comments Section - Using Reusable TaskChat Component */}
-                        <TaskChat
-                            taskId={selectedTask._id}
-                            receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
-                            className="task-chat-component"
-                            title="Task Related Chat"
-                            placeholder="Add a comment..."
-                            showTitle={true}
-                            height="500px"
-                        // onMessageSent={(messageData) => {
-                        //     console.log('Message sent:', messageData);
-                        // }}
-                        />
-                    </div>
-                )}
+                                    <div className="task-status-tags">
+                                        <Tag color={getPriorityColor(selectedTask.priority)} className="task-priority-tag">
+                                            {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)}
+                                        </Tag>
+                                        <Tag color={getStatusColor(selectedTask.taskStatus)} className="task-status-tag">
+                                            {(selectedTask.taskStatus || 'pending').replace(/^./, c => c.toUpperCase())}
+                                        </Tag>
+                                    </div>
+                                </div>
+
+                                {/* Task Date and Time Info */}
+                                <div className="task-info-bar">
+                                    <div className="info-item">
+                                        <BsCalendarDate className="info-icon" />
+                                        <span className="info-label">Task Date:</span>
+                                        <span className="info-value">{formatTaskDate(selectedTask.date)}</span>
+                                    </div>
+                                    <div className="info-item">
+                                        <BsClock className="info-icon" />
+                                        <span className="info-label">Created:</span>
+                                        <span className="info-value">{formatDateTime(selectedTask.createdAt)}</span>
+                                    </div>
+                                    {selectedTask.timeSpend && (
+                                        <div className="info-item">
+                                            <HiOutlineClock className="info-icon" />
+                                            <span className="info-label">Time Spent:</span>
+                                            <span className="info-value">{selectedTask.timeSpend}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Slots Section - Show booked slots */}
+                            {taskSlots.length > 0 && (
+                                <div className="task-slots-section">
+                                    <div className="slots-section-header">
+                                        <HiOutlineClock className="section-header-icon" />
+                                        <h3 className="slots-section-title">Booked Time Slots</h3>
+                                    </div>
+                                    <div className="task-slots-grid">
+                                        {taskSlots.map((slot, index) => (
+                                            <div
+                                                key={slot._id || index}
+                                                className={`task-slot-card ${slot.status === 'booked' ? 'booked' : 'free'}`}
+                                            >
+                                                <div className="slot-card-header">
+                                                    <div className="slot-time-display">
+                                                        {slot.startTime} - {slot.endTime}
+                                                    </div>
+                                                    <Tag
+                                                        color={slot.status === 'booked' ? 'red' : 'green'}
+                                                        className="slot-status-tag"
+                                                    >
+                                                        {slot.status === 'booked' ? 'Booked' : 'Free'}
+                                                    </Tag>
+                                                </div>
+                                                <div className="slot-card-footer">
+                                                    <span className="slot-date">{formatTaskDate(slot.date)}</span>
+                                                    {slot.bufferAfterMinutes && (
+                                                        <span className="slot-buffer">Buffer: {slot.bufferAfterMinutes}m</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Description Section */}
+                            <Card title="Description" className='description-card'>
+                                <p className="description-text">{selectedTask.description || 'No description provided.'}</p>
+                            </Card>
+
+                            {/* Attachments Section (if images available) */}
+                            {selectedTask.taskImages && selectedTask.taskImages.length > 0 && (
+                                <Card title="Attachments" className='attachments-card'>
+                                    <div className="attachments-list">
+                                        {selectedTask.taskImages.map((image, index) => (
+                                            <div key={index} className="attachment-item">
+                                                <Image src={image} alt="Attachment" />
+                                                <div className="attachment-actions">
+                                                    <Button type="text" icon={<AiOutlineEye />}>View</Button>
+                                                    <Button type="text">Download</Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
+                            )}
+
+                            {/* Comments Section - Using Reusable TaskChat Component */}
+                            <TaskChat
+                                taskId={selectedTask._id}
+                                receiverId={
+                                    selectedTask.assignerId === userId 
+                                        ? (selectedTask.receiverId || selectedTask.receiverUserId) 
+                                        : (selectedTask.assignerId || selectedTask.userId)
+                                }
+                                className="task-chat-component"
+                                title="Task Related Chat"
+                                placeholder="Add a comment..."
+                                showTitle={true}
+                                height="500px"
+                            />
+                        </div>
+                    );
+                })()}
             </Drawer>
 
             {/* Archive Confirmation Modal */}

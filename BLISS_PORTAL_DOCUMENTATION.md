@@ -121,15 +121,20 @@ src/
 9. TASK MANAGEMENT FLOW:
    - ExecutionTaskAssignPanel.jsx → "Add New Task" drawer with dynamic user selection
    - Position selection → Shows users from OTHER roles only
-   - User selection → Stores receiverUserId for task assignment
-   - Task creation → API call with userId (creator) and receiverUserId
+   - User selection → Stores receiverId for task assignment
+   - Task creation → API call with assignerId (creator) and receiverId
    - Real-time updates → Socket.IO integration for instant task updates
 
 10. TASK VIEWING FLOW:
-    - AllTaskEntries.jsx → Shows tasks with filtering and search
-    - Filter system → Search by task name/client name, date range picker
-    - Archive functionality → Modal confirmation with task details
-    - View task drawer → Shows full task details with integrated chat
+    - Execution Panel (AllTaskEntries.jsx):
+      * Uses GET /api/getTaskAssign/assigner/:assignerId → Shows tasks assigned BY the user
+      * Filter system → Search by task name/client name, date range picker
+      * Archive functionality → Modal confirmation with task details
+      * View task drawer → Shows full task details with integrated chat
+    - User Panel (AllUserTaskEntries.jsx):
+      * Uses GET /api/getTaskAssign/receiver/:receiverId → Shows tasks assigned TO the user
+      * Task status management → Update task status (pending/completed)
+      * View task drawer → Shows full task details with integrated chat
 
 11. CHAT SYSTEM:
     - TaskChat.jsx → Reusable chat component with emoji picker
@@ -244,8 +249,10 @@ AUTHENTICATION:
 - GET /api/getUserDetails → Get user data
 
 TASK MANAGEMENT:
-- POST /api/addtaskassign → Create new task
-- GET /api/getTaskAssign/:userId?isArchived=false → Get user tasks (filtered)
+- POST /api/addtaskassign → Create new task (uses assignerId and receiverId fields)
+- GET /api/getTaskAssign/assigner/:assignerId → Get tasks assigned BY a user (for Execution panel)
+- GET /api/getTaskAssign/receiver/:receiverId → Get tasks assigned TO a user (for User panel)
+- GET /api/getTaskAssign/:userId?isArchived=false → Get user tasks (legacy endpoint, filtered)
 - PUT /api/addtaskassign/:taskId/archive → Archive task
 
 USER MANAGEMENT:
@@ -297,7 +304,8 @@ TASK API RESPONSE:
         {
             "_id": "68f0edf361a89951ff9710c5",
             "userId": "sachin-bliss-3687",
-            "receiverUserId": "sachin-bliss-3636",
+            "receiverId": "sachin-bliss-3636",
+            "assignerId": "execution-user-id",
             "taskName": "Create a diwali poster",
             "clientName": "Bliss solution",
             "category": "developer",

@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./ExecutionTaskAssignPanel.css";
-import { Row, Col, Button, Tabs, Drawer, Form, Input, Select, Upload, DatePicker } from "antd";
+import { Row, Col, Button, Tabs, Drawer, Form, Input, Select, Upload, DatePicker, Avatar, Badge, Tag } from "antd";
 import { BiTask } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
-import { BsUpload, BsClock, BsSearch, BsFilter } from "react-icons/bs";
+import { BsUpload, BsClock, BsSearch, BsFilter, BsCalendarDate, BsCheckCircle } from "react-icons/bs";
+import { FiUser } from "react-icons/fi";
+import { HiOutlineClock } from "react-icons/hi";
 import { useSelector } from "react-redux";
 import { selectTheme } from "../../../store/slices/themeSlice";
 import { selectUserId, selectUser } from "../../../store/slices/authSlice";
-import { useAddTaskAssignMutation, useGetAllUsersQuery } from "../../../store/api";
+import { useAddTaskAssignMutation, useGetAllUsersQuery, useGetSlotTemplatesQuery, useGetUserSlotsAvailabilityQuery } from "../../../store/api";
 import { useNotification } from "../../../contexts/NotificationContext";
-import { emitTaskAdded, onTaskAdded, offTaskAdded } from "../../../utils/socket";
+import { emitTaskAdded, onTaskAdded, offTaskAdded, onSlotAvailabilityChanged, offSlotAvailabilityChanged, joinSlotRoom, leaveSlotRoom } from "../../../utils/socket";
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 
@@ -24,6 +27,8 @@ const ExecutionTaskAssignPanel = () => {
     const [fileList, setFileList] = useState([]);
     const [selectedReceiverUserId, setSelectedReceiverUserId] = useState(null);
     const [selectedPosition, setSelectedPosition] = useState(null);
+    const [selectedUserSlot, setSelectedUserSlot] = useState(null);
+    const [selectedSlotDate, setSelectedSlotDate] = useState(null);
     const [availableUsers, setAvailableUsers] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -86,6 +91,11 @@ const ExecutionTaskAssignPanel = () => {
         form.resetFields();
         setFileList([]);
         setUploadedImageUrls([]);
+        setSelectedSlotDate(null);
+        setSelectedReceiverUserId(null);
+        setSelectedPosition(null);
+        setSelectedUserSlot(null);
+        setAvailableUsers([]);
     };
 
     const handleFileChange = async ({ fileList: newFileList, file }) => {
@@ -221,8 +231,10 @@ const ExecutionTaskAssignPanel = () => {
         setSelectedPosition(selectedPosition);
         setAvailableUsers(usersWithPosition);
 
-        // Reset receiver selection
+        // Reset receiver selection, slot, and date
         setSelectedReceiverUserId(null);
+        setSelectedUserSlot(null);
+        setSelectedSlotDate(null);
     };
 
     // Get users for the selected position
@@ -240,6 +252,8 @@ const ExecutionTaskAssignPanel = () => {
     // Handle user selection from the users list
     const handleUserSelection = (selectedUserId) => {
         setSelectedReceiverUserId(selectedUserId);
+        setSelectedUserSlot(null);
+        setSelectedSlotDate(null);
         const selectedUser = availableUsers.find(u => u.userId === selectedUserId);
         console.log('✅ Selected User:', {
             userId: selectedUser?.userId,
@@ -247,6 +261,12 @@ const ExecutionTaskAssignPanel = () => {
             position: selectedUser?.position
         });
     };
+
+    // Slots availability via RTK Query
+    // Normalize selectedSlotDate to a dayjs instance and always derive YYYY-MM-DD for API
+    const selectedDateStr = selectedSlotDate && typeof selectedSlotDate?.format === 'function'
+        ? selectedSlotDate.format('YYYY-MM-DD')
+        : null;
 
     const uploadProps = {
         fileList,
@@ -257,24 +277,171 @@ const ExecutionTaskAssignPanel = () => {
         accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
     };
 
+    // Map our internal position key to API expected value (e.g., graphics-designer -> GraphicsDesigner)
+    const mapPositionToApi = (pos) => {
+        if (!pos) return '';
+        const noHyphen = pos.replace(/-+/g, ' ');
+        return noHyphen.split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('');
+    };
+
+    const apiPosition = mapPositionToApi(selectedPosition);
+    const { data: slotTemplatesData, isFetching: loadingSlots, refetch: refetchSlotTemplates } = useGetSlotTemplatesQuery(apiPosition, { skip: !apiPosition });
+
+    // Determine which slots to show:
+    // 1. If date is selected + user selected: show availability slots (with booked status)
+    // 2. If only position selected: show template slots (all available)
+    const shouldShowAvailabilitySlots = selectedSlotDate && selectedReceiverUserId;
+    const { data: availabilityData, isFetching: loadingAvailability, refetch: refetchAvailability } = useGetUserSlotsAvailabilityQuery(
+        { userId: selectedReceiverUserId, date: selectedDateStr },
+        { skip: !selectedReceiverUserId || !selectedDateStr }
+    );
+
+    const baseSlots = shouldShowAvailabilitySlots
+        ? (availabilityData?.data?.slots || [])
+        : (slotTemplatesData?.data?.slots || []);
+
+    const slotOptions = baseSlots.map((s) => ({
+        value: `${s.startTime}-${s.endTime}`,
+        label: `${s.startTime} - ${s.endTime} (${s.status || 'free'})`,
+        disabled: shouldShowAvailabilitySlots && s.status === 'booked', // Only disable if showing availability slots
+        slotObj: s
+    }));
+
+    // Socket.io listener for real-time slot availability updates
+    useEffect(() => {
+        if (!selectedPosition) return;
+
+        const handleSlotAvailabilityChange = (data) => {
+            console.log('🔄 Slot availability changed:', data);
+
+            // Map position for comparison
+            const currentApiPosition = mapPositionToApi(selectedPosition);
+
+            // Check if the update is relevant to current selections
+            const matchesPosition = !selectedPosition || data.position === currentApiPosition ||
+                data.position === mapPositionToApi(selectedPosition);
+            const matchesUser = !selectedReceiverUserId || data.userId === selectedReceiverUserId;
+            const matchesDate = !selectedDateStr || data.date === selectedDateStr;
+
+            if (matchesPosition && refetchSlotTemplates) {
+                // Refetch slot templates if position matches
+                refetchSlotTemplates();
+            }
+
+            if (matchesUser && matchesDate && shouldShowAvailabilitySlots && refetchAvailability) {
+                // Refetch availability if user and date match
+                refetchAvailability();
+            }
+
+            // Show notification if slot was booked/freed
+            if (data.action === 'booked') {
+                showSuccess(`Slot ${data.startTime}-${data.endTime} has been booked`);
+            } else if (data.action === 'freed') {
+                showSuccess(`Slot ${data.startTime}-${data.endTime} is now available`);
+            }
+        };
+
+        // Listen for slot availability changes
+        onSlotAvailabilityChanged(handleSlotAvailabilityChange);
+
+        // Cleanup on unmount
+        return () => {
+            offSlotAvailabilityChanged();
+        };
+    }, [selectedPosition, selectedReceiverUserId, selectedDateStr, shouldShowAvailabilitySlots, refetchSlotTemplates, refetchAvailability, showSuccess]);
+
+    // Join/Leave slot room for real-time updates
+    useEffect(() => {
+        if (selectedPosition && apiPosition) {
+            // Join room for position-based slot updates
+            joinSlotRoom(apiPosition, selectedReceiverUserId || null, selectedDateStr || null);
+
+            return () => {
+                // Leave room when component unmounts or selection changes
+                leaveSlotRoom(apiPosition, selectedReceiverUserId || null, selectedDateStr || null);
+            };
+        }
+    }, [selectedPosition, apiPosition, selectedReceiverUserId, selectedDateStr]);
+
+    // Calendar Row Component - Generate next 14 days
+    const generateDateOptions = () => {
+        const dates = [];
+        const today = dayjs();
+        for (let i = 0; i < 14; i++) {
+            const date = today.add(i, 'day');
+            dates.push({
+                key: date.format('YYYY-MM-DD'),
+                day: date.format('ddd'),
+                date: date.format('MMM D'),
+                dayjs: date
+            });
+        }
+        return dates;
+    };
+
+    const dateOptions = useMemo(() => generateDateOptions(), []);
+
+    const handleDateSelect = (dateOption) => {
+        // Always store the selected date as a dayjs instance to avoid format mismatches
+        setSelectedSlotDate(dateOption?.dayjs || dateOption);
+        setSelectedUserSlot(null);
+    };
+
+    // Get selected user details
+    const selectedUserDetails = useMemo(() => {
+        return availableUsers.find(u => u.userId === selectedReceiverUserId);
+    }, [availableUsers, selectedReceiverUserId]);
+
+    // Get user initials for avatar
+    const getUserInitials = (user) => {
+        if (!user) return '';
+        const firstName = user.firstName || '';
+        const lastName = user.lastName || '';
+        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    };
+
     const handleAddTask = async (values) => {
         try {
+            // Ensure date is selected as backend requires it (YYYY-MM-DD)
+            const dateForApi = selectedDateStr;
+            if (!dateForApi) {
+                showError('Please choose a date before adding the task.');
+                return;
+            }
+            // Derive selected user's position and slot details
+            const selectedUser = availableUsers.find(u => u.userId === selectedReceiverUserId);
+            const selectedUserPosition = selectedUser?.position || mapPositionToApi(selectedPosition);
+            const chosenSlotObj = (baseSlots || []).find(s => `${s.startTime}-${s.endTime}` === selectedUserSlot);
+            const taskSlotsTimes = selectedUserSlot ? [{
+                startTime: chosenSlotObj?.startTime || selectedUserSlot?.split('-')?.[0],
+                endTime: chosenSlotObj?.endTime || selectedUserSlot?.split('-')?.[1],
+                bufferAfterMinutes: typeof chosenSlotObj?.bufferAfterMinutes === 'number' ? chosenSlotObj.bufferAfterMinutes : undefined
+            }] : [];
+            // For backward compatibility with the current backend, include BOTH
+            // legacy keys (assignedBy, receiverUserId) and new keys (assignerId, receiverId).
             const taskData = {
-                userId: userId, // Creator/Sender userId
-                receiverUserId: selectedReceiverUserId, // ✅ Receiver userId (from selected position)
+                // New schema
+                assignerId: userId, // Creator/Sender userId (who assigns the task)
+                receiverId: selectedReceiverUserId, // ✅ Receiver userId (who receives the task)
+                // Legacy schema (required by current backend validation)
+                assignedBy: userId,
+                receiverUserId: selectedReceiverUserId,
+                // Common fields
+                position: selectedUserPosition,
                 taskName: values.taskName,
                 clientName: values.clientName,
                 category: values.category,
                 priority: values.priority,
                 timeSpend: values.timeSpend || '',
                 description: values.description || '',
-                chatMessages: [], // Empty array for new tasks
-                taskImages: uploadedImageUrls // ✅ Include uploaded Cloudinary URLs
+                taskImages: uploadedImageUrls, // ✅ Include uploaded Cloudinary URLs
+                date: dateForApi,
+                taskSlotsTimes
             };
 
             console.log('📤 Sending Task Data with Receiver:', {
-                creatorUserId: userId,
-                receiverUserId: selectedReceiverUserId,
+                assignerId: userId,
+                receiverId: selectedReceiverUserId,
                 taskData
             });
 
@@ -290,6 +457,7 @@ const ExecutionTaskAssignPanel = () => {
             setUploadedImageUrls([]);
             setSelectedReceiverUserId(null); // Reset receiver
             setSelectedPosition(null); // Reset position
+            setSelectedUserSlot(null);
             setAvailableUsers([]); // Reset users list
             setDrawerVisible(false);
         } catch (error) {
@@ -457,141 +625,288 @@ const ExecutionTaskAssignPanel = () => {
                     <Form
                         form={form}
                         layout="vertical"
-                        className="task-form"
+                        className="task-form-drawer"
                         onFinish={handleAddTask}
                     >
-                        <Row gutter={[16, 0]}>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Task Name"
-                                    name="taskName"
-                                    rules={[{ required: true, message: 'Please enter task name' }]}
-                                >
-                                    <Input placeholder="Enter task name" />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Client Name"
-                                    name="clientName"
-                                    rules={[{ required: true, message: 'Please enter client name' }]}
-                                >
-                                    <Input placeholder="Enter client name" />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Row gutter={[16, 0]}>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Assign Task Category"
-                                    name="category"
-                                    rules={[{ required: true, message: 'Please select a category' }]}
-                                >
-                                    <Select
-                                        placeholder="Select position"
-                                        onChange={handlePositionChange}
+                        {/* Task Basic Info Section */}
+                        <div className="task-form-section">
+                            <div className="task-form-section-title">Task Details</div>
+                            <Row gutter={[16, 16]}>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Task Name</span>}
+                                        name="taskName"
+                                        rules={[{ required: true, message: 'Please enter task name' }]}
                                     >
-                                        {getAvailablePositions().map((position) => (
-                                            <Select.Option key={position.value} value={position.value}>
-                                                {position.label}
-                                            </Select.Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Select User"
-                                    name="selectedUser"
-                                    rules={[{ required: true, message: 'Please select a user' }]}
-                                >
-                                    <Select
-                                        placeholder={selectedPosition ? "Select user" : "First select a position"}
-                                        disabled={!selectedPosition || availableUsers.length === 0}
-                                        onChange={handleUserSelection}
+                                        <Input
+                                            placeholder="Enter task name"
+                                            className="task-form-input"
+                                            size="large"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Client Name</span>}
+                                        name="clientName"
+                                        rules={[{ required: true, message: 'Please enter client name' }]}
                                     >
-                                        {getUsersForPosition().map((user) => (
-                                            <Select.Option key={user.value} value={user.value}>
-                                                {user.label}
+                                        <Input
+                                            placeholder="Enter client name"
+                                            className="task-form-input"
+                                            size="large"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </div>
+
+                        {/* Category & User Selection Section */}
+                        <div className="task-form-section">
+                            <div className="task-form-section-title">Assignment</div>
+                            <Row gutter={[16, 16]}>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Task Category</span>}
+                                        name="category"
+                                        rules={[{ required: true, message: 'Please select a category' }]}
+                                    >
+                                        <Select
+                                            placeholder="Select category"
+                                            onChange={handlePositionChange}
+                                            className="task-form-select"
+                                            size="large"
+                                        >
+                                            {getAvailablePositions().map((position) => (
+                                                <Select.Option key={position.value} value={position.value}>
+                                                    {position.label}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Select User</span>}
+                                        name="selectedUser"
+                                        rules={[{ required: true, message: 'Please select a user' }]}
+                                    >
+                                        <Select
+                                            placeholder={selectedPosition ? "Select user" : "First select a category"}
+                                            disabled={!selectedPosition || availableUsers.length === 0}
+                                            onChange={handleUserSelection}
+                                            className="task-form-select"
+                                            size="large"
+                                            showSearch
+                                            filterOption={(input, option) =>
+                                                (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                            }
+                                        >
+                                            {getUsersForPosition().map((user) => (
+                                                <Select.Option key={user.value} value={user.value}>
+                                                    {user.label}
+                                                </Select.Option>
+                                            ))}
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            {/* Selected User Display */}
+                            {selectedUserDetails && (
+                                <div className="selected-user-display">
+                                    <Avatar
+                                        size={48}
+                                        className="user-avatar"
+                                        style={{ backgroundColor: 'var(--brand-color)', color: '#000' }}
+                                    >
+                                        {getUserInitials(selectedUserDetails)}
+                                    </Avatar>
+                                    <div className="user-info">
+                                        <div className="user-name">
+                                            {selectedUserDetails.firstName} {selectedUserDetails.lastName}
+                                        </div>
+                                        <div className="user-position">{selectedUserDetails.position}</div>
+                                        <div className="user-email">{selectedUserDetails.email}</div>
+                                    </div>
+                                    <Badge
+                                        status="success"
+                                        text={<span className="selected-badge">Selected</span>}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Date Selection Section - Show when user is selected */}
+                        {selectedReceiverUserId && (
+                            <div className="task-form-section">
+                                <div className="task-form-section-title">
+                                    <BsCalendarDate className="section-icon" />
+                                    Choose Date
+                                    <span className="slot-info-text"> (select to see availability)</span>
+                                </div>
+                                <div className="calendar-row-container">
+                                    <div className="calendar-row">
+                                        {dateOptions.map((dateOption) => {
+                                            const isSelected = selectedSlotDate && typeof selectedSlotDate?.isSame === 'function'
+                                                ? selectedSlotDate.isSame(dateOption.dayjs, 'day')
+                                                : false;
+                                            return (
+                                                <div
+                                                    key={dateOption.key}
+                                                    className={`calendar-date-box ${isSelected ? 'selected' : ''}`}
+                                                    onClick={() => handleDateSelect(dateOption)}
+                                                >
+                                                    <div className="date-day">{dateOption.day}</div>
+                                                    <div className="date-value">{dateOption.date}</div>
+                                                    {isSelected && <BsCheckCircle className="selected-icon" />}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Slot Selection Section - Show when user is selected */}
+                        {selectedReceiverUserId && (
+                            <div className="task-form-section">
+                                <div className="task-form-section-title">
+                                    <HiOutlineClock className="section-icon" />
+                                    {shouldShowAvailabilitySlots ? 'Available Time Slots' : 'Time Slot Templates'}
+                                    {shouldShowAvailabilitySlots && <span className="slot-info-text"> (for selected date)</span>}
+                                </div>
+                                {shouldShowAvailabilitySlots && loadingAvailability ? (
+                                    <div className="slots-loading">Loading availability...</div>
+                                ) : loadingSlots && !shouldShowAvailabilitySlots ? (
+                                    <div className="slots-loading">Loading slots...</div>
+                                ) : slotOptions.length === 0 ? (
+                                    <div className="slots-empty">
+                                        {shouldShowAvailabilitySlots
+                                            ? 'No slots available for this date'
+                                            : 'No slots available for this position'}
+                                    </div>
+                                ) : (
+                                    <div className="slots-grid">
+                                        {slotOptions.map((opt) => {
+                                            const isSelected = selectedUserSlot === opt.value;
+                                            const isBooked = opt.disabled;
+                                            return (
+                                                <div
+                                                    key={opt.value}
+                                                    className={`slot-card ${isSelected ? 'selected' : ''} ${isBooked ? 'booked' : ''}`}
+                                                    onClick={() => !isBooked && setSelectedUserSlot(opt.value)}
+                                                >
+                                                    <div className="slot-time">
+                                                        {opt.slotObj?.startTime || opt.value.split('-')[0]} - {opt.slotObj?.endTime || opt.value.split('-')[1]}
+                                                    </div>
+                                                    <div className="slot-status">
+                                                        {isBooked ? (
+                                                            <Tag color="red">Booked</Tag>
+                                                        ) : isSelected ? (
+                                                            <Tag color="green">Selected</Tag>
+                                                        ) : (
+                                                            <Tag color="blue">Available</Tag>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Priority & Other Fields */}
+                        <div className="task-form-section">
+                            <div className="task-form-section-title">Additional Information</div>
+                            <Row gutter={[16, 16]}>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Priority</span>}
+                                        name="priority"
+                                        rules={[{ required: true, message: 'Please select priority' }]}
+                                    >
+                                        <Select
+                                            placeholder="Select priority"
+                                            className="task-form-select"
+                                            size="large"
+                                        >
+                                            <Select.Option value="high">
+                                                <Tag color="red">High Priority</Tag>
                                             </Select.Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        <Row gutter={[16, 16]}>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Priority Set"
-                                    name="priority"
-                                    rules={[{ required: true, message: 'Please select priority' }]}
-                                >
-                                    <Select placeholder="Select priority">
-                                        <Select.Option value="high">High Priority</Select.Option>
-                                        <Select.Option value="medium">Medium Priority</Select.Option>
-                                        <Select.Option value="low">Low Priority</Select.Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                                            <Select.Option value="medium">
+                                                <Tag color="orange">Medium Priority</Tag>
+                                            </Select.Option>
+                                            <Select.Option value="low">
+                                                <Tag color="blue">Low Priority</Tag>
+                                            </Select.Option>
+                                        </Select>
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <Form.Item
+                                        label={<span className="form-label">Time Spend</span>}
+                                        name="timeSpend"
+                                    >
+                                        <Input
+                                            prefix={<BsClock />}
+                                            placeholder="e.g., 02:00:00"
+                                            className="task-form-input"
+                                            size="large"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </div>
 
-                        <Row gutter={[16, 0]}>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Task Documents"
-                                    name="taskImages"
-                                >
-                                    <Upload {...uploadProps}>
-                                        <Button icon={<BsUpload />} loading={uploadingImages}>
-                                            {uploadingImages ? 'Uploading...' : 'Upload Documents'}
-                                        </Button>
-                                    </Upload>
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} sm={24} md={12} lg={12}>
-                                <Form.Item
-                                    label="Time Spend on This Project"
-                                    name="timeSpend"
-                                >
-                                    <Input
-                                        prefix={<BsClock />}
-                                        placeholder="e.g., 12:45:00"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Row>
-                            <Col span={24}>
-                                <Form.Item
-                                    label="Description"
-                                    name="description"
-                                >
-                                    <TextArea
-                                        rows={4}
-                                        placeholder="Enter task description"
-                                    />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Row>
-                            <Col span={24} style={{ display: "flex", justifyContent: "end" }}>
-                                <Form.Item>
+                        {/* Documents Section */}
+                        <div className="task-form-section">
+                            <div className="task-form-section-title">Attachments</div>
+                            <Form.Item
+                                label={<span className="form-label">Task Documents</span>}
+                                name="taskImages"
+                            >
+                                <Upload {...uploadProps}>
                                     <Button
-                                        style={{ maxWidth: "200px" }}
-                                        type="primary"
-                                        htmlType="submit"
-                                        loading={isLoading}
-                                        block
+                                        icon={<BsUpload />}
+                                        loading={uploadingImages}
+                                        className="upload-button"
                                         size="large"
                                     >
-                                        {isLoading ? 'Adding Task...' : 'Add Task'}
+                                        {uploadingImages ? 'Uploading...' : 'Upload Documents'}
                                     </Button>
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                                </Upload>
+                            </Form.Item>
+                        </div>
+
+                        {/* Description Section */}
+                        <div className="task-form-section">
+                            <div className="task-form-section-title">Description</div>
+                            <Form.Item
+                                name="description"
+                            >
+                                <TextArea
+                                    rows={4}
+                                    placeholder="Enter task description..."
+                                    className="task-form-textarea"
+                                />
+                            </Form.Item>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="task-form-footer">
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={isLoading}
+                                size="large"
+                                className="submit-button"
+                                icon={<BiTask />}
+                            >
+                                {isLoading ? 'Adding Task...' : 'Create Task'}
+                            </Button>
+                        </div>
                     </Form>
                 </div>
             </Drawer>

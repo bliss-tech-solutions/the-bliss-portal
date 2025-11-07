@@ -4,7 +4,7 @@ import { Card, Tag, Button, Row, Col, Drawer, Spin, Popconfirm } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../../store/slices/themeSlice';
 import { selectUserId, selectUser } from '../../../../../store/slices/authSlice';
-import { useGetTaskAssignQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation } from '../../../../../store/api';
+import { useGetTasksByReceiverQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation } from '../../../../../store/api';
 import { useNotification } from '../../../../../contexts/NotificationContext';
 import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye } from 'react-icons/ai';
@@ -19,8 +19,8 @@ const AllUserTaskEntries = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [confirmTaskId, setConfirmTaskId] = useState(null);
 
-    // Fetch user's assigned tasks from API
-    const { data: tasksData, isLoading, error } = useGetTaskAssignQuery(userId);
+    // Fetch user's assigned tasks from API (tasks assigned TO this user)
+    const { data: tasksData, isLoading, error } = useGetTasksByReceiverQuery(userId);
 
     // Fetch all users to get assigner names
     const { data: allUsersData } = useGetAllUsersQuery();
@@ -88,9 +88,27 @@ const AllUserTaskEntries = () => {
         );
     }
 
-    // Filter out archived tasks and sort latest first
-    const tasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Normalize backend shapes:
+    // - { data: [...] }
+    // - { data: { tasks: [...] } }
+    // - { data: [{ tasks: [...] }, ...] } (edge)
+    const extractTasksArray = () => {
+        const d = tasksData?.data;
+        if (!d) return [];
+        if (Array.isArray(d)) {
+            // Either array of tasks or array of docs with tasks
+            if (d.length > 0 && Array.isArray(d[0]?.tasks)) {
+                return d.flatMap(doc => doc.tasks || []);
+            }
+            return d;
+        }
+        if (Array.isArray(d?.tasks)) return d.tasks;
+        return [];
+    };
+
+    const tasks = extractTasksArray()
+        .filter(task => task?.isArchived !== true)
+        .sort((a, b) => new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime());
 
     const handleViewTask = (task) => {
         setSelectedTask(task);
@@ -99,7 +117,12 @@ const AllUserTaskEntries = () => {
 
     const handleMarkCompleted = async (task) => {
         try {
-            await updateTaskStatus({ taskId: task._id, status: 'completed' }).unwrap();
+            await updateTaskStatus({
+                taskId: task._id,
+                status: 'completed',
+                assignerId: task.assignerId || task.assignedBy || task.userId,
+                receiverId: task.receiverId || task.receiverUserId || userId
+            }).unwrap();
             showSuccess('Task marked as completed');
         } catch (e) {
             showError(e?.data?.message || 'Failed to update task status');
@@ -132,7 +155,7 @@ const AllUserTaskEntries = () => {
                                         <h3 className="user-task-title">{task.taskName}</h3>
                                         <div className="user-task-assigner">
                                             <span className="user-assigner-label">Assigned by:</span>
-                                            <span className="user-assigner-name">{getAssignerName(task.userId)}</span>
+                                            <span className="user-assigner-name">{getAssignerName(task.assignerId || task.assignedBy || task.userId)}</span>
                                         </div>
                                     </div>
                                     <div className="user-task-priority">
@@ -159,7 +182,7 @@ const AllUserTaskEntries = () => {
                                             <span>{task.chatCount || task.chatMessageCount || 0}</span>
                                             <BsPerson className="icon" style={{ marginLeft: 12 }} />
                                             <span style={{ color: 'var(--secondary-text)' }}>
-                                                {getAssignerName(task.userId)}
+                                                {getAssignerName(task.assignerId || task.assignedBy || task.userId)}
                                             </span>
                                         </div>
                                     </div>
@@ -232,7 +255,7 @@ const AllUserTaskEntries = () => {
                                 <h2>{selectedTask.taskName}</h2>
                                 <div className="user-task-assigner-drawer">
                                     <span className="user-assigner-label-drawer">Assigned by:</span>
-                                    <span className="user-assigner-name-drawer">{getAssignerName(selectedTask.userId)}</span>
+                                    <span className="user-assigner-name-drawer">{getAssignerName(selectedTask.assignerId || selectedTask.assignedBy || selectedTask.userId)}</span>
                                 </div>
                             </div>
 
@@ -322,15 +345,17 @@ const AllUserTaskEntries = () => {
                         {/* Comments Section - Using Reusable TaskChat Component */}
                         <TaskChat
                             taskId={selectedTask._id}
-                            receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
+                            receiverId={
+                                // New schema: chats on user side (receiver) should go to the assigner
+                                // Use new field names: assignerId (who assigned the task)
+                                selectedTask?.assignerId || selectedTask?.assignedBy || 
+                                (selectedTask?.receiverId === userId ? (selectedTask?.assignerId || selectedTask?.userId) : selectedTask?.userId)
+                            }
                             className="user-task-chat"
                             title="Task Related Chat"
                             placeholder="Add a comment..."
                             showTitle={true}
                             height="500px"
-                        // onMessageSent={(messageData) => {
-                        //     console.log('Message sent:', messageData);
-                        // }}
                         />
                     </div>
                 )}

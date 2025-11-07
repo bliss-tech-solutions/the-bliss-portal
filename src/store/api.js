@@ -169,9 +169,28 @@ export const api = createApi({
             }),
             invalidatesTags: ['Tasks'],
         }),
+        // Get tasks - if userId provided, get tasks for that user; otherwise get all tasks
         getTaskAssign: builder.query({
             query: (userId) => ({
-                url: `/api/getTaskAssign/${userId}?isArchived=false`,
+                url: userId ? `/api/getTaskAssign/${encodeURIComponent(userId)}` : `/api/getTaskAssign`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Tasks'],
+        }),
+        // Get tasks by assigner (tasks assigned BY a user) - for Execution panel
+        getTasksByAssigner: builder.query({
+            query: (assignerId) => ({
+                url: `/api/getTaskAssign/assigner/${encodeURIComponent(assignerId)}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Tasks'],
+        }),
+        // Get tasks by receiver (tasks assigned TO a user) - for User panel
+        getTasksByReceiver: builder.query({
+            query: (receiverId) => ({
+                url: `/api/getTaskAssign/receiver/${encodeURIComponent(receiverId)}`,
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
@@ -186,10 +205,10 @@ export const api = createApi({
             invalidatesTags: ['Tasks'],
         }),
         updateTaskStatus: builder.mutation({
-            query: ({ taskId, status = 'completed' }) => ({
+            query: ({ taskId, status = 'completed', assignerId, receiverId }) => ({
                 url: `/api/addtaskassign/${taskId}/status`,
                 method: 'PUT',
-                body: { taskStatus: status },
+                body: { taskStatus: status, assignerId, receiverId },
                 headers: { 'Content-Type': 'application/json' },
             }),
             invalidatesTags: ['Tasks'],
@@ -245,6 +264,22 @@ export const api = createApi({
                 headers: { 'Content-Type': 'application/json' },
             }),
         }),
+        // Slot templates by position (e.g., GraphicsDesigner)
+        getSlotTemplates: builder.query({
+            query: (position) => ({
+                url: `/api/getTaskAssign/slot-templates?position=${encodeURIComponent(position)}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        // User slot availability by date
+        getUserSlotsAvailability: builder.query({
+            query: ({ userId, date }) => ({
+                url: `/api/getTaskAssign/${encodeURIComponent(userId)}/slots-availability?date=${encodeURIComponent(date)}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
         getTodayCheckin: builder.query({
             query: (userId) => ({
                 url: `/api/checkin/${userId}/today`,
@@ -277,6 +312,8 @@ export const {
     useDeleteUserDataMutation,
     useAddTaskAssignMutation,
     useGetTaskAssignQuery,
+    useGetTasksByAssignerQuery,
+    useGetTasksByReceiverQuery,
     useArchiveTaskMutation,
     useUpdateTaskStatusMutation,
     useAddTaskChatMutation,
@@ -284,6 +321,8 @@ export const {
     useGetUserChatMessagesQuery,
     useGetAllUsersQuery,
     useGetAllCheckinsQuery,
+    useGetSlotTemplatesQuery,
+    useGetUserSlotsAvailabilityQuery,
     useGetTodayCheckinQuery
 } = api
 
