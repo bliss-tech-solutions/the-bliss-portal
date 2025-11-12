@@ -1,0 +1,35 @@
+BLISS PORTAL // ROLE FLOW SNAPSHOT
+==================================
+
+ACCOUNT SETUP (ALL ROLES)
+1. Visit `/CreateNewUser` → `UserVerificationForm` captures role, position, contact data.
+2. Submit → `POST /api/addUserDetails` stores profile; credentials generated for portal login.
+3. Confirmation shares login email/password; user ready for authentication.
+
+LOGIN & ENTRY
+1. Navigate to `/` → `LoginPortal` posts to `POST /api/signin` with issued credentials.
+2. Successful response → `authSlice` saves token, role, userId; `ProtectedRoute` opens access.
+3. Redirect to `/Dashboard` → `PortalHeader` and `PortalSideBar` load role-based navigation from `navigationConfig`.
+
+ROLE MODULES
+- Executive (`/task-assignment`, `/chat-test`, `/admin-dashboard`)
+  1. Open `/task-assignment` → `ExecutionTaskAssignPanel` lists tasks and provides “Add New Task” drawer.
+  2. Select position (other roles only) → choose assignee → create task via `POST /api/addtaskassign`.
+  3. Manage tasks in `AllTaskEntries`: filter/search, archive, or open detail drawer.
+  4. Drill into a task → embedded `TaskChat` for real-time messaging, emoji, Cloudinary media.
+  5. Monitor overview on `/admin-dashboard` (execution insights and navigation shortcuts).
+- User (`/my-tasks`, `/chat-test`)
+  1. Land on `/my-tasks` → `UserTaskAssignmentPanel` fetches assignments with `GET /api/getTaskAssign/:userId`.
+  2. Open any entry → detail drawer exposes `TaskChat` to collaborate with Execution.
+  3. Track leave balance and requests through `TaskAndLeaveCalender` (calendar tab within panel).
+- HR / Admin (`/admin-dashboard`, HR calendar view)
+  1. Access `/admin-dashboard` to review organization-level widgets and navigation.
+  2. Launch HR calendar module → `FestiveCalender` handles approvals/rejections via leave APIs.
+  3. Respond to requests in real time; Socket.IO events update Execution/User views instantly.
+
+NEXT FEATURE FOCUS
+- Executive: integrate API-backed date-range filters, add drag-and-drop prioritization for `ExecutionTaskAssignPanel`.
+- User: expose task status progression (in-progress/completed) and personal time tracking inside `/my-tasks`.
+- HR / Admin: expand analytics dashboard and push notifications for leave/task changes.
+- Cross-Role: introduce shared calendar task view and richer search facets across modules.
+

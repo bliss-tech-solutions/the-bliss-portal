@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AllTaskEntries.css';
-import { Card, Spin, Tag, Button, Row, Col, Drawer, Image, Modal } from 'antd';
+import { Card, Spin, Tag, Button, Row, Col, Drawer, Image, Modal, Form, Input } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectUserId } from '../../../../store/slices/authSlice';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser } from '../../../../store/slices/authSlice';
-import { useGetTaskAssignQuery, useArchiveTaskMutation } from '../../../../store/api';
+import { useGetTaskAssignQuery, useArchiveTaskMutation, useRespondTaskExtensionMutation } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
+import { BsClock, BsClockHistory, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye, AiOutlineEdit, AiOutlineDelete, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../../PortalCommonComponents/TaskChat/TaskChat';
+import dayjs from 'dayjs';
+import { emitTaskExtensionResponded, onTaskExtensionUpdated, offTaskExtensionUpdated } from '../../../../utils/socket';
 
 const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilter = 'all' }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
     const theme = useSelector(selectTheme);
-    const { data: tasksData, isLoading, error } = useGetTaskAssignQuery(userId);
+    const { data: tasksData, isLoading, error, refetch } = useGetTaskAssignQuery(userId);
 
     const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
@@ -36,6 +38,17 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
     // Archive task mutation
     const [archiveTask, { isLoading: isArchiving }] = useArchiveTaskMutation();
+    const [respondTaskExtension, { isLoading: respondingExtension }] = useRespondTaskExtensionMutation();
+
+    const [extensionResponseModal, setExtensionResponseModal] = useState({
+        visible: false,
+        action: 'approved',
+        slot: null,
+        extension: null,
+        task: null
+    });
+    const [responseForm] = Form.useForm();
+    const selectedTaskRef = useRef(null);
 
     // Derive a best-effort assignee display name from task object
     const getAssigneeDisplay = (task) => {
@@ -53,6 +66,93 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
         return 'Unknown';
     };
+
+    const parseTimeSlotValue = (value) => {
+        if (!value) return null;
+
+        const formats = ['HH:mm', 'HH:mm:ss', 'hh:mm A', 'h:mm A'];
+        for (const fmt of formats) {
+            const parsed = dayjs(value, fmt, true);
+            if (parsed.isValid()) {
+                return parsed;
+            }
+        }
+        return null;
+    };
+
+    const getSlotWindow = (slot) => {
+        if (!slot) return null;
+        const start = parseTimeSlotValue(slot.start);
+        const end = parseTimeSlotValue(slot.end);
+
+        if (!start || !end) return null;
+        return `${start.format('hh:mm A')} - ${end.format('hh:mm A')}`;
+    };
+
+    const getSlotStatusLabel = (status) => {
+        if (!status) return 'Scheduled';
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    };
+
+    const getExtensionStatusColor = (status = '') => {
+        const normalized = status?.toLowerCase();
+        if (normalized === 'approved' || normalized === 'accepted') return 'green';
+        if (normalized === 'rejected') return 'red';
+        if (normalized === 'pending') return 'orange';
+        return 'blue';
+    };
+
+    const getPendingExtensionCount = (task) => {
+        if (!task?.slots) return 0;
+        return task.slots.reduce((count, slot) => {
+            const history = slot?.extensionHistory || [];
+            return count + history.filter(entry => (entry.status || 'pending').toLowerCase() === 'pending').length;
+        }, 0);
+    };
+
+    const getTotalExtendedMinutes = (task) => {
+        if (!task?.slots) return 0;
+        return task.slots.reduce((sum, slot) => sum + (slot.extensionMinutes || 0), 0);
+    };
+
+    const formatExtensionTimestamp = (timestamp) => {
+        if (!timestamp) return null;
+        return dayjs(timestamp).format('MMM D, hh:mm A');
+    };
+
+    useEffect(() => {
+        selectedTaskRef.current = selectedTask;
+    }, [selectedTask]);
+
+    useEffect(() => {
+        if (selectedTaskRef.current && tasksData?.data) {
+            const updatedTask = tasksData.data.find(task => task._id === selectedTaskRef.current._id);
+            if (updatedTask) {
+                setSelectedTask(prev => {
+                    if (!prev) return updatedTask;
+                    if (prev.updatedAt === updatedTask.updatedAt && prev.timeTracking?.totalExtendedMinutes === updatedTask.timeTracking?.totalExtendedMinutes) {
+                        return prev;
+                    }
+                    return updatedTask;
+                });
+            }
+        }
+    }, [tasksData]);
+
+    useEffect(() => {
+        const handleExtensionUpdate = (payload) => {
+            if (!payload) return;
+            const { receiverUserId, userId: creatorUserId } = payload;
+            if (receiverUserId === userId || creatorUserId === userId) {
+                refetch();
+            }
+        };
+
+        onTaskExtensionUpdated(handleExtensionUpdate);
+        return () => {
+            offTaskExtensionUpdated(handleExtensionUpdate);
+        };
+    }, [refetch, userId]);
 
     if (isLoading) {
         return (
@@ -182,6 +282,62 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
         setTaskToArchive(null);
     };
 
+    const openExtensionResponseModal = (action, slot, extension, task) => {
+        if (!slot || !extension || !task) return;
+        setExtensionResponseModal({
+            visible: true,
+            action,
+            slot,
+            extension,
+            task
+        });
+        responseForm.setFieldsValue({ note: '' });
+    };
+
+    const closeExtensionResponseModal = () => {
+        setExtensionResponseModal({
+            visible: false,
+            action: 'approved',
+            slot: null,
+            extension: null,
+            task: null
+        });
+        responseForm.resetFields();
+    };
+
+    const handleExtensionResponseSubmit = async (values) => {
+        const { action, slot, extension, task } = extensionResponseModal;
+        if (!slot || !extension || !task) return;
+
+        const payload = {
+            taskId: task._id,
+            slotId: slot._id,
+            extensionId: extension._id,
+            body: {
+                decision: action,
+                respondedBy: user?.userId || userId,
+                note: values.note?.trim() || undefined
+            }
+        };
+
+        try {
+            await respondTaskExtension(payload).unwrap();
+            showSuccess(`Extension request ${action === 'approved' ? 'approved' : 'rejected'} successfully.`);
+            emitTaskExtensionResponded({
+                taskId: task._id,
+                slotId: slot._id,
+                extensionId: extension._id,
+                status: action,
+                receiverUserId: task.receiverUserId,
+                userId: user?.userId || userId
+            });
+            closeExtensionResponseModal();
+            await refetch();
+        } catch (err) {
+            showError(err?.data?.message || 'Failed to respond to extension request');
+        }
+    };
+
     return (
         <div className="all-task-entries">
             {sortedTasks.length === 0 ? (
@@ -189,81 +345,110 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                     {searchTerm || selectedDateRange ? 'No tasks match your filters.' : 'No tasks found. Create your first task!'}
                 </div>
             ) : (
-                sortedTasks.map((task) => (
-                    <Card
-                        key={task._id}
-                        className="task-entry-card"
-                        hoverable
-                    >
-                        <Row gutter={[16, 16]}>
-                            {/* Top Section */}
-                            <Col span={24}>
-                                <div className="task-header">
-                                    <div className="task-title-section">
-                                        <h3 className="task-title">{task.taskName}</h3>
-                                    </div>
-                                    <div className="task-priority">
-                                        <Tag color={getPriorityColor(task.priority)}>
-                                            {task.priority?.toUpperCase()}
-                                        </Tag>
-                                        <Tag color={getStatusColor(task.taskStatus)} style={{ marginLeft: 8 }}>
-                                            {(task.taskStatus || 'pending').toUpperCase()}
-                                        </Tag>
-                                    </div>
-                                </div>
-                            </Col>
+                sortedTasks.map((task) => {
+                    const primarySlot = getSlotWindow(task.slots?.[0]);
+                    const primarySlotStatus = task.slots?.[0]?.status ? getSlotStatusLabel(task.slots[0].status) : null;
+                    const pendingExtensionCount = getPendingExtensionCount(task);
+                    const totalExtendedMinutes = getTotalExtendedMinutes(task);
 
-                            {/* Bottom Section */}
-                            <Col span={24}>
-                                <div className="task-footer">
-                                    <div className="task-info">
-                                        <div className="task-time">
-                                            <BsClock className="icon" />
-                                            <span>{formatDateTime(task.createdAt)}</span>
+                    return (
+                        <Card
+                            key={task._id}
+                            className="task-entry-card"
+                            hoverable
+                        >
+                            <Row gutter={[16, 16]}>
+                                {/* Top Section */}
+                                <Col span={24}>
+                                    <div className="task-header">
+                                        <div className="task-title-section">
+                                            <h3 className="task-title">{task.taskName}</h3>
                                         </div>
-                                        <div className="task-time-spend">
-                                            <span>Time: {task.timeSpend}</span>
-                                        </div>
-                                    <div className="task-chat">
-                                            <BsChat className="icon" />
-                                            <span>{task.chatCount || task.chatMessageCount || 0}</span>
-                                        <BsPerson className="icon" style={{ marginLeft: 12 }} />
-                                        <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
-                                                {getAssigneeDisplay(task)}
-                                            </span>
+                                        <div className="task-priority">
+                                            <Tag color={getPriorityColor(task.priority)}>
+                                                {task.priority?.toUpperCase()}
+                                            </Tag>
+                                            <Tag color={getStatusColor(task.taskStatus)} style={{ marginLeft: 8 }}>
+                                                {(task.taskStatus || 'pending').toUpperCase()}
+                                            </Tag>
                                         </div>
                                     </div>
-                                    <div className="task-actions">
-                                        <Button
-                                            type="text"
-                                            icon={<AiOutlineEye />}
-                                            className="action-btn"
-                                            onClick={() => handleViewTask(task)}
-                                        >
-                                            View
-                                        </Button>
-                                        <Button
-                                            type="text"
-                                            icon={<AiOutlineEdit />}
-                                            className="action-btn"
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            type="text"
-                                            icon={<AiOutlineDelete />}
-                                            className="action-btn archive-btn"
-                                            loading={isArchiving}
-                                            onClick={() => handleShowArchiveModal(task)}
-                                        >
-                                            Delete
-                                        </Button>
+                                </Col>
+
+                                {/* Bottom Section */}
+                                <Col span={24}>
+                                    <div className="task-footer">
+                                        <div className="task-info">
+                                            <div className="task-time">
+                                                <BsClock className="icon" />
+                                                <span>{formatDateTime(task.createdAt)}</span>
+                                            </div>
+                                            <div className="task-time-spend">
+                                                <span>Time: {task.timeSpend}</span>
+                                            </div>
+                                            <div className="task-chat">
+                                                <BsChat className="icon" />
+                                                <span>{task.chatCount || task.chatMessageCount || 0}</span>
+                                                <BsPerson className="icon" style={{ marginLeft: 12 }} />
+                                                <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
+                                                    {getAssigneeDisplay(task)}
+                                                </span>
+                                            </div>
+                                            {primarySlot && (
+                                                <div className="task-slot">
+                                                    <BsClockHistory className="icon" />
+                                                    <span>
+                                                        Slot: {primarySlot}
+                                                        {primarySlotStatus ? ` (${primarySlotStatus})` : ''}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {totalExtendedMinutes > 0 && (
+                                                <div className="task-extension-summary">
+                                                    <BsClockHistory className="icon" />
+                                                    <span>Extended: {totalExtendedMinutes} mins</span>
+                                                </div>
+                                            )}
+                                            {pendingExtensionCount > 0 && (
+                                                <div className="task-extension-alert">
+                                                    <Tag color="orange">
+                                                        {pendingExtensionCount} pending extension{pendingExtensionCount > 1 ? 's' : ''}
+                                                    </Tag>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="task-actions">
+                                            <Button
+                                                type="text"
+                                                icon={<AiOutlineEye />}
+                                                className="action-btn"
+                                                onClick={() => handleViewTask(task)}
+                                            >
+                                                View
+                                            </Button>
+                                            <Button
+                                                type="text"
+                                                icon={<AiOutlineEdit />}
+                                                className="action-btn"
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                type="text"
+                                                icon={<AiOutlineDelete />}
+                                                className="action-btn archive-btn"
+                                                loading={isArchiving}
+                                                onClick={() => handleShowArchiveModal(task)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Card>
-                ))
+                                </Col>
+                            </Row>
+                        </Card>
+                    );
+                })
             )}
 
             {/* View Task Drawer */}
@@ -321,6 +506,85 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                         </div>
 
                         {/* Time Spend Banner */}
+                        {selectedTask.slots && selectedTask.slots.length > 0 && (
+                            <Card title="Scheduled Slots" className='scheduled-slots-card MarginBottomMedium'>
+                                {selectedTask.slots.map((slot, index) => {
+                                    const slotWindow = getSlotWindow(slot);
+                                    if (!slotWindow) return null;
+                                    const slotPendingCount = (slot.extensionHistory || []).filter(entry => (entry.status || 'pending').toLowerCase() === 'pending').length;
+                                    return (
+                                        <div key={`slot-${slot._id || index}`} className="manager-slot-row">
+                                            <div className="manager-slot-time">
+                                                <div className="manager-slot-timewindow">
+                                                    <BsClockHistory style={{ color: 'var(--brand-color)' }} />
+                                                    <span>{slotWindow}</span>
+                                                </div>
+                                                <Tag color="blue">{getSlotStatusLabel(slot.status)}</Tag>
+                                            </div>
+                                            <div className="manager-slot-stats">
+                                                <div>
+                                                    <span>Allocated</span>
+                                                    <strong>{slot.durationMinutes ?? 0} mins</strong>
+                                                </div>
+                                                <div>
+                                                    <span>Extended</span>
+                                                    <strong>{slot.extensionMinutes ?? 0} mins</strong>
+                                                </div>
+                                                {slotPendingCount > 0 && (
+                                                    <div>
+                                                        <span>Pending</span>
+                                                        <strong>{slotPendingCount} request{slotPendingCount > 1 ? 's' : ''}</strong>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {slot.extensionHistory && slot.extensionHistory.length > 0 && (
+                                                <div className="manager-slot-history">
+                                                    {slot.extensionHistory.map((entry, entryIndex) => {
+                                                        const status = (entry.status || 'pending').toLowerCase();
+                                                        const minutes = entry.minutesApproved ?? entry.minutesRequested ?? 0;
+                                                        return (
+                                                            <div key={`slot-history-${slot._id || index}-${entry._id || entryIndex}`} className={`manager-slot-history-item status-${status}`}>
+                                                                <div className="manager-slot-history-meta">
+                                                                    <Tag color={getExtensionStatusColor(entry.status)}>{(entry.status || 'pending').replace(/^./, c => c.toUpperCase())}</Tag>
+                                                                    <span>{minutes} mins</span>
+                                                                    {entry.requestedAt && <span>{formatExtensionTimestamp(entry.requestedAt)}</span>}
+                                                                    {entry.requestedBy && <span>By: {entry.requestedBy}</span>}
+                                                                </div>
+                                                                {entry.reason && (
+                                                                    <p className="manager-slot-history-reason">Reason: {entry.reason}</p>
+                                                                )}
+                                                                {entry.note && (
+                                                                    <p className="manager-slot-history-note">Assigner note: {entry.note}</p>
+                                                                )}
+                                                                {status === 'pending' && (
+                                                                    <div className="manager-slot-history-actions">
+                                                                        <Button
+                                                                            type="primary"
+                                                                            size="small"
+                                                                            onClick={() => openExtensionResponseModal('approved', slot, entry, selectedTask)}
+                                                                        >
+                                                                            Approve
+                                                                        </Button>
+                                                                        <Button
+                                                                            danger
+                                                                            size="small"
+                                                                            onClick={() => openExtensionResponseModal('rejected', slot, entry, selectedTask)}
+                                                                        >
+                                                                            Reject
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </Card>
+                        )}
+
                         <div className="time-spend-container MarginBottomMedium">
                             <div className="time-icon-wrapper">
                                 <BsClock className="time-icon" />
@@ -363,13 +627,56 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                             placeholder="Add a comment..."
                             showTitle={true}
                             height="500px"
-                        // onMessageSent={(messageData) => {
-                        //     console.log('Message sent:', messageData);
-                        // }}
                         />
                     </div>
                 )}
             </Drawer>
+            <Modal
+                title={`${extensionResponseModal.action === 'approved' ? 'Approve' : 'Reject'} Extension Request`}
+                open={extensionResponseModal.visible}
+                onCancel={closeExtensionResponseModal}
+                onOk={() => responseForm.submit()}
+                okText={extensionResponseModal.action === 'approved' ? 'Approve' : 'Reject'}
+                okButtonProps={{ danger: extensionResponseModal.action === 'rejected' }}
+                confirmLoading={respondingExtension}
+                destroyOnClose
+                className="manager-extension-modal"
+            >
+                <div className="manager-extension-modal-meta">
+                    <div>
+                        <span className="label">Requested</span>
+                        <strong>{extensionResponseModal.extension ? (extensionResponseModal.extension.minutesApproved ?? extensionResponseModal.extension.minutesRequested ?? 0) : 0} mins</strong>
+                    </div>
+                    <div>
+                        <span className="label">Slot</span>
+                        <strong>{extensionResponseModal.slot ? getSlotWindow(extensionResponseModal.slot) : '--'}</strong>
+                    </div>
+                    <div>
+                        <span className="label">From</span>
+                        <strong>{extensionResponseModal.extension?.requestedBy || 'Unknown'}</strong>
+                    </div>
+                </div>
+                {extensionResponseModal.extension?.reason && (
+                    <div className="manager-extension-reason">
+                        <span className="label">Reason</span>
+                        <p>{extensionResponseModal.extension.reason}</p>
+                    </div>
+                )}
+                <Form
+                    layout="vertical"
+                    form={responseForm}
+                    onFinish={handleExtensionResponseSubmit}
+                    className="manager-extension-form"
+                >
+                    <Form.Item label="Add a note (optional)" name="note">
+                        <Input.TextArea
+                            rows={3}
+                            maxLength={300}
+                            placeholder="Share context with the assignee..."
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
 
             {/* Archive Confirmation Modal */}
             <Modal

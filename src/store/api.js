@@ -169,6 +169,19 @@ export const api = createApi({
             }),
             invalidatesTags: ['Tasks'],
         }),
+        getSuggestedSlots: builder.query({
+            query: ({ receiverUserId, slotDate } = {}) => {
+                const params = new URLSearchParams();
+                if (receiverUserId) params.append('receiverUserId', receiverUserId);
+                if (slotDate) params.append('slotDate', slotDate);
+                const queryString = params.toString();
+                return {
+                    url: `/api/availability${queryString ? `?${queryString}` : ''}`,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            },
+        }),
         getTaskAssign: builder.query({
             query: (userId) => ({
                 url: `/api/getTaskAssign/${userId}?isArchived=false`,
@@ -190,6 +203,24 @@ export const api = createApi({
                 url: `/api/addtaskassign/${taskId}/status`,
                 method: 'PUT',
                 body: { taskStatus: status },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
+        requestTaskExtension: builder.mutation({
+            query: ({ taskId, slotId, body }) => ({
+                url: `/api/addtaskassign/${taskId}/slots/${slotId}/request-extension`,
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
+        respondTaskExtension: builder.mutation({
+            query: ({ taskId, slotId, extensionId, body }) => ({
+                url: `/api/addtaskassign/${taskId}/slots/${slotId}/extensions/${extensionId}/respond`,
+                method: 'PUT',
+                body,
                 headers: { 'Content-Type': 'application/json' },
             }),
             invalidatesTags: ['Tasks'],
@@ -276,9 +307,12 @@ export const {
     useUpdateUserDataMutation,
     useDeleteUserDataMutation,
     useAddTaskAssignMutation,
+    useLazyGetSuggestedSlotsQuery,
     useGetTaskAssignQuery,
     useArchiveTaskMutation,
     useUpdateTaskStatusMutation,
+    useRequestTaskExtensionMutation,
+    useRespondTaskExtensionMutation,
     useAddTaskChatMutation,
     useGetTaskChatMessagesQuery,
     useGetUserChatMessagesQuery,

@@ -344,3 +344,320 @@
         padding: 12px 0;
     }
 }
+
+.custom-drawer .task-form-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-drawer .task-form-section:hover {
+    border-color: var(--brand-color);
+    box-shadow: 0 18px 38px -22px rgba(235, 178, 54, 0.35);
+}
+
+.custom-drawer .task-section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.custom-drawer .task-section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(235, 178, 54, 0.15);
+    color: var(--brand-color);
+    font-size: 20px;
+}
+
+.custom-drawer .task-section-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.custom-drawer .task-section-header p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.custom-drawer .slot-selector {
+    border: 1px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 20px 18px;
+    transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.custom-drawer .slot-selector.slot-selector-active {
+    background: rgba(235, 178, 54, 0.04);
+    border-color: rgba(235, 178, 54, 0.45);
+}
+
+.custom-drawer .slot-selector.slot-selector-disabled {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    background: var(--primary-bg);
+}
+
+.custom-drawer .slot-selector-empty {
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+.custom-drawer .slot-input-card {
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.custom-drawer .slot-input-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.custom-drawer .slot-helper-text {
+    margin: 0;
+    font-size: 11px;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.slot-suggestions.conflict {
+    margin-top: 16px;
+}
+
+.slot-suggestions-loading {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.slot-suggestion-chip {
+    border-radius: 16px !important;
+    padding: 0 14px !important;
+    height: 30px !important;
+    background: var(--primary-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.slot-suggestion-chip:hover:not([disabled]) {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+}
+
+.slot-conflict-alert {
+    margin-top: 12px;
+    border-radius: 10px;
+}
+
+.slot-bookings {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slot-bookings-empty {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.slot-bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.slot-booking-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+}
+
+.slot-booking-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-text);
+    min-width: 120px;
+}
+
+.slot-booking-time {
+    font-size: 13px;
+    color: var(--secondary-text);
+    flex: 1;
+}
+
+.slot-duration-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper {
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--primary-text);
+    background: var(--input-bg);
+    box-shadow: none;
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper::before {
+    display: none;
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper:not(.ant-radio-button-wrapper-disabled):hover {
+    border-color: var(--brand-color);
+    color: var(--brand-color);
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper-disabled {
+    background: var(--primary-bg);
+    border-color: var(--border-color);
+    color: var(--secondary-text);
+    cursor: not-allowed;
+    opacity: 0.55;
+    box-shadow: none;
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper-disabled:hover {
+    border-color: var(--border-color);
+    color: var(--secondary-text);
+}
+
+.custom-drawer .slot-duration-group .ant-radio-button-wrapper-checked {
+    background: var(--brand-color);
+    border-color: var(--brand-color);
+    color: #1f1f1f;
+    box-shadow: 0 8px 16px -10px rgba(235, 178, 54, 0.8);
+}
+
+.custom-drawer .slot-summary-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-top: 18px;
+    padding: 12px 16px;
+}
+
+.custom-drawer .slot-summary-bar span {
+    display: block;
+    font-size: 11px;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.custom-drawer .slot-summary-bar strong {
+    display: block;
+    font-size: 15px;
+    color: var(--primary-text);
+    margin-top: 4px;
+}
+
+.custom-drawer .slot-warning-alert {
+    margin-top: 16px;
+    border-radius: 10px;
+}
+
+.custom-drawer .task-form-section .ant-form-item {
+    margin-bottom: 0;
+}
+
+.custom-drawer .task-form-section .ant-form-item + .ant-form-item {
+    margin-top: 18px;
+}
+
+.custom-drawer .task-section-files .ant-form-item {
+    margin-top: 0;
+}
+
+.custom-drawer .task-section-description .ant-form-item textarea {
+    min-height: 140px;
+}
+
+@media (max-width: 992px) {
+    .custom-drawer .task-form-section {
+        padding: 18px;
+    }
+
+    .slot-booking-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
+
+@media (max-width: 576px) {
+    .custom-drawer .task-form-section {
+        padding: 16px;
+    }
+
+    .custom-drawer .task-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .custom-drawer .slot-duration-group {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+
+    .custom-drawer .slot-summary-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .slot-bookings {
+        margin-top: 16px;
+    }
+}
