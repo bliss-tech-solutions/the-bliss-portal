@@ -223,6 +223,8 @@ const AllUserTaskEntries = () => {
                 open={viewDrawerVisible}
                 closable={false}
                 className="user-custom-drawer"
+                destroyOnClose={false}
+                forceRender
             >
                 {selectedTask && (
                     <div className={`user-drawer-content theme-${theme}`}>

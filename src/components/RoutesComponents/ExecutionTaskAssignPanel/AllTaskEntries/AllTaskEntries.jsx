@@ -224,11 +224,11 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                                         <div className="task-time-spend">
                                             <span>Time: {task.timeSpend}</span>
                                         </div>
-                                    <div className="task-chat">
+                                        <div className="task-chat">
                                             <BsChat className="icon" />
                                             <span>{task.chatCount || task.chatMessageCount || 0}</span>
-                                        <BsPerson className="icon" style={{ marginLeft: 12 }} />
-                                        <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
+                                            <BsPerson className="icon" style={{ marginLeft: 12 }} />
+                                            <span style={{ marginLeft: 0, color: 'var(--secondary-text)' }}>
                                                 {getAssigneeDisplay(task)}
                                             </span>
                                         </div>
@@ -289,6 +289,8 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
                 open={viewDrawerVisible}
                 closable={false}
                 className="custom-drawer"
+                destroyOnClose={false}
+                forceRender
             >
                 {selectedTask && (
                     <div className={`drawer-content theme-${theme}`}>

@@ -3,7 +3,7 @@ import './TaskChat.css';
 import { Card, Avatar, Input, Spin, Button, Popover, Modal } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
-import { useGetUserChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
+import { useLazyGetTaskChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useSocket } from '../../../contexts/SocketContext';
 import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
@@ -59,8 +59,11 @@ const TaskChat = ({
         return true;
     };
 
-    // Fetch user's chat messages from API
-    const { data: chatMessagesData, isLoading: isChatLoading, error: chatError, refetch: refetchChat } = useGetUserChatMessagesQuery(userId);
+    // Fetch chat messages for this task only once (initial load / manual refetch)
+    const [
+        fetchTaskChatMessages,
+        { data: chatMessagesData, isFetching: isChatLoading, error: chatError }
+    ] = useLazyGetTaskChatMessagesQuery();
 
     // Add task chat mutation
     const [addTaskChat, { isLoading: isSendingChat }] = useAddTaskChatMutation();
@@ -102,28 +105,35 @@ const TaskChat = ({
         };
     }, [socket, taskId]);
 
+    // Load chat history for the active task once (or whenever taskId changes)
+    useEffect(() => {
+        if (taskId) {
+            fetchTaskChatMessages(taskId);
+        }
+    }, [taskId, fetchTaskChatMessages]);
+
     // Update local chat messages when API data changes
     useEffect(() => {
-        if (chatMessagesData?.data) {
-            let filteredMessages;
+        const payload = chatMessagesData?.data;
 
-            if (customMessageFilter) {
-                filteredMessages = customMessageFilter(chatMessagesData.data);
-            } else {
-                // Default: filter messages for this specific task
-                filteredMessages = chatMessagesData.data.filter(msg => msg.taskId === taskId);
-            }
+        if (!payload) return;
 
-            // Sort by createdAt date, oldest first (so latest appears at bottom)
-            const sortedMessages = filteredMessages.sort((a, b) => {
-                const dateA = new Date(a.createdAt);
-                const dateB = new Date(b.createdAt);
-                return dateA - dateB;
-            });
+        const baseMessages = Array.isArray(payload)
+            ? payload
+            : payload.messages || [];
 
-            setTaskChatMessages(sortedMessages);
-        }
-    }, [chatMessagesData, taskId, customMessageFilter]);
+        const processedMessages = customMessageFilter
+            ? customMessageFilter(baseMessages)
+            : baseMessages;
+
+        const sortedMessages = [...processedMessages].sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateA - dateB;
+        });
+
+        setTaskChatMessages(sortedMessages);
+    }, [chatMessagesData, customMessageFilter]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {

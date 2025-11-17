@@ -209,7 +209,6 @@ export const api = createApi({
                 },
                 headers: { 'Content-Type': 'application/json' },
             }),
-            invalidatesTags: ['TaskChat'],
         }),
 
         // Get chat messages by task (matches your backend)
@@ -281,6 +280,7 @@ export const {
     useUpdateTaskStatusMutation,
     useAddTaskChatMutation,
     useGetTaskChatMessagesQuery,
+    useLazyGetTaskChatMessagesQuery,
     useGetUserChatMessagesQuery,
     useGetAllUsersQuery,
     useGetAllCheckinsQuery,
