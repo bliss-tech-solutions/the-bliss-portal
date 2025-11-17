@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AllTaskEntries.css';
 import { Card, Spin, Tag, Button, Row, Col, Drawer, Image, Modal, Form, Input } from 'antd';
 import { useSelector } from 'react-redux';
