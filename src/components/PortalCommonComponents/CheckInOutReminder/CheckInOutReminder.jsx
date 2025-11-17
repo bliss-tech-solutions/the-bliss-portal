@@ -29,6 +29,12 @@ const CheckInOutReminder = () => {
     const [checkIn, { isLoading }] = useCheckInMutation();
     const [reason, setReason] = useState('');
 
+    // Hide check-in/check-out for admin role
+    const isAdmin = role?.toLowerCase() === 'admin';
+    if (isAdmin) {
+        return null;
+    }
+
     // Query server for today's check-in status (no localStorage gating)
     const { data: statusData, isFetching } = useCheckInStatusQuery(
         { userId },

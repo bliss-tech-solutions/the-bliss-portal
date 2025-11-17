@@ -216,7 +216,7 @@ const PortalHeader = () => {
                                 <div className="PortalGreetingsContainer">
                                     <div className="PortalGreetingsText">
                                         <div>
-                                            <p>{greeting},&nbsp;<span className="PortalGreetingsName">{fullName}</span></p>
+                                            <p>{greeting},&nbsp;<span className="PortalGreetingsName">{fullName}</span>&nbsp; 👋</p>
                                         </div>
                                         <div className="ShowCurrentDateAndTime">
                                             <div className="date-container">
@@ -229,11 +229,13 @@ const PortalHeader = () => {
 
                                             </div>
                                         </div>
-                                        <div>
-                                            <Button size="small" icon={<ExportOutlined />} onClick={() => setCheckoutModalOpen(true)}>
-                                                Check Out
-                                            </Button>
-                                        </div>
+                                        {user?.role?.toLowerCase() !== 'admin' && user?.position?.toLowerCase() !== 'admin' && (
+                                            <div>
+                                                <Button size="small" icon={<ExportOutlined />} onClick={() => setCheckoutModalOpen(true)}>
+                                                    Check Out
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </Col>

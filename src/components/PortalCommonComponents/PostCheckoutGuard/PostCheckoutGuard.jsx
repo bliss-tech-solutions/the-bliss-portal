@@ -5,9 +5,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCheckoutStatusQuery } from '../../../store/api';
 
 const PostCheckoutGuard = () => {
+    const user = useSelector((state) => state.auth?.user);
     const userId = useSelector((state) => state.auth?.userId || state.auth?.user?._id || state.auth?.user?.id);
     const location = useLocation();
     const navigate = useNavigate();
+    const role = user?.role || user?.position || 'user';
+
+    // Hide checkout guard for admin role
+    const isAdmin = role?.toLowerCase() === 'admin';
+    if (isAdmin) {
+        return null;
+    }
 
     const { data, isFetching, error } = useCheckoutStatusQuery({ userId }, { skip: !userId });
 
