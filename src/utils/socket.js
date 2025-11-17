@@ -70,3 +70,29 @@ export const offTaskAdded = () => {
     }
 };
 
+export const emitTaskExtensionRequested = (payload) => {
+    if (socket && socket.connected) {
+        socket.emit('task-extension-requested', payload);
+    }
+};
+
+export const onTaskExtensionUpdated = (callback) => {
+    if (socket) {
+        socket.on('task-extension-requested', callback);
+        socket.on('task-extension-updated', callback);
+    }
+};
+
+export const offTaskExtensionUpdated = (callback) => {
+    if (socket) {
+        socket.off('task-extension-requested', callback);
+        socket.off('task-extension-updated', callback);
+    }
+};
+
+export const emitTaskExtensionResponded = (payload) => {
+    if (socket && socket.connected) {
+        socket.emit('task-extension-updated', payload);
+    }
+};
+

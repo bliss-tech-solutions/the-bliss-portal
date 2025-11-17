@@ -120,6 +120,19 @@
     color: var(--secondary-text);
 }
 
+.user-task-slot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--secondary-text);
+    font-size: 13px;
+}
+
+.user-task-slot .icon {
+    font-size: 14px;
+    color: var(--secondary-text);
+}
+
 /* .user-task-time,
 .user-task-time-spend,
 .user-task-chat {
@@ -743,9 +756,28 @@
         height: 28px;
         font-size: 10px;
     }
+
+    .user-slot-stats {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+
+    .user-slot-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
 
 @media (max-width: 480px) {
+    .user-slot-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .user-slot-time {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
     .user-custom-drawer .ant-drawer-content {
         width: 100vw !important;
     }
@@ -758,3 +790,195 @@
         font-size: 24px;
     }
 }
+
+/* .user-task-chat {
+    margin-top: 32px;
+} */
+
+/* Slot Extension Styles */
+.user-scheduled-slots-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.user-slot-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-slot-row:last-child {
+    border-bottom: none;
+}
+
+.user-slot-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-slot-timewindow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.user-slot-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 12px;
+    background: var(--primary-bg);
+    border: 1px dashed var(--border-color);
+    border-radius: 10px;
+}
+
+.user-slot-stats span {
+    display: block;
+    font-size: 12px;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.user-slot-stats strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 16px;
+    color: var(--primary-text);
+}
+
+.user-slot-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(235, 178, 54, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(235, 178, 54, 0.18);
+}
+
+.user-slot-history-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-slot-history-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.user-slot-history-reason,
+.user-slot-history-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.user-slot-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.user-slot-request-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 20px !important;
+    padding: 0 14px !important;
+    height: 32px !important;
+}
+
+.user-slot-request-btn:hover:not([disabled]) {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+}
+
+.user-time-tracking-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.user-time-tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+.user-time-tracking-stat {
+    background: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-time-tracking-stat span {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary-text);
+}
+
+.user-time-tracking-stat strong {
+    font-size: 18px;
+    color: var(--primary-text);
+}
+
+.user-extension-modal .ant-modal-body {
+    padding-top: 12px;
+}
+
+.user-extension-modal-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    padding: 12px 0 4px;
+}
+
+.user-extension-modal-meta .label {
+    display: block;
+    font-size: 11px;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.user-extension-modal-meta strong {
+    display: block;
+    font-size: 16px;
+    color: var(--primary-text);
+    margin-top: 2px;
+}
+
+.user-extension-form .ant-form-item {
+    margin-bottom: 16px;
+}
+
+.user-extension-form textarea {
+    resize: none;
+}
+
+.user-extension-form .ant-select-selector {
+    border-radius: 10px !important;
+}
+
+.user-extension-form .ant-input-textarea-show-count::after {
+    color: var(--secondary-text);
+}
+
+/* Responsive */

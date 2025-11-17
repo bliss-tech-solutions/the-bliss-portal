@@ -5,6 +5,8 @@ import { SlCalender } from "react-icons/sl";
 import { FileTextOutlined } from '@ant-design/icons';
 import { FaCalendarAlt } from "react-icons/fa";
 import { CalendarOutlined } from '@ant-design/icons';
+import { SiGoogleanalytics } from "react-icons/si";
+
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
 import ProfileUpdate from '../PortalCommonComponents/ProfileUpdate/ProfileUpdate';
@@ -19,10 +21,10 @@ import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/Ta
 export const navigationConfig = [
     // Admin Only Route
     {
-        componentLabelName: "Admin Dashboard",
-        icon: DashboardOutlined,
+        componentLabelName: "Analytics",
+        icon: SiGoogleanalytics,
         routeName: "/admin-dashboard",
-        roles: ["Execution"],
+        roles: ["admin"],
         component: AdminDashboard,
         showInSidebar: true
     },

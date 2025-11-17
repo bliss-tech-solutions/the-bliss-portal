@@ -76,7 +76,7 @@ const UserTaskAssignmentPanel = () => {
                         </div>
                     </Col>
                 </Row>
-                <div >
+                <div>
                     <div className="AntdTabsContent user-AntdTabsContent">
                         {renderTabContent()}
                     </div>

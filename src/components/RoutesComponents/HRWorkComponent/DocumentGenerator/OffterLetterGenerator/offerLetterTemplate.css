@@ -1,0 +1,553 @@
+.offer-letter-template {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    background-color: white;
+    min-height: 100vh;
+    /* Allow content to expand naturally for multi-page rendering */
+    overflow-x: auto;
+}
+
+.offer-letter-page {
+    width: 188mm;
+    max-width: 188mm;
+    min-height: 297mm;
+    background-color: #ffffff;
+    /* White background - clean PDF format */
+    /* Standard padding: 30px all around (as per user change) */
+    padding: 30px 0px;
+    /* Reserve space at bottom for footer */
+    padding-bottom: 60px;
+    /* box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); */
+    margin: 0 auto;
+    font-family: 'Times New Roman', serif;
+    color: #333333;
+    line-height: 1.6;
+    /* Allow content to flow naturally across pages */
+    height: auto;
+    overflow: visible;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Ensure consistent spacing - parent padding handles all spacing */
+/* No child-specific rules needed - parent .offer-letter-page padding applies to all content */
+
+/* Header Section */
+.offer-letter-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 0;
+    margin-bottom: 25px;
+    padding-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #F1000F;
+}
+
+.offer-letter-logo {
+    flex: 0 0 100px;
+    margin-right: 20px;
+}
+
+.offer-letter-logo img {
+    max-width: 100px;
+    height: auto;
+    object-fit: contain;
+}
+
+.offer-letter-company-info {
+    flex: 1;
+    text-align: right;
+}
+
+.company-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.company-address {
+    font-size: 11px;
+    color: #555555;
+    margin: 0 0 5px 0;
+    line-height: 1.5;
+}
+
+.company-contact {
+    font-size: 11px;
+    color: #555555;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Date Section */
+.offer-letter-date {
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #333333;
+}
+
+.offer-letter-date p {
+    margin: 0;
+}
+
+/* Candidate Name Section */
+.offer-letter-candidate-name {
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #333333;
+}
+
+.offer-letter-candidate-name p {
+    margin: 0;
+}
+
+/* Subject Section */
+.offer-letter-subject {
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #333333;
+}
+
+.offer-letter-subject p {
+    margin: 0;
+}
+
+/* Salutation */
+.offer-letter-salutation {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.offer-letter-salutation p {
+    margin: 0;
+}
+
+/* Content Section */
+.offer-letter-content {
+    margin-bottom: 15px;
+    font-size: 13px;
+    text-align: justify;
+    line-height: 1.8;
+    /* Allow content to flow across pages */
+    page-break-inside: auto;
+}
+
+.offer-letter-content>p {
+    margin-bottom: 15px;
+    orphans: 1;
+    widows: 1;
+    page-break-inside: auto;
+    /* Allow paragraphs to break if needed */
+}
+
+.offer-letter-content strong {
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+/* Sections */
+.offer-letter-section {
+    margin: 8px 0;
+    /* Minimal spacing between sections - content flows continuously */
+    /* Allow sections to break naturally across pages - fill page before breaking */
+    page-break-inside: auto;
+    page-break-before: auto;
+    /* Don't force breaks - let content flow continuously */
+    page-break-after: auto;
+    /* Don't force breaks - let content flow continuously */
+    orphans: 1;
+    widows: 1;
+}
+
+.section-number {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+    /* Reduced bottom margin for tighter spacing */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    /* Allow natural page breaks after section headers */
+    page-break-after: auto;
+    orphans: 1;
+    widows: 1;
+    page-break-before: auto;
+    /* Allow breaks before section headers */
+}
+
+.section-content {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    /* Remove top margin to start immediately after section header */
+    margin-bottom: 0;
+    /* Remove bottom margin to flow into next section */
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.section-content p {
+    margin-bottom: 0px;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+.section-content ul {
+    margin: 8px 0 8px 0;
+    /* Reduced top/bottom margins */
+    /* Removed left margin - padding from parent handles spacing */
+    padding-left: 20px;
+    /* Use padding instead of margin for consistent spacing */
+    padding-right: 0;
+    page-break-inside: auto;
+    /* Allow lists to break across pages */
+    page-break-before: auto;
+    /* Allow breaks before lists */
+    page-break-after: auto;
+    /* Allow breaks after lists */
+}
+
+.section-content li {
+    margin-bottom: 8px;
+    line-height: 1.8;
+    list-style-type: disc;
+    page-break-inside: auto;
+    /* Allow list items to break if needed */
+    page-break-before: auto;
+    /* Allow breaks before list items - if item doesn't fit, move to next page */
+    page-break-after: auto;
+    /* Allow breaks after list items */
+    orphans: 1;
+    widows: 1;
+    /* List items will flow to next page if they don't fit - like line break to new page */
+}
+
+.section-content strong {
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+/* Closing Section */
+.offer-letter-closing {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    /* Try to keep closing section together but allow page breaks if needed */
+    page-break-inside: avoid;
+}
+
+.offer-letter-closing>p {
+    margin-bottom: 50px;
+    font-size: 14px;
+}
+
+.offer-letter-signature {
+    margin-top: 50px;
+}
+
+.signature-line {
+    width: 200px;
+    height: 1px;
+    background-color: #333333;
+    margin-bottom: 8px;
+}
+
+.signature-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 5px 0;
+}
+
+.signature-title {
+    font-size: 12px;
+    color: #555555;
+    margin: 0 0 3px 0;
+}
+
+.signature-company {
+    font-size: 12px;
+    color: #555555;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+/* Candidate Acceptance Section */
+.candidate-acceptance {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 2px solid #333333;
+    page-break-inside: avoid;
+}
+
+.acceptance-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+}
+
+.acceptance-statement {
+    font-size: 13px;
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+.acceptance-statement strong {
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.acceptance-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.acceptance-field {
+    font-size: 13px;
+    line-height: 2;
+    min-height: 30px;
+}
+
+.acceptance-field span {
+    display: inline-block;
+    border-bottom: 1px solid #333333;
+    min-width: 300px;
+    padding-bottom: 2px;
+}
+
+/* PDF Footer Styles - Visible for PDF generation */
+.pdf-page-footer {
+    display: block;
+    position: absolute;
+    bottom: 10mm;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 8px 0;
+    margin-top: 20px;
+    page-break-inside: avoid;
+}
+
+.pdf-footer-line {
+    width: 100%;
+    height: 2px;
+    background-color: #dc3545;
+    margin-bottom: 10px;
+}
+
+.pdf-footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: #333333;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pdf-footer-phone,
+.pdf-footer-email,
+.pdf-footer-address {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pdf-footer-icon {
+    font-size: 12px;
+}
+
+.pdf-footer-text {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Show footer in PDF generation context */
+.offer-letter-template[data-pdf-mode="true"] .pdf-page-footer,
+.offer-letter-page .pdf-page-footer {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
+/* Print Styles */
+@media print {
+    .offer-letter-template {
+        background-color: #ffffff;
+        /* White background for print */
+        padding: 0;
+    }
+
+    .offer-letter-page {
+        box-shadow: none;
+        margin: 0;
+        background-color: #ffffff;
+        /* White background for print */
+        /* Fixed A4 width - consistent across all devices */
+        width: 210mm !important;
+        max-width: 210mm !important;
+        /* Standard padding: 30px all around, reserve space for footer */
+        padding: 30px 30px 60px 30px;
+        /* Remove fixed height and allow natural page breaks */
+        min-height: auto;
+        height: auto;
+        page-break-after: auto;
+        position: relative;
+        /* Content flows naturally and breaks at page boundaries */
+    }
+
+    @page {
+        size: A4;
+        /* Standard margins: 30px all around, reserve bottom space for footer */
+        margin: 30px 30px 60px 30px;
+    }
+
+    /* Show footer on each page */
+    .pdf-page-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 15mm;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+
+    /* Keep header on first page */
+    .offer-letter-header {
+        page-break-inside: avoid;
+        page-break-after: avoid;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    /* Ensure all content maintains consistent left/right spacing on all pages */
+    /* No left/right padding - content uses full width */
+    .offer-letter-content,
+    .offer-letter-section,
+    .section-content,
+    .section-content p,
+    .section-content ul,
+    .section-content li {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Lists use padding for indentation, not margin */
+    .section-content ul {
+        padding-left: 20px !important;
+        padding-right: 0 !important;
+    }
+
+    /* Sections should fill page and break naturally when needed */
+    .offer-letter-section {
+        margin: 8px 0 !important;
+        /* Minimal spacing between sections - content flows continuously */
+        page-break-inside: auto;
+        page-break-before: auto;
+        /* Don't force breaks - let content flow continuously */
+        page-break-after: auto;
+        /* Don't force breaks - let content flow continuously */
+        /* Allow sections to break across pages */
+        orphans: 1;
+        widows: 1;
+    }
+
+    /* Allow section headers to break naturally */
+    .section-number {
+        page-break-after: auto;
+        /* Allow breaks after section headers */
+        orphans: 2;
+        widows: 2;
+    }
+
+    /* Keep closing signature together */
+    .offer-letter-closing {
+        page-break-inside: avoid;
+        page-break-before: auto;
+    }
+
+    /* Keep candidate acceptance section together */
+    .candidate-acceptance {
+        page-break-inside: avoid;
+        page-break-before: auto;
+    }
+
+    /* Allow paragraphs to break across pages to fill space */
+    .offer-letter-content p {
+        orphans: 1;
+        widows: 1;
+        page-break-inside: auto;
+        /* Allow paragraphs to break if needed to fill page */
+    }
+
+    /* Allow lists to break across pages */
+    .section-content ul {
+        page-break-inside: auto;
+        /* Allow lists to break across pages */
+        page-break-before: auto;
+        /* Allow breaks before lists */
+        page-break-after: auto;
+        /* Allow breaks after lists */
+    }
+
+    .section-content li {
+        page-break-inside: auto;
+        /* Allow list items to break if needed */
+        page-break-before: auto;
+        /* Allow breaks before list items - if item doesn't fit, move to next page */
+        page-break-after: auto;
+        /* Allow breaks after list items */
+        orphans: 1;
+        widows: 1;
+        /* List items will flow to next page if they don't fit - like line break to new page */
+    }
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .offer-letter-template {
+        padding: 10px;
+    }
+
+    .offer-letter-page {
+        width: 100%;
+        max-width: 210mm;
+        padding: 15mm 20mm;
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+
+    .offer-letter-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .offer-letter-company-info {
+        text-align: left;
+    }
+
+    .company-name {
+        font-size: 20px;
+    }
+
+    .acceptance-field span {
+        min-width: 250px;
+    }
+}
