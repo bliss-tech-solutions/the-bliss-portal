@@ -88,20 +88,25 @@ const TaskChat = ({
         if (!socket || !taskId) return;
 
         // Join task-specific room
-        socket.emit('join-task-room', { taskId });
+        socket.emit('joinTask', String(taskId));
 
         // Listen for new messages
-        const handleNewMessage = (messageData) => {
-            if (messageData.taskId === taskId) {
-                setTaskChatMessages(prev => [...prev, messageData]);
-            }
+        const handleNewMessage = (incoming) => {
+            if (!incoming || String(incoming.taskId) !== String(taskId)) return;
+
+            const normalizedMessage = incoming.message ? {
+                ...incoming.message,
+                taskId: incoming.taskId,
+                createdAt: incoming.message?.createdAt || new Date().toISOString()
+            } : incoming;
+
+            setTaskChatMessages(prev => [...prev, normalizedMessage]);
         };
 
-        socket.on('new-message', handleNewMessage);
+        socket.on('chat:new', handleNewMessage);
 
         return () => {
-            socket.emit('leave-task-room', { taskId });
-            socket.off('new-message', handleNewMessage);
+            socket.off('chat:new', handleNewMessage);
         };
     }, [socket, taskId]);
 
@@ -202,9 +207,6 @@ const TaskChat = ({
             if (socket) {
                 socket.emit('send-message', messageData);
             }
-
-            // Update local state immediately for instant UI feedback
-            setTaskChatMessages(prev => [...prev, messageData]);
 
             // Send to API for persistence
             await addTaskChat(messageData).unwrap();

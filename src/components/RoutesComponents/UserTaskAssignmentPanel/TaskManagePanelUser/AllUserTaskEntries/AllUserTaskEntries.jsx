@@ -108,7 +108,6 @@ const AllUserTaskEntries = () => {
 
     const handleCloseDrawer = () => {
         setViewDrawerVisible(false);
-        setSelectedTask(null);
     };
 
     return (

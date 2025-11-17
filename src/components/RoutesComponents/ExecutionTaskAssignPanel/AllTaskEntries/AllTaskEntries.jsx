@@ -155,7 +155,6 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
     const handleCloseDrawer = () => {
         setViewDrawerVisible(false);
-        setSelectedTask(null);
     };
 
     const handleShowArchiveModal = (task) => {
