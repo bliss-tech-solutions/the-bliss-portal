@@ -6,6 +6,7 @@ import { selectTheme } from '../../../../../store/slices/themeSlice';
 import { selectUserId, selectUser } from '../../../../../store/slices/authSlice';
 import { useGetTaskAssignQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation } from '../../../../../store/api';
 import { useNotification } from '../../../../../contexts/NotificationContext';
+import { useTaskChatStore } from '../../../../../contexts/TaskChatContext';
 import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
@@ -18,6 +19,7 @@ const AllUserTaskEntries = () => {
     const [viewDrawerVisible, setViewDrawerVisible] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [confirmTaskId, setConfirmTaskId] = useState(null);
+    const { ensureTaskRoom } = useTaskChatStore();
 
     // Fetch user's assigned tasks from API
     const { data: tasksData, isLoading, error } = useGetTaskAssignQuery(userId);
@@ -72,6 +74,14 @@ const AllUserTaskEntries = () => {
     };
 
     // Handle loading and error states
+    // Filter out archived tasks and sort latest first
+    const tasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    useEffect(() => {
+        tasks.forEach(task => ensureTaskRoom(task._id));
+    }, [tasks, ensureTaskRoom]);
+
     if (isLoading) {
         return (
             <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -87,10 +97,6 @@ const AllUserTaskEntries = () => {
             </div>
         );
     }
-
-    // Filter out archived tasks and sort latest first
-    const tasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const handleViewTask = (task) => {
         setSelectedTask(task);

@@ -6,6 +6,7 @@ import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useLazyGetTaskChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useSocket } from '../../../contexts/SocketContext';
+import { useTaskChatStore } from '../../../contexts/TaskChatContext';
 import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
 import EmojiPicker from 'emoji-picker-react';
 import { uploadToCloudinary, isCloudinaryImageUrl, isCloudinaryVideoUrl, isCloudinaryFileUrl, toAttachmentUrl, toPdfThumbnail } from '../../../utils/cloudinary';
@@ -24,9 +25,9 @@ const TaskChat = ({
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
     const { socket } = useSocket();
+    const { getMessagesForTask, setInitialMessages, ensureTaskRoom } = useTaskChatStore();
 
     const [chatMessage, setChatMessage] = useState('');
-    const [taskChatMessages, setTaskChatMessages] = useState([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [preview, setPreview] = useState({ open: false, url: '', type: 'image' });
@@ -83,32 +84,11 @@ const TaskChat = ({
     const chatEndRef = useRef(null);
     const emojiPickerRef = useRef(null);
 
-    // Socket.IO integration for real-time chat
+    // Ensure we're subscribed to this task's socket room
     useEffect(() => {
-        if (!socket || !taskId) return;
-
-        // Join task-specific room
-        socket.emit('joinTask', String(taskId));
-
-        // Listen for new messages
-        const handleNewMessage = (incoming) => {
-            if (!incoming || String(incoming.taskId) !== String(taskId)) return;
-
-            const normalizedMessage = incoming.message ? {
-                ...incoming.message,
-                taskId: incoming.taskId,
-                createdAt: incoming.message?.createdAt || new Date().toISOString()
-            } : incoming;
-
-            setTaskChatMessages(prev => [...prev, normalizedMessage]);
-        };
-
-        socket.on('chat:new', handleNewMessage);
-
-        return () => {
-            socket.off('chat:new', handleNewMessage);
-        };
-    }, [socket, taskId]);
+        if (!taskId) return;
+        ensureTaskRoom(taskId);
+    }, [ensureTaskRoom, taskId]);
 
     // Load chat history for the active task once (or whenever taskId changes)
     useEffect(() => {
@@ -137,8 +117,10 @@ const TaskChat = ({
             return dateA - dateB;
         });
 
-        setTaskChatMessages(sortedMessages);
-    }, [chatMessagesData, customMessageFilter]);
+        setInitialMessages(taskId, sortedMessages);
+    }, [chatMessagesData, customMessageFilter, setInitialMessages, taskId]);
+
+    const taskChatMessages = getMessagesForTask(taskId);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {

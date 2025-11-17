@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AllTaskEntries.css';
 import { Card, Spin, Tag, Button, Row, Col, Drawer, Image, Modal } from 'antd';
 import { useSelector } from 'react-redux';
@@ -7,6 +7,7 @@ import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser } from '../../../../store/slices/authSlice';
 import { useGetTaskAssignQuery, useArchiveTaskMutation } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
+import { useTaskChatStore } from '../../../../contexts/TaskChatContext';
 import { BsClock, BsChat, BsPerson } from 'react-icons/bs';
 import { AiOutlineEye, AiOutlineEdit, AiOutlineDelete, AiOutlineExclamationCircle } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
@@ -22,6 +23,7 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
     const [selectedTask, setSelectedTask] = useState(null);
     const [archiveModalVisible, setArchiveModalVisible] = useState(false);
     const [taskToArchive, setTaskToArchive] = useState(null);
+    const { ensureTaskRoom } = useTaskChatStore();
 
     // Get notification functions with fallbacks
     let showSuccess, showError;
@@ -53,22 +55,6 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
 
         return 'Unknown';
     };
-
-    if (isLoading) {
-        return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div style={{ padding: '20px', color: 'red' }}>
-                Error loading tasks: {error?.data?.message || 'Failed to fetch tasks'}
-            </div>
-        );
-    }
 
     // Filter out archived tasks and apply search/date filters
     const filteredTasks = tasksData?.data?.filter(task => {
@@ -109,6 +95,26 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
         const db = new Date(b.createdAt).getTime();
         return db - da;
     });
+
+    useEffect(() => {
+        sortedTasks.forEach(task => ensureTaskRoom(task._id));
+    }, [sortedTasks, ensureTaskRoom]);
+
+    if (isLoading) {
+        return (
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: '20px', color: 'red' }}>
+                Error loading tasks: {error?.data?.message || 'Failed to fetch tasks'}
+            </div>
+        );
+    }
 
     // Debug: Log filtered tasks (remove in production)
     console.log('📋 Filtered tasks loaded:', filteredTasks.length);
