@@ -621,24 +621,6 @@ REUSABLE CHAT COMPONENT:
 ✓ TaskChat component extraction
 ✓ Props-based configuration
 ✓ Separate CSS file for chat styling
-✓ Used across AllTaskEntries and AllUserTaskEntries
-✓ Consistent chat theming
-
-MEDIA UPLOAD SYSTEM:
-✓ Cloudinary integration for frontend-only media uploads
-✓ Image upload support (max 10MB)
-✓ Video upload support (max 100MB)
-✓ Document upload support (PDF, Word, Excel, PPT - max 25MB)
-✓ Multi-file selection with batch preview
-✓ Dynamic grid layout for previews (1 item full-width, 2 items half-half, 3+ items in 3 columns)
-✓ Upload progress indicators per file
-✓ Fullscreen preview modal for media
-✓ Click media to open in new tab
-✓ Proper media type detection (image/video/file)
-✓ PDF preview with first-page thumbnail
-✓ Inline PDF rendering with fallback to link
-
-CALENDAR & LEAVE MANAGEMENT:
 ✓ Reusable CalenderModule component for dynamic calendar needs
 ✓ TaskAndLeaveCalender for user-side task and leave management
 ✓ Multi-date selection (individual dates, not ranges)
@@ -666,10 +648,19 @@ UserTaskAssignmentPanel
 TaskChat Component
 ├── Emoji picker integration
 ├── Socket.IO real-time messaging
+│   ├── Global TaskChatContext keeps sockets joined per task
+│   ├── Execution + user panels auto-join their task rooms on load
+│   └── chat:new events are stored centrally before drawers render
 ├── Media upload (Cloudinary)
 ├── Message persistence API
 ├── Auto-scroll functionality
 └── Media previews (image, video, PDF)
+
+🟡 **Realtime Conversation Flow**
+1. Execution creates/assigns a task → both Execution & User task lists call `ensureTaskRoom(taskId)` during list load.
+2. `TaskChatContext` joins `joinTask(taskId)` once and keeps the socket listener alive globally.
+3. When either side sends a message, backend emits `chat:new` → context stores it under that taskId.
+4. Opening the TaskChat drawer simply reads the already-synced messages, so both participants always see the latest thread without refetching.
 
 CalenderModule Component
 ├── Dynamic calendar rendering
@@ -709,3 +700,21 @@ FRONTEND ENHANCEMENTS:
 - Calendar view integration
 
 ================================================================================
+✓ Used across AllTaskEntries and AllUserTaskEntries
+✓ Consistent chat theming
+
+MEDIA UPLOAD SYSTEM:
+✓ Cloudinary integration for frontend-only media uploads
+✓ Image upload support (max 10MB)
+✓ Video upload support (max 100MB)
+✓ Document upload support (PDF, Word, Excel, PPT - max 25MB)
+✓ Multi-file selection with batch preview
+✓ Dynamic grid layout for previews (1 item full-width, 2 items half-half, 3+ items in 3 columns)
+✓ Upload progress indicators per file
+✓ Fullscreen preview modal for media
+✓ Click media to open in new tab
+✓ Proper media type detection (image/video/file)
+✓ PDF preview with first-page thumbnail
+✓ Inline PDF rendering with fallback to link
+
+CALENDAR & LEAVE MANAGEMENT:
