@@ -25,7 +25,7 @@ const TaskChat = ({
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
     const { socket } = useSocket();
-    const { getMessagesForTask, setInitialMessages, ensureTaskRoom } = useTaskChatStore();
+    const { getMessagesForTask, setInitialMessages, ensureTaskRoom, addMessage } = useTaskChatStore();
 
     const [chatMessage, setChatMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -185,9 +185,14 @@ const TaskChat = ({
                 createdAt: new Date().toISOString()
             };
 
-            // Emit via socket for real-time updates
+            // Optimistically add to local store so sender sees immediately
+            addMessage(taskId, messageData);
+
+            // Emit via socket for real-time updates (cover multiple event names)
             if (socket) {
                 socket.emit('send-message', messageData);
+                socket.emit('chat:new', { taskId, message: messageData });
+                socket.emit('chat:message', { taskId, message: messageData });
             }
 
             // Send to API for persistence

@@ -33,11 +33,13 @@ export const connectSocket = (userId) => {
     if (!socket) {
         socket = initializeSocket();
     }
-    
+
     if (!socket.connected) {
         socket.connect();
-        // Join user-specific room
-        socket.emit('join', { userId });
+        // Join user-specific room (matches backend events)
+        socket.emit('joinUser', userId);
+    } else {
+        socket.emit('joinUser', userId);
     }
 };
 

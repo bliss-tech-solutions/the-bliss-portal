@@ -3,14 +3,17 @@ import './UserTaskAssignmentPanel.css';
 import { Row, Col, Tabs } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
+import { selectUser } from '../../../../store/slices/authSlice';
 import AllUserTaskEntries from './AllUserTaskEntries/AllUserTaskEntries';
 
 const UserTaskAssignmentPanel = () => {
     const [activeTab, setActiveTab] = useState('1');
     const theme = useSelector(selectTheme);
+    const user = useSelector(selectUser);
+    const userFullName = (user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Your').trim();
 
     const handleTabChange = (key) => {
-        setActiveTab(key);
+        setActiveTab(key)
     };
 
     const renderTabContent = () => {
@@ -45,7 +48,7 @@ const UserTaskAssignmentPanel = () => {
 
     return (
         <div id="UserTaskAssignmentPanel" className={`theme-${theme}`}>
-            <h2>User Task Assignment Panel</h2>
+            <h2>{userFullName} Tasks Management</h2>
             <div className="MarginTopMedium">
                 <Row>
                     <Col lg={24} md={24} sm={24} xs={24}>

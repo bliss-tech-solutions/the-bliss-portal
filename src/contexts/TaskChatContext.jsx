@@ -4,7 +4,8 @@ import { useSocket } from './SocketContext';
 const TaskChatContext = createContext({
     getMessagesForTask: () => [],
     setInitialMessages: () => { },
-    ensureTaskRoom: () => { }
+    ensureTaskRoom: () => { },
+    addMessage: () => { }
 });
 
 const buildMessageKey = (msg) => {
@@ -33,36 +34,44 @@ export const TaskChatProvider = ({ children }) => {
         const key = String(taskId);
         if (joinedTasksRef.current.has(key)) return;
         socket.emit('joinTask', key);
+        socket.emit('join-task-room', { taskId: key });
         // keep the room joined for the session (no leave)
         joinedTasksRef.current.add(key);
     }, [socket]);
 
+    const addMessage = useCallback((taskId, message) => {
+        if (!taskId || !message) return;
+        setMessagesByTask((prev) => {
+            const key = String(taskId);
+            const existing = prev[key] || [];
+            const merged = mergeMessages(existing, [message]);
+            return {
+                ...prev,
+                [key]: merged
+            };
+        });
+    }, []);
+
     useEffect(() => {
         if (!socket) return;
-        const handleNewMessage = (incoming) => {
-            if (!incoming?.taskId) return;
+        const handleAnyMessage = (event, incoming) => {
+            if (!incoming) return;
+            const taskId = incoming.taskId || incoming.message?.taskId;
+            if (!taskId) return;
             const normalizedMessage = incoming.message ? {
                 ...incoming.message,
-                taskId: incoming.taskId,
+                taskId,
                 createdAt: incoming.message?.createdAt || new Date().toISOString()
             } : incoming;
-
-            setMessagesByTask((prev) => {
-                const key = String(normalizedMessage.taskId);
-                const existing = prev[key] || [];
-                const merged = mergeMessages(existing, [normalizedMessage]);
-                return {
-                    ...prev,
-                    [key]: merged
-                };
-            });
+            addMessage(taskId, normalizedMessage);
         };
 
-        socket.on('chat:new', handleNewMessage);
+        socket.onAny(handleAnyMessage);
+
         return () => {
-            socket.off('chat:new', handleNewMessage);
+            socket.offAny(handleAnyMessage);
         };
-    }, [socket]);
+    }, [socket, addMessage]);
 
     const setInitialMessages = useCallback((taskId, messages) => {
         if (!taskId || !Array.isArray(messages)) return;
@@ -86,8 +95,9 @@ export const TaskChatProvider = ({ children }) => {
     const value = useMemo(() => ({
         getMessagesForTask,
         setInitialMessages,
-        ensureTaskRoom
-    }), [getMessagesForTask, setInitialMessages, ensureTaskRoom]);
+        ensureTaskRoom,
+        addMessage
+    }), [getMessagesForTask, setInitialMessages, ensureTaskRoom, addMessage]);
 
     return (
         <TaskChatContext.Provider value={value}>
