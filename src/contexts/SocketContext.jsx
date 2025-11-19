@@ -1,25 +1,32 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { selectUserId } from '../store/slices/authSlice';
-import { getSocket, connectSocket, disconnectSocket } from '../utils/socket';
+import { getSocket, connectSocket, initializeSocket } from '../utils/socket';
 
 const SocketContext = createContext({ socket: null });
 
 export const SocketProvider = ({ children }) => {
-  const socket = getSocket();
+  const socket = useMemo(() => getSocket() || initializeSocket(), []);
   const userId = useSelector(selectUserId);
 
   // Initialize socket connection when provider mounts or user changes
   useEffect(() => {
-    if (!userId) return;
-    if (socket && !socket.connected) {
+    if (!socket || !userId) return;
+
+    const joinUserRoom = () => {
+      socket.emit('joinUser', userId);
+    };
+
+    if (!socket.connected) {
       connectSocket(userId);
-    } else if (socket && socket.connected) {
-      // ensure we join the right room for current user
-      socket.emit('join', { userId });
+    } else {
+      joinUserRoom();
     }
+
+    socket.on('connect', joinUserRoom);
+
     return () => {
-      // optional: keep connection for app; do not disconnect on userId change
+      socket.off('connect', joinUserRoom);
     };
   }, [socket, userId]);
 
