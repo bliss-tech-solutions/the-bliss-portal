@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useLazyGetTaskChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
-import { useSocket } from '../../../contexts/SocketContext';
 import { useTaskChatStore } from '../../../contexts/TaskChatContext';
 import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
 import EmojiPicker from 'emoji-picker-react';
@@ -24,8 +23,7 @@ const TaskChat = ({
 }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
-    const { socket } = useSocket();
-    const { getMessagesForTask, setInitialMessages, ensureTaskRoom, addMessage } = useTaskChatStore();
+    const { getMessagesForTask, setInitialMessages, ensureTaskRoom } = useTaskChatStore();
 
     const [chatMessage, setChatMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -174,8 +172,7 @@ const TaskChat = ({
                 ? `${user.firstName} ${user.lastName}`
                 : user?.email || 'Unknown User';
 
-            // Create message data
-            const messageData = {
+            const payload = {
                 taskId,
                 senderId: userId,
                 receiverId,
@@ -185,18 +182,8 @@ const TaskChat = ({
                 createdAt: new Date().toISOString()
             };
 
-            // Optimistically add to local store so sender sees immediately
-            addMessage(taskId, messageData);
-
-            // Emit via socket for real-time updates (cover multiple event names)
-            if (socket) {
-                socket.emit('send-message', messageData);
-                socket.emit('chat:new', { taskId, message: messageData });
-                socket.emit('chat:message', { taskId, message: messageData });
-            }
-
             // Send to API for persistence
-            await addTaskChat(messageData).unwrap();
+            await addTaskChat(payload).unwrap();
 
             if (overrideText === undefined) {
                 setChatMessage('');
@@ -205,7 +192,7 @@ const TaskChat = ({
 
             // Call optional callback
             if (onMessageSent) {
-                onMessageSent(messageData);
+                onMessageSent(payload);
             }
         } catch (error) {
             showError(error?.data?.message || error?.message || 'Failed to send message');

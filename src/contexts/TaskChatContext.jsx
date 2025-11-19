@@ -4,8 +4,7 @@ import { useSocket } from './SocketContext';
 const TaskChatContext = createContext({
     getMessagesForTask: () => [],
     setInitialMessages: () => { },
-    ensureTaskRoom: () => { },
-    addMessage: () => { }
+    ensureTaskRoom: () => { }
 });
 
 const buildMessageKey = (msg) => {
@@ -39,22 +38,27 @@ export const TaskChatProvider = ({ children }) => {
         joinedTasksRef.current.add(key);
     }, [socket]);
 
-    const addMessage = useCallback((taskId, message) => {
-        if (!taskId || !message) return;
-        setMessagesByTask((prev) => {
-            const key = String(taskId);
-            const existing = prev[key] || [];
-            const merged = mergeMessages(existing, [message]);
-            return {
-                ...prev,
-                [key]: merged
-            };
-        });
-    }, []);
+    useEffect(() => {
+        if (!socket) return;
+        const rejoinRooms = () => {
+            joinedTasksRef.current.forEach((taskId) => {
+                socket.emit('joinTask', taskId);
+                socket.emit('join-task-room', { taskId });
+            });
+        };
+
+        socket.on('connect', rejoinRooms);
+        socket.on('reconnect', rejoinRooms);
+
+        return () => {
+            socket.off('connect', rejoinRooms);
+            socket.off('reconnect', rejoinRooms);
+        };
+    }, [socket]);
 
     useEffect(() => {
         if (!socket) return;
-        const handleAnyMessage = (event, incoming) => {
+        const handleNewMessage = (incoming) => {
             if (!incoming) return;
             const taskId = incoming.taskId || incoming.message?.taskId;
             if (!taskId) return;
@@ -63,15 +67,23 @@ export const TaskChatProvider = ({ children }) => {
                 taskId,
                 createdAt: incoming.message?.createdAt || new Date().toISOString()
             } : incoming;
-            addMessage(taskId, normalizedMessage);
+            setMessagesByTask((prev) => {
+                const key = String(taskId);
+                const existing = prev[key] || [];
+                const merged = mergeMessages(existing, [normalizedMessage]);
+                return {
+                    ...prev,
+                    [key]: merged
+                };
+            });
         };
 
-        socket.onAny(handleAnyMessage);
+        socket.on('chat:new', handleNewMessage);
 
         return () => {
-            socket.offAny(handleAnyMessage);
+            socket.off('chat:new', handleNewMessage);
         };
-    }, [socket, addMessage]);
+    }, [socket]);
 
     const setInitialMessages = useCallback((taskId, messages) => {
         if (!taskId || !Array.isArray(messages)) return;
@@ -95,9 +107,8 @@ export const TaskChatProvider = ({ children }) => {
     const value = useMemo(() => ({
         getMessagesForTask,
         setInitialMessages,
-        ensureTaskRoom,
-        addMessage
-    }), [getMessagesForTask, setInitialMessages, ensureTaskRoom, addMessage]);
+        ensureTaskRoom
+    }), [getMessagesForTask, setInitialMessages, ensureTaskRoom]);
 
     return (
         <TaskChatContext.Provider value={value}>
