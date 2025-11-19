@@ -46,7 +46,7 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
-        componentLabelName: "User Task Assignment Panel",
+        componentLabelName: "My Tasks Management",
         icon: BiTask,
         routeName: "/user-task-assignment-panel",
         roles: ["user"],

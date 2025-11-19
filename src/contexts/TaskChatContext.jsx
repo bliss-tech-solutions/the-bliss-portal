@@ -33,22 +33,42 @@ export const TaskChatProvider = ({ children }) => {
         const key = String(taskId);
         if (joinedTasksRef.current.has(key)) return;
         socket.emit('joinTask', key);
+        socket.emit('join-task-room', { taskId: key });
         // keep the room joined for the session (no leave)
         joinedTasksRef.current.add(key);
     }, [socket]);
 
     useEffect(() => {
         if (!socket) return;
+        const rejoinRooms = () => {
+            joinedTasksRef.current.forEach((taskId) => {
+                socket.emit('joinTask', taskId);
+                socket.emit('join-task-room', { taskId });
+            });
+        };
+
+        socket.on('connect', rejoinRooms);
+        socket.on('reconnect', rejoinRooms);
+
+        return () => {
+            socket.off('connect', rejoinRooms);
+            socket.off('reconnect', rejoinRooms);
+        };
+    }, [socket]);
+
+    useEffect(() => {
+        if (!socket) return;
         const handleNewMessage = (incoming) => {
-            if (!incoming?.taskId) return;
+            if (!incoming) return;
+            const taskId = incoming.taskId || incoming.message?.taskId;
+            if (!taskId) return;
             const normalizedMessage = incoming.message ? {
                 ...incoming.message,
-                taskId: incoming.taskId,
+                taskId,
                 createdAt: incoming.message?.createdAt || new Date().toISOString()
             } : incoming;
-
             setMessagesByTask((prev) => {
-                const key = String(normalizedMessage.taskId);
+                const key = String(taskId);
                 const existing = prev[key] || [];
                 const merged = mergeMessages(existing, [normalizedMessage]);
                 return {
@@ -59,6 +79,7 @@ export const TaskChatProvider = ({ children }) => {
         };
 
         socket.on('chat:new', handleNewMessage);
+
         return () => {
             socket.off('chat:new', handleNewMessage);
         };

@@ -156,24 +156,7 @@ const AllTaskEntries = ({ searchTerm = '', selectedDateRange = null, statusFilte
         };
     }, [refetch, userId]);
 
-    if (isLoading) {
-        return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <Spin size="large" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div style={{ padding: '20px', color: 'red' }}>
-                Error loading tasks: {error?.data?.message || 'Failed to fetch tasks'}
-            </div>
-        );
-    }
-
-    // Filter out archived tasks and apply search/date filters
-    const filteredTasks = tasksData?.data?.filter(task => {
+    const filteredTasks = (tasksData?.data || []).filter(task => {
         // First filter out archived tasks
         if (task.isArchived === true) return false;
 

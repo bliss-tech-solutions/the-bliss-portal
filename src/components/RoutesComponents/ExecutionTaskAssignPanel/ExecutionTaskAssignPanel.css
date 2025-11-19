@@ -36,6 +36,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -140,7 +141,7 @@
     margin-bottom: 20px;
 }
 
-.task-form .ant-form-item-label > label {
+.task-form .ant-form-item-label>label {
     color: var(--primary-text);
     font-weight: 500;
 }
@@ -331,15 +332,15 @@
     .drawer-title h3 {
         font-size: 16px;
     }
-    
+
     .task-form .ant-col {
         margin-bottom: 0;
     }
-    
+
     .chat-messages {
         max-height: 200px;
     }
-    
+
     .drawer-content {
         padding: 12px 0;
     }
@@ -417,6 +418,76 @@
     color: var(--secondary-text);
     font-weight: 500;
 }
+
+.slot-date-picker {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slot-date-picker-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary-text);
+}
+
+.slot-date-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    /* overflow-x: auto; */
+    padding-bottom: 6px;
+}
+
+.slot-date-grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.slot-date-grid::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 999px;
+}
+
+.slot-date-card {
+    width: 70px;
+    min-width: 70px;
+    border-radius: 18px;
+    padding: 12px 0;
+    border: 1px solid var(--border-color);
+    background: var(--primary-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: var(--primary-text);
+}
+
+.slot-date-card:hover {
+    border-color: var(--brand-color);
+}
+
+.slot-date-card.selected {
+    background: var(--primary-text);
+    color: var(--primary-bg);
+    border-color: var(--primary-text);
+    box-shadow: 0 10px 18px -14px rgba(0, 0, 0, 0.55);
+}
+
+.slot-date-day {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.slot-date-number {
+    font-size: 18px;
+    font-weight: 600;
+}
+
 
 .custom-drawer .slot-input-card {
     background: var(--primary-bg);
@@ -614,7 +685,7 @@
     margin-bottom: 0;
 }
 
-.custom-drawer .task-form-section .ant-form-item + .ant-form-item {
+.custom-drawer .task-form-section .ant-form-item+.ant-form-item {
     margin-top: 18px;
 }
 
@@ -635,6 +706,20 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
+    }
+
+    .slot-date-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
     }
 }
 

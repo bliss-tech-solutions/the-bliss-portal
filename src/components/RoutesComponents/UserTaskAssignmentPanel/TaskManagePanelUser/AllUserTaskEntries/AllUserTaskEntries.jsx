@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './AllUserTaskEntries.css';
-import { Card, Tag, Button, Row, Col, Drawer, Spin, Popconfirm, Modal, Form, Input, Select } from 'antd';
+import { Card, Tag, Button, Row, Col, Drawer, Spin, Popconfirm, Modal, Form, Input, Select, Dropdown } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../../store/slices/themeSlice';
 import { selectUserId, selectUser } from '../../../../../store/slices/authSlice';
 import { useGetTaskAssignQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation, useRequestTaskExtensionMutation } from '../../../../../store/api';
 import { useNotification } from '../../../../../contexts/NotificationContext';
 import { useTaskChatStore } from '../../../../../contexts/TaskChatContext';
-import { BsClock, BsClockHistory, BsChat, BsPerson, BsPlusCircle } from 'react-icons/bs';
+import { BsClock, BsClockHistory, BsChat, BsPerson, BsPlusCircle, BsCardChecklist, BsThreeDots } from 'react-icons/bs';
 import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../../../PortalCommonComponents/TaskChat/TaskChat';
@@ -261,6 +261,41 @@ const AllUserTaskEntries = () => {
                     const primarySlotStart = task.slots?.[0]?.start ? parseTimeSlotValue(task.slots[0].start) : null;
                     const primarySlotDate = task.slots?.[0]?.slotDate ? dayjs(task.slots[0].slotDate) : primarySlotStart;
                     const primarySlotDuration = task.slots?.[0]?.durationMinutes;
+                    const taskStatus = task.taskStatus || 'pending';
+                    const isCompleted = taskStatus === 'completed';
+                    
+                    // Get status color for the indicator
+                    const getStatusIndicatorColor = () => {
+                        if (isCompleted) return '#52c41a'; // green
+                        if (taskStatus === 'in-progress') return '#1890ff'; // blue
+                        return '#faad14'; // orange/yellow for pending
+                    };
+
+                    // Menu items for dropdown
+                    const handleMenuClick = ({ key }) => {
+                        if (key === 'view') {
+                            handleViewTask(task);
+                        } else if (key === 'complete') {
+                            setConfirmTaskId(task._id);
+                        }
+                    };
+
+                    const menuItems = [
+                        {
+                            key: 'view',
+                            label: (
+                                <span>
+                                    <AiOutlineEye style={{ marginRight: 8 }} />
+                                    View Details
+                                </span>
+                            ),
+                        },
+                        {
+                            key: 'complete',
+                            label: 'Mark as Completed',
+                            disabled: isCompleted || updatingStatus,
+                        },
+                    ];
 
                     return (
                         <Card
@@ -268,89 +303,94 @@ const AllUserTaskEntries = () => {
                             className="user-task-entry-card"
                             hoverable
                         >
-                            <Row gutter={[16, 16]}>
-                                {/* Top Section */}
-                                <Col span={24}>
-                                    <div className="user-task-header">
-                                        <div className="user-task-title-section">
-                                            <h3 className="user-task-title">{task.taskName}</h3>
-                                            <div className="user-task-assigner">
-                                                <span className="user-assigner-label">Assigned by:</span>
-                                                <span className="user-assigner-name">{getAssignerName(task.userId)}</span>
-                                            </div>
-                                        </div>
-                                        <div className="user-task-priority">
-                                            <Tag color={getPriorityColor(task.priority)}>
-                                                {task.priority?.toUpperCase()}
-                                            </Tag>
-                                        </div>
+                            <div className="user-task-card-layout">
+                                {/* Left Section: Icon, Task Name, Priority */}
+                                <div className="user-task-left-section">
+                                    <div className="user-task-icon-wrapper">
+                                        <BsCardChecklist className="user-task-icon" />
+                                        <span 
+                                            className="user-task-status-indicator" 
+                                            style={{ backgroundColor: getStatusIndicatorColor() }}
+                                        />
                                     </div>
-                                </Col>
+                                    <div className="user-task-content">
+                                        <h3 className="user-task-title">{task.taskName}</h3>
+                                        <Tag 
+                                            color={getPriorityColor(task.priority)} 
+                                            className="user-task-priority-tag"
+                                        >
+                                            {task.priority?.charAt(0).toUpperCase() + task.priority?.slice(1) || 'Medium'} Priority
+                                        </Tag>
+                                    </div>
+                                </div>
 
-                                {/* Bottom Section */}
-                                <Col span={24}>
-                                    <div className="user-task-footer">
-                                        <div className="user-task-info">
-                                            <div className="user-task-time">
-                                                <BsClock className="icon" />
-                                                <span>{formatDateTime(task.createdAt)}</span>
-                                            </div>
-                                            <div className="user-task-time-spend">
-                                                <span>Time: {task.timeSpend}</span>
-                                            </div>
-                                            <div className="user-task-chat">
-                                                <BsChat className="icon" />
-                                                <span>{task.chatCount || task.chatMessageCount || 0}</span>
-                                                <BsPerson className="icon" style={{ marginLeft: 12 }} />
-                                                <span style={{ color: 'var(--secondary-text)' }}>
-                                                    {getAssignerName(task.userId)}
-                                                </span>
-                                            </div>
-                                            {primarySlot && (
-                                                <div className="user-task-slot">
-                                                    <BsClockHistory className="icon" />
-                                                    <span>
-                                                        Slot: {primarySlotDate ? `${primarySlotDate.format('MMM D')} • ` : ''}{primarySlot}
-                                                        {primarySlotStatus ? ` (${primarySlotStatus})` : ''}
-                                                        {primarySlotDuration ? ` · ${primarySlotDuration} mins` : ''}
-                                                        {task.slots?.[0]?.extensionMinutes ? ` (+${task.slots[0].extensionMinutes} mins)` : ''}
-                                                    </span>
-                                                </div>
-                                            )}
+                                {/* Middle Section: Slot/Delivery Info */}
+                                <div className="user-task-middle-section">
+                                    {primarySlot ? (
+                                        <div className="user-task-delivery-info">
+                                            <span className="user-delivery-label">Delivery:</span>
+                                            <span className="user-delivery-value">
+                                                {primarySlotDate ? `${primarySlotDate.format('MMM D')} • ` : ''}
+                                                {primarySlot}
+                                            </span>
                                         </div>
-                                        <div className="user-task-actions">
-                                            <Button
-                                                type="text"
-                                                icon={<AiOutlineEye />}
-                                                className="user-action-btn"
-                                                onClick={() => handleViewTask(task)}
-                                            >
-                                                View
-                                            </Button>
-                                            <Popconfirm
-                                                title="Mark task as completed?"
-                                                okText="Yes, complete"
-                                                cancelText="Cancel"
-                                                placement="topRight"
-                                                open={confirmTaskId === task._id}
-                                                onOpenChange={(open) => setConfirmTaskId(open ? task._id : null)}
-                                                onConfirm={() => { setConfirmTaskId(null); handleMarkCompleted(task); }}
-                                                onCancel={() => setConfirmTaskId(null)}
-                                                disabled={task.taskStatus === 'completed'}
-                                            >
-                                                <Button
-                                                    type="primary"
-                                                    style={{ color: 'white' }}
-                                                    className="user-action-btn"
-                                                    disabled={task.taskStatus === 'completed' || updatingStatus}
-                                                >
-                                                    {task.taskStatus === 'completed' ? 'Completed' : 'Mark Completed'}
-                                                </Button>
-                                            </Popconfirm>
+                                    ) : (
+                                        <div className="user-task-delivery-info">
+                                            <span className="user-delivery-label">Time:</span>
+                                            <span className="user-delivery-value">{task.timeSpend || 'Not specified'}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right Section: Assigned To, Status, Chat, Menu */}
+                                <div className="user-task-right-section">
+                                    <div className="user-task-assigner-section">
+                                        <BsPerson className="user-assigner-icon" />
+                                        <div className="user-assigner-info">
+                                            <span className="user-assigner-name-text">
+                                                {getAssignerName(task.userId)}
+                                            </span>
+                                            <span className="user-assigner-label-text">Assigned to</span>
                                         </div>
                                     </div>
-                                </Col>
-                            </Row>
+                                    <Tag 
+                                        color={isCompleted ? 'green' : taskStatus === 'in-progress' ? 'blue' : 'orange'}
+                                        className="user-task-status-tag"
+                                    >
+                                        {taskStatus.charAt(0).toUpperCase() + taskStatus.slice(1)}
+                                    </Tag>
+                                    <Button
+                                        type="text"
+                                        icon={<BsChat />}
+                                        className="user-task-chat-btn"
+                                        onClick={() => handleViewTask(task)}
+                                    />
+                                    <Dropdown
+                                        menu={{ items: menuItems, onClick: handleMenuClick }}
+                                        trigger={['click']}
+                                        placement="bottomRight"
+                                    >
+                                        <Button
+                                            type="text"
+                                            icon={<BsThreeDots />}
+                                            className="user-task-menu-btn"
+                                        />
+                                    </Dropdown>
+                                    <Popconfirm
+                                        title="Mark task as completed?"
+                                        okText="Yes, complete"
+                                        cancelText="Cancel"
+                                        placement="topRight"
+                                        open={confirmTaskId === task._id}
+                                        onOpenChange={(open) => setConfirmTaskId(open ? task._id : null)}
+                                        onConfirm={() => { setConfirmTaskId(null); handleMarkCompleted(task); }}
+                                        onCancel={() => setConfirmTaskId(null)}
+                                        disabled={isCompleted}
+                                    >
+                                        <span style={{ display: 'none' }} />
+                                    </Popconfirm>
+                                </div>
+                            </div>
                         </Card>
                     );
                 })

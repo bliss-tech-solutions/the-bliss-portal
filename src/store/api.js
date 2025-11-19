@@ -190,6 +190,20 @@ export const api = createApi({
             }),
             providesTags: ['Tasks'],
         }),
+        getTaskAssignByDate: builder.query({
+            query: ({ userId, date }) => {
+                const params = new URLSearchParams();
+                if (userId) params.append('userId', userId);
+                if (date) params.append('date', date);
+                const queryString = params.toString();
+                return {
+                    url: `/api/getTaskAssignByDate${queryString ? `?${queryString}` : ''}`,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            },
+            providesTags: ['Tasks'],
+        }),
         archiveTask: builder.mutation({
             query: (taskId) => ({
                 url: `/api/addtaskassign/${taskId}/archive`,
@@ -308,6 +322,8 @@ export const {
     useAddTaskAssignMutation,
     useLazyGetSuggestedSlotsQuery,
     useGetTaskAssignQuery,
+    useGetTaskAssignByDateQuery,
+    useLazyGetTaskAssignByDateQuery,
     useArchiveTaskMutation,
     useUpdateTaskStatusMutation,
     useRequestTaskExtensionMutation,

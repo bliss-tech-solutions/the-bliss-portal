@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./ExecutionTaskAssignPanel.css";
 import { Row, Col, Button, Tabs, Drawer, Form, Input, Select, Upload, DatePicker, TimePicker, Alert, Radio, Tag } from "antd";
 import { BiTask } from "react-icons/bi";
@@ -7,7 +7,7 @@ import { BsUpload, BsClock, BsSearch, BsFilter, BsCardChecklist, BsPersonPlus, B
 import { useSelector } from "react-redux";
 import { selectTheme } from "../../../store/slices/themeSlice";
 import { selectUserId, selectUser } from "../../../store/slices/authSlice";
-import { useAddTaskAssignMutation, useGetAllUsersQuery, useLazyGetSuggestedSlotsQuery } from "../../../store/api";
+import { useAddTaskAssignMutation, useGetAllUsersQuery, useLazyGetTaskAssignByDateQuery } from "../../../store/api";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { emitTaskAdded, onTaskAdded, offTaskAdded } from "../../../utils/socket";
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
@@ -38,15 +38,18 @@ const ExecutionTaskAssignPanel = () => {
     const [slotSuggestions, setSlotSuggestions] = useState([]);
     const [conflictSuggestions, setConflictSuggestions] = useState([]);
     const [conflictMessage, setConflictMessage] = useState(null);
-    const [userBookings, setUserBookings] = useState([]);
+    const [selectedSlotDate, setSelectedSlotDate] = useState(dayjs().startOf('day'));
+    const [bookedSlots, setBookedSlots] = useState([]);
 
     const theme = useSelector(selectTheme);
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
 
     const [addTaskAssign, { isLoading }] = useAddTaskAssignMutation();
-    const { showSuccess, showError } = useNotification();
-    const [triggerSuggestedSlots, { isFetching: isFetchingSuggestedSlots }] = useLazyGetSuggestedSlotsQuery();
+    const [triggerGetTaskAssignByDate] = useLazyGetTaskAssignByDateQuery();
+    const notification = useNotification();
+    const showSuccess = notification?.showSuccess || ((msg) => console.log('Success:', msg));
+    const showError = notification?.showError || ((msg) => console.error('Error:', msg));
 
     // Fetch all users from API
     const { data: allUsersData, isLoading: isLoadingUsers } = useGetAllUsersQuery();
@@ -94,6 +97,16 @@ const ExecutionTaskAssignPanel = () => {
     const onClose = () => {
         setDrawerVisible(false);
         form.resetFields();
+        form.setFieldsValue({
+            category: undefined,
+            selectedUser: undefined,
+            taskName: undefined,
+            clientName: undefined,
+            priority: undefined,
+            description: undefined,
+            slotStart: undefined,
+            slotDuration: undefined
+        });
         setFileList([]);
         setUploadedImageUrls([]);
         setSlotStart(null);
@@ -103,7 +116,11 @@ const ExecutionTaskAssignPanel = () => {
         setSlotSuggestions([]);
         setConflictSuggestions([]);
         setConflictMessage(null);
-        setUserBookings([]);
+        setSelectedReceiverUserId(null);
+        setSelectedPosition(null);
+        setAvailableUsers([]);
+        setSelectedSlotDate(dayjs().startOf('day'));
+        setBookedSlots([]);
     };
 
     const handleFileChange = async ({ fileList: newFileList, file }) => {
@@ -210,40 +227,6 @@ const ExecutionTaskAssignPanel = () => {
         setConflictSuggestions([]);
     };
 
-    const fetchSuggestedSlots = async (receiverId, options = {}) => {
-        if (!receiverId) {
-            setSlotSuggestions([]);
-            return;
-        }
-
-        try {
-            const params = {
-                receiverUserId: receiverId
-            };
-            if (options.slotDate) {
-                params.slotDate = options.slotDate;
-            }
-
-            const response = await triggerSuggestedSlots(params).unwrap();
-            const suggestions = Array.isArray(response?.suggestions) ? response.suggestions : Array.isArray(response) ? response : [];
-            const bookings = Array.isArray(response?.bookings) ? response.bookings : [];
-            setSlotSuggestions(suggestions);
-            setUserBookings(bookings);
-            if (suggestions.length > 0) {
-                applySlotSuggestion(suggestions[0]);
-            } else {
-                setSlotStart(null);
-                setSlotDuration(null);
-                setSlotEnd(null);
-                form.setFieldsValue({ slotStart: null, slotDuration: null });
-            }
-        } catch (error) {
-            console.error('Failed to fetch availability suggestions', error);
-            setSlotSuggestions([]);
-            setUserBookings([]);
-        }
-    };
-
     // Dynamic positions based on ALL users from API - show OTHER roles' positions
     const getAvailablePositions = () => {
         const currentUserRole = user?.role; // Logged-in user's role
@@ -311,7 +294,6 @@ const ExecutionTaskAssignPanel = () => {
         setSlotDuration(null);
         setSlotEnd(null);
         form.setFieldsValue({ slotStart: null, slotDuration: null });
-        setUserBookings([]);
     };
 
     // Get users for the selected position
@@ -342,9 +324,63 @@ const ExecutionTaskAssignPanel = () => {
         form.setFieldsValue({ slotStart: null, slotDuration: null });
         setConflictMessage(null);
         setConflictSuggestions([]);
-        setUserBookings([]);
-        fetchSuggestedSlots(selectedUserId);
+        setSelectedSlotDate(dayjs().startOf('day'));
+        setBookedSlots([]);
     };
+
+    const dateOptions = useMemo(() => {
+        return Array.from({ length: 20 }, (_, index) => dayjs().startOf('day').add(index, 'day'));
+    }, []);
+
+    const handleDateSelect = (date) => {
+        const nextDate = date ? date.clone() : dayjs().startOf('day');
+        setSelectedSlotDate(nextDate);
+    };
+
+    useEffect(() => {
+        if (!selectedReceiverUserId || !selectedSlotDate) {
+            setBookedSlots([]);
+            return;
+        }
+        const dateString = selectedSlotDate.format('YYYY-MM-DD');
+        triggerGetTaskAssignByDate({ userId: selectedReceiverUserId, date: dateString })
+            .unwrap()
+            .then((response) => {
+                console.log('[ExecutionTaskAssignPanel] getTaskAssignByDate response:', response);
+
+                // Extract booked slots from the response
+                const data = response?.data || response || {};
+                const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+                // Collect all slots from all tasks
+                const slots = [];
+                tasks.forEach((task) => {
+                    if (Array.isArray(task.slots)) {
+                        task.slots.forEach((slot) => {
+                            slots.push({
+                                taskId: task.taskId,
+                                taskName: task.taskName,
+                                slotId: slot.slotId,
+                                start: slot.start,
+                                end: slot.end,
+                                slotDate: slot.slotDate,
+                                status: slot.status,
+                                durationMinutes: slot.durationMinutes,
+                                extensionMinutes: slot.extensionMinutes || 0
+                            });
+                        });
+                    }
+                });
+
+                setBookedSlots(slots);
+                console.log(`📅 Booked slots for ${dateString}:`, slots);
+                console.log(`📊 Total booked slots: ${slots.length}`);
+            })
+            .catch((error) => {
+                console.error('[ExecutionTaskAssignPanel] getTaskAssignByDate error:', error);
+                setBookedSlots([]);
+            });
+    }, [selectedReceiverUserId, selectedSlotDate, triggerGetTaskAssignByDate]);
 
     const SLOT_DURATION_OPTIONS = [
         { label: '15 minutes', value: 15 },
@@ -359,12 +395,29 @@ const ExecutionTaskAssignPanel = () => {
     const getDisabledStartTimes = () => {
         const now = dayjs();
         const latest = dayjs().hour(19).minute(30);
+        
+        // Check if selected date is today or future date
+        const isToday = selectedSlotDate && selectedSlotDate.isSame(now, 'day');
+        const isFutureDate = selectedSlotDate && selectedSlotDate.isAfter(now, 'day');
 
         const disabledHours = [];
-        for (let hour = 0; hour < 24; hour++) {
-            if (hour < now.hour() || hour > latest.hour()) {
+        
+        if (isToday) {
+            // For today: disable past hours and hours after 7:30 PM
+            for (let hour = 0; hour < 24; hour++) {
+                if (hour < now.hour() || hour > latest.hour()) {
+                    disabledHours.push(hour);
+                }
+            }
+        } else if (isFutureDate) {
+            // For future dates: only disable hours after 7:30 PM (allow all 24 hours from 00:00 to 19:30)
+            for (let hour = 20; hour < 24; hour++) {
                 disabledHours.push(hour);
-                continue;
+            }
+        } else {
+            // Default: disable all hours after 7:30 PM
+            for (let hour = 20; hour < 24; hour++) {
+                disabledHours.push(hour);
             }
         }
 
@@ -373,12 +426,16 @@ const ExecutionTaskAssignPanel = () => {
         const disabledMinutes = (selectedHour) => {
             const minutes = [];
 
-            if (selectedHour === now.hour()) {
-                for (let minute = 0; minute < now.minute(); minute++) {
-                    minutes.push(minute);
+            if (isToday) {
+                // For today: disable past minutes in the current hour
+                if (selectedHour === now.hour()) {
+                    for (let minute = 0; minute < now.minute(); minute++) {
+                        minutes.push(minute);
+                    }
                 }
             }
 
+            // For both today and future dates: disable minutes after 7:30 PM
             if (selectedHour === latest.hour()) {
                 for (let minute = latest.minute() + 1; minute < 60; minute++) {
                     minutes.push(minute);
@@ -395,25 +452,33 @@ const ExecutionTaskAssignPanel = () => {
     };
 
     const updateSlotMeta = (startValue, durationValue) => {
-        const now = dayjs();
-        const latest = dayjs().hour(19).minute(30);
-
         setSlotWarning(null);
 
-        if (!startValue || !durationValue) {
+        if (!startValue || !durationValue || !selectedSlotDate) {
             setSlotEnd(null);
             return;
         }
 
-        if (now.isAfter(latest)) {
+        // Combine selected date with start time
+        const selectedDate = selectedSlotDate.format('YYYY-MM-DD');
+        const selectedTime = startValue.format('HH:mm:ss');
+        const combinedStart = dayjs(`${selectedDate} ${selectedTime}`);
+        const endOfDay = selectedSlotDate.hour(19).minute(30);
+
+        // For today's date, check if it's past 7:30 PM
+        const now = dayjs();
+        const isToday = selectedSlotDate.isSame(now, 'day');
+        const latest = dayjs().hour(19).minute(30);
+
+        if (isToday && now.isAfter(latest)) {
             setSlotWarning('Task slots are unavailable after 7:30 PM today.');
             setSlotEnd(null);
             return;
         }
 
-        const computedEnd = startValue.add(durationValue, 'minute');
+        const computedEnd = combinedStart.add(durationValue, 'minute');
 
-        if (computedEnd.isAfter(latest)) {
+        if (computedEnd.isAfter(endOfDay)) {
             setSlotWarning('Selected duration extends beyond 7:30 PM. Choose an earlier start or shorter duration.');
             setSlotEnd(null);
             return;
@@ -477,18 +542,30 @@ const ExecutionTaskAssignPanel = () => {
             return Promise.reject(new Error('Please select a start time'));
         }
 
+        if (!selectedSlotDate) {
+            return Promise.reject(new Error('Please select a date first'));
+        }
+
+        // Combine selected date with selected time for validation
+        const selectedDate = selectedSlotDate.format('YYYY-MM-DD');
+        const selectedTime = value.format('HH:mm:ss');
+        const combinedStart = dayjs(`${selectedDate} ${selectedTime}`);
+
         const now = dayjs();
         const latest = dayjs().hour(19).minute(30);
+        const isToday = selectedSlotDate.isSame(now, 'day');
+        const endOfDay = selectedSlotDate.hour(19).minute(30);
 
-        if (now.isAfter(latest)) {
-            return Promise.reject(new Error('Task slots are unavailable after 7:30 PM'));
+        if (isToday) {
+            if (now.isAfter(latest)) {
+                return Promise.reject(new Error('Task slots are unavailable after 7:30 PM'));
+            }
+            if (combinedStart.isBefore(now)) {
+                return Promise.reject(new Error('Start time must be later than the current time'));
+            }
         }
 
-        if (value.isBefore(now)) {
-            return Promise.reject(new Error('Start time must be later than the current time'));
-        }
-
-        if (value.isAfter(latest)) {
+        if (combinedStart.isAfter(endOfDay)) {
             return Promise.reject(new Error('Start time must be on or before 7:30 PM'));
         }
 
@@ -504,14 +581,22 @@ const ExecutionTaskAssignPanel = () => {
             return Promise.reject(new Error('Select a start time first'));
         }
 
+        if (!selectedSlotDate) {
+            return Promise.reject(new Error('Please select a date first'));
+        }
+
         if (!value) {
             return Promise.reject(new Error('Please choose a duration'));
         }
 
-        const latest = dayjs().hour(19).minute(30);
-        const computedEnd = slotStart.add(Number(value), 'minute');
+        // Combine selected date with start time for validation
+        const selectedDate = selectedSlotDate.format('YYYY-MM-DD');
+        const selectedTime = slotStart.format('HH:mm:ss');
+        const combinedStart = dayjs(`${selectedDate} ${selectedTime}`);
+        const endOfDay = selectedSlotDate.hour(19).minute(30);
+        const computedEnd = combinedStart.add(Number(value), 'minute');
 
-        if (computedEnd.isAfter(latest)) {
+        if (computedEnd.isAfter(endOfDay)) {
             return Promise.reject(new Error('Duration pushes the task past 7:30 PM'));
         }
 
@@ -519,18 +604,18 @@ const ExecutionTaskAssignPanel = () => {
     };
 
     const isDurationDisabled = (value) => {
-        if (!slotStart) return false;
-        const latest = dayjs().hour(19).minute(30);
-        return slotStart.add(Number(value), 'minute').isAfter(latest);
+        if (!slotStart || !selectedSlotDate) return false;
+        const selectedDate = selectedSlotDate.format('YYYY-MM-DD');
+        const selectedTime = slotStart.format('HH:mm:ss');
+        const combinedStart = dayjs(`${selectedDate} ${selectedTime}`);
+        const endOfDay = selectedSlotDate.hour(19).minute(30);
+        return combinedStart.add(Number(value), 'minute').isAfter(endOfDay);
     };
 
     const handleAddTask = async (values) => {
         try {
-            const latest = dayjs().hour(19).minute(30);
-            const now = dayjs();
-
-            if (now.isAfter(latest)) {
-                showError('Cannot assign slots after 7:30 PM');
+            if (!selectedSlotDate) {
+                showError('Please select a date first');
                 return;
             }
 
@@ -542,18 +627,41 @@ const ExecutionTaskAssignPanel = () => {
                 return;
             }
 
-            const computedEnd = selectedStart.add(selectedDuration, 'minute');
+            // Combine selected date with selected time
+            const selectedDate = selectedSlotDate.format('YYYY-MM-DD');
+            const selectedTime = selectedStart.format('HH:mm:ss');
+            const combinedStart = dayjs(`${selectedDate} ${selectedTime}`);
 
-            if (computedEnd.isAfter(latest)) {
+            // For today's date, validate time restrictions
+            const now = dayjs();
+            const latest = dayjs().hour(19).minute(30);
+            const isToday = selectedSlotDate.isSame(now, 'day');
+
+            if (isToday) {
+                if (now.isAfter(latest)) {
+                    showError('Cannot assign slots after 7:30 PM');
+                    return;
+                }
+                if (combinedStart.isBefore(now)) {
+                    showError('Start time must be later than the current time');
+                    return;
+                }
+            }
+
+            // Always validate end time is before 7:30 PM
+            const computedEnd = combinedStart.add(selectedDuration, 'minute');
+            const endOfDay = selectedSlotDate.hour(19).minute(30);
+
+            if (computedEnd.isAfter(endOfDay)) {
                 showError('Selected slot exceeds 7:30 PM. Adjust the start or duration.');
                 return;
             }
 
             const slots = [{
-                start: selectedStart.toISOString(),
+                start: combinedStart.toISOString(),
                 end: computedEnd.toISOString(),
                 durationMinutes: selectedDuration,
-                slotDate: selectedStart.format('YYYY-MM-DD')
+                slotDate: selectedDate
             }];
 
             const taskData = {
@@ -583,20 +691,9 @@ const ExecutionTaskAssignPanel = () => {
             emitTaskAdded(taskData);
 
             showSuccess('Task added successfully!');
-            form.resetFields();
-            setFileList([]);
-            setUploadedImageUrls([]);
-            setSlotStart(null);
-            setSlotDuration(null);
-            setSlotEnd(null);
-            setSlotWarning(null);
-            setSlotSuggestions([]);
-            setConflictSuggestions([]);
-            setConflictMessage(null);
-            setSelectedReceiverUserId(null); // Reset receiver
-            setSelectedPosition(null); // Reset position
-            setAvailableUsers([]); // Reset users list
-            setDrawerVisible(false);
+            
+            // Use the same onClose function as the close button - ensures exact same behavior
+            onClose();
         } catch (error) {
             if (error?.status === 409) {
                 const message = error?.data?.message || 'Selected slot is unavailable. Please choose a different time.';
@@ -903,68 +1000,123 @@ const ExecutionTaskAssignPanel = () => {
 
                                 {selectedReceiverUserId && (
                                     <>
-                                        <Row gutter={[16, 16]}>
-                                            <Col xs={24} sm={12} md={12} lg={12}>
-                                                <div className="slot-input-card">
-                                                    <span className="slot-input-label">Task Start Time</span>
-                                                    <Form.Item
-                                                        name="slotStart"
-                                                        rules={[
-                                                            { required: true, message: 'Please select a start time' },
-                                                            { validator: validateSlotStart }
-                                                        ]}
-                                                    >
-                                                        <TimePicker
-                                                            value={slotStart}
-                                                            onChange={handleSlotStartChange}
-                                                            use12Hours
-                                                            format="hh:mm A"
-                                                            minuteStep={5}
-                                                            style={{ width: '100%' }}
-                                                            disabledTime={getDisabledStartTimes}
-                                                            showSecond={false}
-                                                            placeholder="Pick a start time"
-                                                        />
-                                                    </Form.Item>
-                                                    <p className="slot-helper-text">
-                                                        Available in 5-minute intervals until 7:30 PM.
-                                                    </p>
-                                                </div>
-                                            </Col>
-                                            <Col xs={24} sm={12} md={12} lg={12}>
-                                                <div className="slot-input-card">
-                                                    <span className="slot-input-label">Duration</span>
-                                                    <Form.Item
-                                                        name="slotDuration"
-                                                        rules={[
-                                                            { required: true, message: 'Please choose a duration' },
-                                                            { validator: validateSlotDuration }
-                                                        ]}
-                                                    >
-                                                        <Radio.Group
-                                                            className="slot-duration-group"
-                                                            value={slotDuration}
-                                                            onChange={handleSlotDurationChange}
-                                                            disabled={!slotStart}
+                                        <div className="slot-date-picker">
+                                            <span className="slot-date-picker-label">Select Date (next 20 days)</span>
+                                            <div className="slot-date-grid">
+                                                {dateOptions.map(date => {
+                                                    const isSelected = selectedSlotDate && date.isSame(selectedSlotDate, 'day');
+                                                    return (
+                                                        <button
+                                                            key={date.toISOString()}
+                                                            type="button"
+                                                            className={`slot-date-card ${isSelected ? 'selected' : ''}`}
+                                                            onClick={() => handleDateSelect(date)}
                                                         >
-                                                            {SLOT_DURATION_OPTIONS.map(option => (
-                                                                <Radio.Button
-                                                                    key={option.value}
-                                                                    value={option.value}
-                                                                    disabled={isDurationDisabled(option.value)}
-                                                                    style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-                                                                >
-                                                                    {option.label}
-                                                                </Radio.Button>
-                                                            ))}
-                                                        </Radio.Group>
-                                                    </Form.Item>
-                                                    <p className="slot-helper-text">
-                                                        Pick a preset block that fits within the day.
-                                                    </p>
-                                                </div>
-                                            </Col>
-                                        </Row>
+                                                            <span className="slot-date-day">{date.format('ddd')}</span>
+                                                            <span className="slot-date-number">{date.format('D')}</span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Booked Slots Display */}
+                                        {selectedSlotDate && (
+                                            <div className="slot-bookings" style={{ marginTop: '18px' }}>
+                                                <span className="slot-suggestions-label">
+                                                    Bookings on {selectedSlotDate.format('ddd, MMM D')}
+                                                </span>
+                                                {bookedSlots.length === 0 ? (
+                                                    <div className="slot-bookings-empty">No slots booked for this date.</div>
+                                                ) : (
+                                                    <div className="slot-bookings-list">
+                                                        {bookedSlots.map((booking, index) => {
+                                                            const start = dayjs(booking.start);
+                                                            const end = dayjs(booking.end);
+                                                            return (
+                                                                <div key={`booking-${booking.slotId || index}`} className="slot-booking-item">
+                                                                    <div className="slot-booking-time">
+                                                                        {start.format('hh:mm A')} - {end.format('hh:mm A')}
+                                                                    </div>
+                                                                    <div className="slot-booking-task" style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>
+                                                                        {booking.taskName}
+                                                                    </div>
+                                                                    <Tag color={booking.status === 'scheduled' ? 'blue' : 'green'}>
+                                                                        {booking.status || 'scheduled'}
+                                                                    </Tag>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Task Start Time and Duration - Only show after date is selected */}
+                                        {selectedSlotDate && (
+                                            <Row gutter={[16, 16]} style={{ marginTop: '18px' }}>
+                                                <Col xs={24} sm={12} md={12} lg={12}>
+                                                    <div className="slot-input-card">
+                                                        <span className="slot-input-label">Task Start Time</span>
+                                                        <Form.Item
+                                                            name="slotStart"
+                                                            rules={[
+                                                                { required: true, message: 'Please select a start time' },
+                                                                { validator: validateSlotStart }
+                                                            ]}
+                                                        >
+                                                            <TimePicker
+                                                                value={slotStart}
+                                                                onChange={handleSlotStartChange}
+                                                                use12Hours
+                                                                format="hh:mm A"
+                                                                minuteStep={5}
+                                                                style={{ width: '100%' }}
+                                                                disabledTime={getDisabledStartTimes}
+                                                                showSecond={false}
+                                                                placeholder="Pick a start time"
+                                                            />
+                                                        </Form.Item>
+                                                        <p className="slot-helper-text">
+                                                            Available in 5-minute intervals until 7:30 PM.
+                                                        </p>
+                                                    </div>
+                                                </Col>
+                                                <Col xs={24} sm={12} md={12} lg={12}>
+                                                    <div className="slot-input-card">
+                                                        <span className="slot-input-label">Duration</span>
+                                                        <Form.Item
+                                                            name="slotDuration"
+                                                            rules={[
+                                                                { required: true, message: 'Please choose a duration' },
+                                                                { validator: validateSlotDuration }
+                                                            ]}
+                                                        >
+                                                            <Radio.Group
+                                                                className="slot-duration-group"
+                                                                value={slotDuration}
+                                                                onChange={handleSlotDurationChange}
+                                                                disabled={!slotStart}
+                                                            >
+                                                                {SLOT_DURATION_OPTIONS.map(option => (
+                                                                    <Radio.Button
+                                                                        key={option.value}
+                                                                        value={option.value}
+                                                                        disabled={isDurationDisabled(option.value)}
+                                                                        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                                                                    >
+                                                                        {option.label}
+                                                                    </Radio.Button>
+                                                                ))}
+                                                            </Radio.Group>
+                                                        </Form.Item>
+                                                        <p className="slot-helper-text">
+                                                            Pick a preset block that fits within the day.
+                                                        </p>
+                                                    </div>
+                                                </Col>
+                                            </Row>
+                                        )}
 
                                         {slotEnd && (
                                             <div style={{ color: 'var(--success-color)', fontSize: '12px', marginTop: -4 }}>
@@ -972,11 +1124,6 @@ const ExecutionTaskAssignPanel = () => {
                                             </div>
                                         )}
 
-                                        {isFetchingSuggestedSlots && (
-                                            <div className="slot-suggestions-loading">
-                                                Fetching suggested windows...
-                                            </div>
-                                        )}
                                         {slotSuggestions.length > 0 && (
                                             <div className="slot-suggestions">
                                                 <span className="slot-suggestions-label">Suggested windows</span>
@@ -1020,30 +1167,6 @@ const ExecutionTaskAssignPanel = () => {
                                                 </div>
                                             </div>
                                         )}
-
-                                        <div className="slot-bookings">
-                                            <span className="slot-suggestions-label">Upcoming bookings</span>
-                                            {userBookings.length === 0 ? (
-                                                <div className="slot-bookings-empty">No existing bookings found for this teammate.</div>
-                                            ) : (
-                                                <div className="slot-bookings-list">
-                                                    {userBookings.map((booking, index) => {
-                                                        const formatted = formatBookingWindow(booking);
-                                                        return (
-                                                            <div key={`booking-${booking._id || index}`} className="slot-booking-item">
-                                                                <div className="slot-booking-date">{formatted.dateLabel}</div>
-                                                                <div className="slot-booking-time">{formatted.timeLabel}</div>
-                                                                {formatted.status && (
-                                                                    <Tag color={formatted.status.toLowerCase() === 'completed' ? 'green' : 'blue'}>
-                                                                        {formatted.status}
-                                                                    </Tag>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
 
                                         <div className="slot-summary-bar">
                                             <div className="slot-summary-time">
