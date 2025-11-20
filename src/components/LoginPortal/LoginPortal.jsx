@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./LoginPortal.css";
-import { Row, Col, Form, Input, Button, Checkbox, Spin } from "antd";
+import { Row, Col, Form, Input, Button, Checkbox } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useSignInUserMutation, useLazyCheckoutStatusQuery } from "../../store/api";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,12 +34,12 @@ const LoginPortal = () => {
 
             // Check if credentials are provided
             if (!email || !password) {
-                setGlobalLoading(false);
                 error('User credentials not found. Please contact administrator.');
                 setLoading(false);
                 return;
             }
 
+            // API call - button shows "Signing in..." (no loader overlay)
             const response = await signInUser({
                 userEmail: email,
                 Password: password
@@ -52,7 +52,6 @@ const LoginPortal = () => {
                     try {
                         const status = await triggerCheckoutStatus({ userId: userIdFromResponse }).unwrap();
                         if (status?.checkedOut) {
-                            setGlobalLoading(false);
                             error('You have already checked out today. Please contact the administrator if you need access.');
                             setLoading(false);
                             return;
@@ -77,23 +76,20 @@ const LoginPortal = () => {
                     token: response.token || 'authenticated'
                 }));
 
-                success('Welcome back! Redirecting to dashboard...');
-
-                // Show global loader during transition
+                // Now show global loader AFTER successful login (before redirect)
                 setGlobalLoading(true);
                 setLoadingMessage('Loading Dashboard...');
 
-                // Navigate to dashboard immediately - loader will stay visible until APIs complete
+                // Navigate immediately - loader is already visible
                 navigate('/Dashboard', { replace: true });
+
+                // Don't set loading to false here - let redirect happen with loader visible
             } else {
-                setGlobalLoading(false);
                 error(response.message || 'Invalid credentials. Please check your email and password.');
+                setLoading(false);
             }
         } catch (error) {
             console.error('Login error:', error);
-            
-            // Hide loader on error
-            setGlobalLoading(false);
 
             if (error.status === 401) {
                 error('User credentials not found. Please contact administrator.');
@@ -102,13 +98,12 @@ const LoginPortal = () => {
             } else {
                 error('An unexpected error occurred. Please try again.');
             }
-        } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div id="LoginPortal" className={`page-transition theme-${theme} ${loading ? 'fade-out' : ''}`}>
+        <div id="LoginPortal" className={`theme-${theme}`}>
             <div>
                 <div className="LoginPortalBackgroundOverlay">
                     <img src="/Images/BackgroundOverlay.jpg" alt="" />
@@ -163,17 +158,9 @@ const LoginPortal = () => {
                                             className="LoginSubmitBtn"
                                             size="large"
                                             block
-                                            loading={loading || isLoading}
                                             disabled={loading || isLoading}
                                         >
-                                            {loading || isLoading ? (
-                                                <>
-                                                    <Spin size="small" style={{ marginRight: 8 }} />
-                                                    Signing in...
-                                                </>
-                                            ) : (
-                                                'Sign in'
-                                            )}
+                                            {loading || isLoading ? 'Signing in...' : 'Sign in'}
                                         </Button>
                                     </Form.Item>
                                     <div className="LoginAltAction">

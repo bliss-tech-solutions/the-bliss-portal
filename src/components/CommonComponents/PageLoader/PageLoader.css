@@ -9,7 +9,8 @@
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    animation: fadeIn 0.3s ease-in;
+    opacity: 1;
+    animation: fadeIn 0.2s ease-in;
 }
 
 @keyframes fadeIn {
