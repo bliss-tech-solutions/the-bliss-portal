@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser } from '../../../../store/slices/authSlice';
 import AllUserTaskEntries from './AllUserTaskEntries/AllUserTaskEntries';
+import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 
 const UserTaskAssignmentPanel = () => {
     const [activeTab, setActiveTab] = useState('1');
@@ -19,36 +20,18 @@ const UserTaskAssignmentPanel = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case '1':
-                return <AllUserTaskEntries />;
             case '2':
-                return (
-                    <div>
-                        <p>Tasks that are scheduled for the near future.</p>
-                        <p>These tasks will be available for you to work on soon.</p>
-                    </div>
-                );
             case '3':
-                return (
-                    <div>
-                        <p>Tasks that you are currently working on.</p>
-                        <p>Track your progress and update task status.</p>
-                    </div>
-                );
             case '4':
-                return (
-                    <div>
-                        <p>Tasks that you have completed successfully.</p>
-                        <p>Review your completed work and achievements.</p>
-                    </div>
-                );
+                return <AllUserTaskEntries activeTab={activeTab} />;
             default:
-                return <div>No content available.</div>;
+                return <AllUserTaskEntries activeTab="1" />;
         }
     };
 
     return (
         <div id="UserTaskAssignmentPanel" className={`theme-${theme}`}>
-            <h2>{userFullName} Tasks Management</h2>
+            <h2 style={{ textTransform: 'capitalize' }}>{userFullName} Tasks Management</h2>
             <div className="MarginTopMedium">
                 <Row>
                     <Col lg={24} md={24} sm={24} xs={24}>

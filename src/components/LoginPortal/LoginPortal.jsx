@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../../store/slices/authSlice";
 import { selectTheme, toggleTheme } from "../../store/slices/themeSlice";
 import { useNotification } from "../../contexts/NotificationContext";
+import { useLoading } from "../../contexts/LoadingContext";
 import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
@@ -17,6 +18,7 @@ const LoginPortal = () => {
     const [triggerCheckoutStatus] = useLazyCheckoutStatusQuery();
     const [loading, setLoading] = useState(false);
     const { success, error } = useNotification();
+    const { setLoading: setGlobalLoading, setLoadingMessage } = useLoading();
     const theme = useSelector(selectTheme);
     const isDarkMode = theme === 'dark';
 
@@ -32,6 +34,7 @@ const LoginPortal = () => {
 
             // Check if credentials are provided
             if (!email || !password) {
+                setGlobalLoading(false);
                 error('User credentials not found. Please contact administrator.');
                 setLoading(false);
                 return;
@@ -49,6 +52,7 @@ const LoginPortal = () => {
                     try {
                         const status = await triggerCheckoutStatus({ userId: userIdFromResponse }).unwrap();
                         if (status?.checkedOut) {
+                            setGlobalLoading(false);
                             error('You have already checked out today. Please contact the administrator if you need access.');
                             setLoading(false);
                             return;
@@ -75,14 +79,21 @@ const LoginPortal = () => {
 
                 success('Welcome back! Redirecting to dashboard...');
 
-                setTimeout(() => {
-                    navigate('/Dashboard', { replace: true });
-                }, 1500);
+                // Show global loader during transition
+                setGlobalLoading(true);
+                setLoadingMessage('Loading Dashboard...');
+
+                // Navigate to dashboard immediately - loader will stay visible until APIs complete
+                navigate('/Dashboard', { replace: true });
             } else {
+                setGlobalLoading(false);
                 error(response.message || 'Invalid credentials. Please check your email and password.');
             }
         } catch (error) {
             console.error('Login error:', error);
+            
+            // Hide loader on error
+            setGlobalLoading(false);
 
             if (error.status === 401) {
                 error('User credentials not found. Please contact administrator.');

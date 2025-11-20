@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { App as AntdApp, ConfigProvider } from 'antd'
 import { SocketProvider } from './contexts/SocketContext'
 import { TaskChatProvider } from './contexts/TaskChatContext'
+import { LoadingProvider } from './contexts/LoadingContext'
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
@@ -16,11 +17,13 @@ createRoot(document.getElementById('root')).render(
       <Provider store={store}>
         <ConfigProvider>
           <AntdApp>
-            <SocketProvider>
-              <TaskChatProvider>
-                <App />
-              </TaskChatProvider>
-            </SocketProvider>
+            <LoadingProvider>
+              <SocketProvider>
+                <TaskChatProvider>
+                  <App />
+                </TaskChatProvider>
+              </SocketProvider>
+            </LoadingProvider>
           </AntdApp>
         </ConfigProvider>
       </Provider>

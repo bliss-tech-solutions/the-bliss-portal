@@ -1,0 +1,112 @@
+.empty-state-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 40px 20px;
+    width: 100%;
+}
+
+.empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.empty-state-image-wrapper {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-state-image {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.empty-state-image:hover {
+    opacity: 1;
+}
+
+.empty-state-title {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.empty-state-description {
+    margin: 0;
+    font-size: 14px;
+    color: var(--secondary-text);
+    line-height: 1.6;
+}
+
+/* Compact variant */
+.empty-state-container.compact {
+    min-height: 200px;
+    padding: 24px 20px;
+}
+
+.empty-state-container.compact .empty-state-image-wrapper {
+    margin-bottom: 16px;
+}
+
+.empty-state-container.compact .empty-state-title {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.empty-state-container.compact .empty-state-description {
+    font-size: 13px;
+}
+
+/* Minimal variant (image only) */
+.empty-state-container.minimal {
+    min-height: auto;
+    padding: 20px;
+}
+
+.empty-state-container.minimal .empty-state-image-wrapper {
+    margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .empty-state-container {
+        min-height: 250px;
+        padding: 32px 16px;
+    }
+
+    .empty-state-image {
+        max-width: 280px;
+    }
+
+    .empty-state-title {
+        font-size: 16px;
+    }
+
+    .empty-state-description {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .empty-state-container {
+        min-height: 200px;
+        padding: 24px 12px;
+    }
+
+    .empty-state-image {
+        max-width: 240px;
+    }
+}
+

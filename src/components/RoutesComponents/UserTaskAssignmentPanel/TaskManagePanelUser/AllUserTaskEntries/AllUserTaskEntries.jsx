@@ -11,14 +11,17 @@ import { BsClock, BsClockHistory, BsChat, BsPerson, BsPlusCircle, BsCardChecklis
 import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../../../PortalCommonComponents/TaskChat/TaskChat';
+import EmptyState from '../../../../CommonComponents/EmptyState/EmptyState';
 import dayjs from 'dayjs';
 import {
     emitTaskExtensionRequested,
     onTaskExtensionUpdated,
-    offTaskExtensionUpdated
+    offTaskExtensionUpdated,
+    onTaskAdded,
+    offTaskAdded
 } from '../../../../../utils/socket';
 
-const AllUserTaskEntries = () => {
+const AllUserTaskEntries = ({ activeTab = '1' }) => {
     const theme = useSelector(selectTheme);
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
@@ -77,7 +80,28 @@ const AllUserTaskEntries = () => {
         selectedTaskRef.current = selectedTask;
     }, [selectedTask]);
 
+    // Real-time task updates via socket
     useEffect(() => {
+        // Listen for new tasks added (real-time task fetching)
+        const handleTaskAdded = (taskData) => {
+            if (!taskData) return;
+
+            // Check if this task is assigned to the current user
+            const isForCurrentUser = taskData.receiverUserId === userId;
+            
+            if (isForCurrentUser) {
+                console.log('✅ New task received via socket:', taskData);
+                // Refetch tasks to get the latest list with the new task
+                refetch();
+                
+                // Show success notification
+                if (taskData.taskName) {
+                    showSuccess(`New task assigned: ${taskData.taskName}`);
+                }
+            }
+        };
+
+        // Listen for extension updates
         const handleExtensionUpdate = (payload) => {
             if (!payload) return;
 
@@ -96,12 +120,16 @@ const AllUserTaskEntries = () => {
             }
         };
 
+        // Set up socket listeners
+        onTaskAdded(handleTaskAdded);
         onTaskExtensionUpdated(handleExtensionUpdate);
 
+        // Cleanup listeners on unmount
         return () => {
+            offTaskAdded();
             offTaskExtensionUpdated(handleExtensionUpdate);
         };
-    }, [refetch, userId]);
+    }, [refetch, userId, showSuccess]);
 
     const parseTimeSlotValue = (value) => {
         if (!value) return null;
@@ -158,12 +186,43 @@ const AllUserTaskEntries = () => {
 
     // Handle loading and error states
     // Filter out archived tasks and sort latest first
-    const tasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
+    const allTasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
+    // Filter tasks based on active tab from parent component
+    // Tab 1: All Tasks (non-completed)
+    // Tab 2: Upcoming Tasks (future slots)
+    // Tab 3: In Progress (in-progress status)
+    // Tab 4: Completed (completed status)
+    const tasks = (() => {
+        switch (activeTab) {
+            case '2': // Upcoming Tasks
+                const now = new Date();
+                return allTasks.filter(task => {
+                    const firstSlot = task.slots?.[0];
+                    if (!firstSlot?.slotDate) return false;
+                    const slotDate = new Date(firstSlot.slotDate);
+                    return slotDate > now;
+                });
+            case '3': // In Progress
+                return allTasks.filter(task => 
+                    (task.taskStatus || 'pending').toLowerCase() === 'in-progress'
+                );
+            case '4': // Completed
+                return allTasks.filter(task => 
+                    (task.taskStatus || 'pending').toLowerCase() === 'completed'
+                );
+            case '1': // All Tasks (default - non-completed)
+            default:
+                return allTasks.filter(task => 
+                    (task.taskStatus || 'pending').toLowerCase() !== 'completed'
+                );
+        }
+    })();
+
     useEffect(() => {
-        tasks.forEach(task => ensureTaskRoom(task._id));
-    }, [tasks, ensureTaskRoom]);
+        allTasks.forEach(task => ensureTaskRoom(task._id));
+    }, [allTasks, ensureTaskRoom]);
 
     if (isLoading) {
         return (
@@ -251,9 +310,23 @@ const AllUserTaskEntries = () => {
     return (
         <div className="all-user-task-entries">
             {tasks.length === 0 ? (
-                <div className="user-empty-state">
-                    No tasks assigned to you yet.
-                </div>
+                <EmptyState 
+                    image="/Images/NoTaskAvaible.png"
+                    imageAlt="No tasks available"
+                    title={
+                        activeTab === '2' ? "No Upcoming Tasks" :
+                        activeTab === '3' ? "No Tasks In Progress" :
+                        activeTab === '4' ? "No Completed Tasks" :
+                        "No Tasks Assigned"
+                    }
+                    description={
+                        activeTab === '2' ? "You don't have any upcoming tasks scheduled. Tasks will appear here once they are assigned with future dates." :
+                        activeTab === '3' ? "You don't have any tasks currently in progress. Start working on assigned tasks to see them here." :
+                        activeTab === '4' ? "You haven't completed any tasks yet. Completed tasks will appear here once you mark them as done." :
+                        "You don't have any tasks assigned to you yet. Tasks will appear here once they are assigned."
+                    }
+                    className="compact"
+                />
             ) : (
                 tasks.map((task) => {
                     const primarySlot = getSlotWindow(task.slots?.[0]);
@@ -263,7 +336,7 @@ const AllUserTaskEntries = () => {
                     const primarySlotDuration = task.slots?.[0]?.durationMinutes;
                     const taskStatus = task.taskStatus || 'pending';
                     const isCompleted = taskStatus === 'completed';
-                    
+
                     // Get status color for the indicator
                     const getStatusIndicatorColor = () => {
                         if (isCompleted) return '#52c41a'; // green
@@ -308,15 +381,15 @@ const AllUserTaskEntries = () => {
                                 <div className="user-task-left-section">
                                     <div className="user-task-icon-wrapper">
                                         <BsCardChecklist className="user-task-icon" />
-                                        <span 
-                                            className="user-task-status-indicator" 
+                                        <span
+                                            className="user-task-status-indicator"
                                             style={{ backgroundColor: getStatusIndicatorColor() }}
                                         />
                                     </div>
                                     <div className="user-task-content">
                                         <h3 className="user-task-title">{task.taskName}</h3>
-                                        <Tag 
-                                            color={getPriorityColor(task.priority)} 
+                                        <Tag
+                                            color={getPriorityColor(task.priority)}
                                             className="user-task-priority-tag"
                                         >
                                             {task.priority?.charAt(0).toUpperCase() + task.priority?.slice(1) || 'Medium'} Priority
@@ -353,7 +426,7 @@ const AllUserTaskEntries = () => {
                                             <span className="user-assigner-label-text">Assigned to</span>
                                         </div>
                                     </div>
-                                    <Tag 
+                                    <Tag
                                         color={isCompleted ? 'green' : taskStatus === 'in-progress' ? 'blue' : 'orange'}
                                         className="user-task-status-tag"
                                     >
@@ -387,7 +460,7 @@ const AllUserTaskEntries = () => {
                                         onCancel={() => setConfirmTaskId(null)}
                                         disabled={isCompleted}
                                     >
-                                        <span style={{ display: 'none' }} />
+                                        <span />
                                     </Popconfirm>
                                 </div>
                             </div>
@@ -424,8 +497,8 @@ const AllUserTaskEntries = () => {
             >
                 {selectedTask && (
                     <div className={`user-drawer-content theme-${theme}`}>
-                        {/* Task Name */}
-                        <div className='user-task-name-and-priority-row MarginBottomSmall'>
+                        {/* Header Section - Grid Layout */}
+                        <div className='user-drawer-header-grid'>
                             <div className="user-task-name-section">
                                 <h2>{selectedTask.taskName}</h2>
                                 <div className="user-task-assigner-drawer">
@@ -433,8 +506,6 @@ const AllUserTaskEntries = () => {
                                     <span className="user-assigner-name-drawer">{getAssignerName(selectedTask.userId)}</span>
                                 </div>
                             </div>
-
-                            {/* Priority and Date Row */}
                             <div className="user-priority-date-row">
                                 <Tag color={getPriorityColor(selectedTask.priority)} className="user-priority-tag-pill">
                                     {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)} Priority
@@ -453,170 +524,240 @@ const AllUserTaskEntries = () => {
                             </div>
                         </div>
 
-                        {/* Time Spend Banner */}
-                        {selectedTask.slots && selectedTask.slots.length > 0 && (
-                            <Card title="Scheduled Slots" className='user-scheduled-slots-card MarginBottomMedium'>
-                                {selectedTask.slots.map((slot, index) => {
-                                    const slotWindow = getSlotWindow(slot);
-                                    if (!slotWindow) return null;
+                        {/* Main Content Grid - 2 Columns */}
+                        <div className='user-drawer-main-grid'>
+                            {/* Left Column */}
+                            <div className='user-drawer-left-column'>
+                                {/* Scheduled Slots */}
+                                {selectedTask.slots && selectedTask.slots.length > 0 && (
+                                    <div className='user-scheduled-slots-section'>
+                                        <h3 className="user-section-title">Scheduled Slots</h3>
+                                        {selectedTask.slots.map((slot, index) => {
+                                            const slotWindow = getSlotWindow(slot);
+                                            if (!slotWindow) return null;
 
-                                    return (
-                                        <div key={`slot-${slot._id || index}`} className="user-slot-row">
-                                            <div className="user-slot-time">
-                                                <div className="user-slot-timewindow">
-                                                    <BsClockHistory style={{ color: 'var(--brand-color)' }} />
-                                                    <span>{slotWindow}</span>
-                                                </div>
-                                                <Tag color="blue">{getSlotStatusLabel(slot.status)}</Tag>
-                                            </div>
-
-                                            <div className="user-slot-stats">
-                                                <div>
-                                                    <span>Allocated</span>
-                                                    <strong>{slot.durationMinutes ?? 0} mins</strong>
-                                                </div>
-                                                <div>
-                                                    <span>Extended</span>
-                                                    <strong>{slot.extensionMinutes ?? 0} mins</strong>
-                                                </div>
-                                            </div>
-
-                                            {slot.extensionHistory && slot.extensionHistory.length > 0 && (
-                                                <div className="user-slot-history">
-                                                    {slot.extensionHistory.map((entry, entryIndex) => (
-                                                        <div key={`slot-history-${slot._id || index}-${entry._id || entryIndex}`} className="user-slot-history-item">
-                                                            <div className="user-slot-history-meta">
-                                                                <Tag color={getExtensionStatusColor(entry.status)}>{entry.status || 'pending'}</Tag>
-                                                                <span>{(entry.minutesApproved ?? entry.minutesRequested) || 0} mins</span>
-                                                                {entry.requestedAt && (
-                                                                    <span>{dayjs(entry.requestedAt).format('MMM D, hh:mm A')}</span>
-                                                                )}
-                                                            </div>
-                                                            {entry.reason && (
-                                                                <p className="user-slot-history-reason">Reason: {entry.reason}</p>
-                                                            )}
-                                                            {entry.note && (
-                                                                <p className="user-slot-history-note">Assigner note: {entry.note}</p>
-                                                            )}
+                                            return (
+                                                <div key={`slot-${slot._id || index}`} className="user-slot-card">
+                                                    <div className="user-slot-header">
+                                                        <div className="user-slot-timewindow">
+                                                            <BsClockHistory />
+                                                            <span>{slotWindow}</span>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                        <Tag color="blue" className="user-slot-status-tag">{getSlotStatusLabel(slot.status)}</Tag>
+                                                    </div>
 
-                                            <div className="user-slot-actions">
-                                                <Button
-                                                    size="small"
-                                                    type="default"
-                                                    icon={<BsPlusCircle />}
-                                                    className="user-slot-request-btn"
-                                                    onClick={() => openExtensionModal(selectedTask, slot)}
-                                                    disabled={selectedTask.taskStatus === 'completed' || slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending')}
-                                                    title={slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending') ? 'Awaiting approval from assigner' : undefined}
-                                                >
-                                                    Request Extra Time
-                                                </Button>
+                                                    <div className="user-slot-stats-grid">
+                                                        <div className="user-slot-stat-item">
+                                                            <span className="user-slot-stat-label">Allocated</span>
+                                                            <strong className="user-slot-stat-value">{slot.durationMinutes ?? 0} mins</strong>
+                                                        </div>
+                                                        <div className="user-slot-stat-item">
+                                                            <span className="user-slot-stat-label">Extended</span>
+                                                            <strong className="user-slot-stat-value">{slot.extensionMinutes ?? 0} mins</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    {slot.extensionHistory && slot.extensionHistory.length > 0 && (
+                                                        <div className="user-slot-history">
+                                                            {slot.extensionHistory.map((entry, entryIndex) => (
+                                                                <div key={`slot-history-${slot._id || index}-${entry._id || entryIndex}`} className="user-slot-history-item">
+                                                                    <div className="user-slot-history-meta">
+                                                                        <Tag color={getExtensionStatusColor(entry.status)} className="user-history-tag">{entry.status || 'pending'}</Tag>
+                                                                        <span className="user-history-mins">{(entry.minutesApproved ?? entry.minutesRequested) || 0} mins</span>
+                                                                        {entry.requestedAt && (
+                                                                            <span className="user-history-date">{dayjs(entry.requestedAt).format('MMM D, hh:mm A')}</span>
+                                                                        )}
+                                                                    </div>
+                                                                    {entry.reason && (
+                                                                        <p className="user-slot-history-reason">Reason: {entry.reason}</p>
+                                                                    )}
+                                                                    {entry.note && (
+                                                                        <p className="user-slot-history-note">Assigner note: {entry.note}</p>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="user-slot-actions">
+                                                        <Button
+                                                            size="small"
+                                                            type="default"
+                                                            icon={<BsPlusCircle />}
+                                                            className="user-slot-request-btn"
+                                                            onClick={() => openExtensionModal(selectedTask, slot)}
+                                                            disabled={selectedTask.taskStatus === 'completed' || slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending')}
+                                                            title={slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending') ? 'Awaiting approval from assigner' : undefined}
+                                                        >
+                                                            Request Extra Time
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Time Tracking Overview */}
+                                {selectedTask.timeTracking && (
+                                    <div className='user-time-tracking-section'>
+                                        <h3 className="user-section-title">Time Tracking Overview</h3>
+                                        
+                                        <br /><div className="user-time-tracking-grid">
+                                            <div className="user-time-tracking-stat">
+                                                <span className="user-tracking-label">Original Slot</span>
+                                                <strong className="user-tracking-value">{selectedTask.timeTracking.originalSlotMinutes ?? 0} mins</strong>
+                                            </div>
+                                            <div className="user-time-tracking-stat">
+                                                <span className="user-tracking-label">Extended</span>
+                                                <strong className="user-tracking-value">{selectedTask.timeTracking.totalExtendedMinutes ?? 0} mins</strong>
+                                            </div>
+                                            <div className="user-time-tracking-stat">
+                                                <span className="user-tracking-label">Worked</span>
+                                                <strong className="user-tracking-value">{selectedTask.timeTracking.totalWorkedMinutes ?? 0} mins</strong>
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </Card>
-                        )}
+                                    </div>
+                                )}
 
-                        {selectedTask.timeTracking && (
-                            <Card title="Time Tracking Overview" className='user-time-tracking-card MarginBottomMedium'>
-                                <div className="user-time-tracking-grid">
-                                    <div className="user-time-tracking-stat">
-                                        <span>Original Slot</span>
-                                        <strong>{selectedTask.timeTracking.originalSlotMinutes ?? 0} mins</strong>
-                                    </div>
-                                    <div className="user-time-tracking-stat">
-                                        <span>Extended</span>
-                                        <strong>{selectedTask.timeTracking.totalExtendedMinutes ?? 0} mins</strong>
-                                    </div>
-                                    <div className="user-time-tracking-stat">
-                                        <span>Worked</span>
-                                        <strong>{selectedTask.timeTracking.totalWorkedMinutes ?? 0} mins</strong>
-                                    </div>
-                                </div>
-                            </Card>
-                        )}
-
-                        <div className="user-time-spend-container MarginBottomMedium">
-                            <div className="user-time-icon-wrapper">
-                                <BsClock className="user-time-icon" />
+                                {/* Description */}
+                               
                             </div>
-                            <span className="user-time-label">Time Spent on this project</span>
-                            <div className="user-time-value-wrapper">
-                                <h2>{selectedTask.timeSpend}</h2>
-                                <div className="user-time-info-icon">ⓘ</div>
-                            </div>
-                        </div>
 
-                        {/* Description Section */}
-                        <div className='CardFlexContainer'>
-                            <Card title="Description" className='user-description-card'>
-                                <div>
-                                    <p className="user-description-text">{selectedTask.description}</p>
-                                </div>
-                            </Card>
-
-                            {/* Client Info */}
-                            <Card title="Client Information" className='user-client-info-card'>
-                                <div className="user-client-info">
-                                    <div className="user-info-item">
-                                        <span className="user-info-label">Client:</span>
-                                        <span className="user-info-value">{selectedTask.clientName}</span>
+                            {/* Right Column */}
+                            <div className='user-drawer-right-column'>
+                                {/* Time Spent Banner */}
+                                <div className="user-time-spend-card">
+                                    <div className="user-time-icon-wrapper">
+                                        <BsClock className="user-time-icon" />
                                     </div>
-                                    <div className="user-info-item">
-                                        <span className="user-info-label">Task Assign Position:</span>
-                                        <span className="user-info-value">{selectedTask.category}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Attachments Section (if images available) */}
-                        {selectedTask.taskImages && selectedTask.taskImages.length > 0 && (
-                            <Card title="Attachments" className='user-attachments-card'>
-                                <div className="user-attachments-list">
-                                    {selectedTask.taskImages.map((image, index) => (
-                                        <div key={index} className="user-attachment-item">
-                                            <div className="user-attachment-icon">📄</div>
-                                            <div className="user-attachment-info">
-                                                <div className="user-attachment-name">{image}</div>
-                                                <div className="user-attachment-date">
-                                                    {new Date(selectedTask.createdAt).toLocaleString('en-US', {
-                                                        hour: 'numeric',
-                                                        minute: 'numeric',
-                                                        hour12: true,
-                                                        day: 'numeric',
-                                                        month: 'long'
-                                                    })}
-                                                </div>
-                                            </div>
-                                            <div className="user-attachment-actions">
-                                                <Button type="text" icon={<AiOutlineEye />}>View</Button>
-                                                <Button type="text">Download</Button>
-                                            </div>
+                                    <div className="user-time-content">
+                                        <span className="user-time-label">Time Spent on this project</span>
+                                        <div className="user-time-value-wrapper">
+                                            <h2 className="user-time-value">{selectedTask.timeSpend || 'Not specified'}</h2>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
-                            </Card>
-                        )}
 
-                        {/* Comments Section - Using Reusable TaskChat Component */}
-                        <TaskChat
-                            taskId={selectedTask._id}
-                            receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
-                            className="user-task-chat"
-                            title="Task Related Chat"
-                            placeholder="Add a comment..."
-                            showTitle={true}
-                            height="500px"
-                        // onMessageSent={(messageData) => {
-                        //     console.log('Message sent:', messageData);
-                        // }}
-                        />
+                                {/* Client Information */}
+                                <div className='user-client-info-section'>
+                                    <h3 className="user-section-title">Client Information</h3>
+                                    <div className="user-client-info-grid">
+                                        <div className="user-info-row">
+                                            <span className="user-info-label">Client:</span>
+                                            <span className="user-info-value">{selectedTask.clientName}</span>
+                                        </div>
+                                        <div className="user-info-row">
+                                            <span className="user-info-label">Task Assign Position:</span>
+                                            <span className="user-info-value">{selectedTask.category}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Attachments Section */}
+                                {selectedTask.taskImages && selectedTask.taskImages.length > 0 && (
+                                    <div className='user-attachments-section'>
+                                        <h3 className="user-section-title">Attachments</h3>
+                                        <div className="user-attachments-list">
+                                            {selectedTask.taskImages.map((image, index) => {
+                                                // Truncate link to 60 characters
+                                                const truncatedLink = image.length > 100 ? `${image.substring(0, 100)}...` : image;
+                                                
+                                                // Function to handle view (open in new tab)
+                                                const handleView = () => {
+                                                    window.open(image, '_blank', 'noopener,noreferrer');
+                                                };
+                                                
+                                                // Function to handle download
+                                                const handleDownload = () => {
+                                                    fetch(image)
+                                                        .then(response => response.blob())
+                                                        .then(blob => {
+                                                            const url = window.URL.createObjectURL(blob);
+                                                            const a = document.createElement('a');
+                                                            a.href = url;
+                                                            // Extract filename from URL or use a default name
+                                                            const urlParts = image.split('/');
+                                                            const filename = urlParts[urlParts.length - 1] || `attachment-${index + 1}`;
+                                                            a.download = filename;
+                                                            document.body.appendChild(a);
+                                                            a.click();
+                                                            window.URL.revokeObjectURL(url);
+                                                            document.body.removeChild(a);
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Download failed:', error);
+                                                            // Fallback: open in new tab
+                                                            window.open(image, '_blank', 'noopener,noreferrer');
+                                                        });
+                                                };
+                                                
+                                                return (
+                                                    <div key={index} className="user-attachment-item">
+                                                        <div className="user-attachment-icon">📄</div>
+                                                        <div className="user-attachment-info">
+                                                            <div 
+                                                                className="user-attachment-name"
+                                                                title={image}
+                                                                onClick={handleView}
+                                                                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                                            >
+                                                                {truncatedLink}
+                                                            </div>
+                                                            <div className="user-attachment-date">
+                                                                {new Date(selectedTask.createdAt).toLocaleString('en-US', {
+                                                                    hour: 'numeric',
+                                                                    minute: 'numeric',
+                                                                    hour12: true,
+                                                                    day: 'numeric',
+                                                                    month: 'long'
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                        <div className="user-attachment-actions">
+                                                            <Button 
+                                                                type="text" 
+                                                                size="small" 
+                                                                icon={<AiOutlineEye />}
+                                                                onClick={handleView}
+                                                            >
+                                                                View
+                                                            </Button>
+                                                            <Button 
+                                                                type="text" 
+                                                                size="small"
+                                                                onClick={handleDownload}
+                                                            >
+                                                                Download
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            
+                        </div>
+                        <div className='user-description-section'>
+                                    <h3 className="user-section-title">Description</h3>
+                                    <div className="user-description-content">
+                                        <p className="user-description-text">{selectedTask.description || 'No description provided.'}</p>
+                                    </div>
+                                </div>
+                        {/* Task Chat - Full Width */}
+                        <div className="user-task-chat-wrapper">
+                            <TaskChat
+                                taskId={selectedTask._id}
+                                receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
+                                className="user-task-chat"
+                                title="Task Related Chat"
+                                placeholder="Add a comment..."
+                                showTitle={true}
+                                height="500px"
+                            />
+                        </div>
                     </div>
                 )}
             </Drawer>

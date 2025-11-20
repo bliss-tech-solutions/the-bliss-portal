@@ -13,6 +13,7 @@ import { emitTaskAdded, onTaskAdded, offTaskAdded } from "../../../utils/socket"
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 import dayjs from "dayjs";
+import InlineLoader from "../../CommonComponents/InlineLoader/InlineLoader";
 
 const { TextArea } = Input;
 
@@ -29,6 +30,8 @@ const ExecutionTaskAssignPanel = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDateRange, setSelectedDateRange] = useState(null);
+    const [taskFilterUser, setTaskFilterUser] = useState('all');
+    const [taskFilterCategory, setTaskFilterCategory] = useState('all');
     const [uploadingImages, setUploadingImages] = useState(false);
     const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
     const [slotStart, setSlotStart] = useState(null);
@@ -40,6 +43,7 @@ const ExecutionTaskAssignPanel = () => {
     const [conflictMessage, setConflictMessage] = useState(null);
     const [selectedSlotDate, setSelectedSlotDate] = useState(dayjs().startOf('day'));
     const [bookedSlots, setBookedSlots] = useState([]);
+    const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
     const theme = useSelector(selectTheme);
     const userId = useSelector(selectUserId);
@@ -92,6 +96,8 @@ const ExecutionTaskAssignPanel = () => {
     const clearFilters = () => {
         setSearchTerm('');
         setSelectedDateRange(null);
+        setTaskFilterUser('all');
+        setTaskFilterCategory('all');
     };
 
     const onClose = () => {
@@ -204,7 +210,7 @@ const ExecutionTaskAssignPanel = () => {
         beforeUpload: () => false,
         multiple: true,
         listType: "text",
-        accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
+        accept: "*/*" // Accept all file types including images
     };
 
     const applySlotSuggestion = (suggestion) => {
@@ -340,9 +346,11 @@ const ExecutionTaskAssignPanel = () => {
     useEffect(() => {
         if (!selectedReceiverUserId || !selectedSlotDate) {
             setBookedSlots([]);
+            setIsLoadingBookings(false);
             return;
         }
         const dateString = selectedSlotDate.format('YYYY-MM-DD');
+        setIsLoadingBookings(true);
         triggerGetTaskAssignByDate({ userId: selectedReceiverUserId, date: dateString })
             .unwrap()
             .then((response) => {
@@ -379,6 +387,9 @@ const ExecutionTaskAssignPanel = () => {
             .catch((error) => {
                 console.error('[ExecutionTaskAssignPanel] getTaskAssignByDate error:', error);
                 setBookedSlots([]);
+            })
+            .finally(() => {
+                setIsLoadingBookings(false);
             });
     }, [selectedReceiverUserId, selectedSlotDate, triggerGetTaskAssignByDate]);
 
@@ -392,32 +403,35 @@ const ExecutionTaskAssignPanel = () => {
         { label: '3 hours', value: 180 },
     ];
 
+    const getBookingStatusColor = (status = '') => {
+        const normalized = status?.toLowerCase();
+        if (normalized === 'completed') return 'green';
+        if (normalized === 'in-progress') return 'blue';
+        if (normalized === 'scheduled') return 'gold';
+        return '#8c8c8c';
+    };
+
     const getDisabledStartTimes = () => {
+        const OFFICE_START_HOUR = 10; // 10 AM -> 10:30 with minutes
+        const OFFICE_START_MINUTE = 30;
+        const OFFICE_END_HOUR = 21; // 9 PM
+
         const now = dayjs();
-        const latest = dayjs().hour(19).minute(30);
-        
-        // Check if selected date is today or future date
         const isToday = selectedSlotDate && selectedSlotDate.isSame(now, 'day');
-        const isFutureDate = selectedSlotDate && selectedSlotDate.isAfter(now, 'day');
 
         const disabledHours = [];
-        
+        for (let hour = 0; hour < OFFICE_START_HOUR; hour++) {
+            disabledHours.push(hour);
+        }
+        for (let hour = OFFICE_END_HOUR + 1; hour < 24; hour++) {
+            disabledHours.push(hour);
+        }
+
         if (isToday) {
-            // For today: disable past hours and hours after 7:30 PM
-            for (let hour = 0; hour < 24; hour++) {
-                if (hour < now.hour() || hour > latest.hour()) {
+            for (let hour = OFFICE_START_HOUR; hour <= OFFICE_END_HOUR; hour++) {
+                if (hour < now.hour()) {
                     disabledHours.push(hour);
                 }
-            }
-        } else if (isFutureDate) {
-            // For future dates: only disable hours after 7:30 PM (allow all 24 hours from 00:00 to 19:30)
-            for (let hour = 20; hour < 24; hour++) {
-                disabledHours.push(hour);
-            }
-        } else {
-            // Default: disable all hours after 7:30 PM
-            for (let hour = 20; hour < 24; hour++) {
-                disabledHours.push(hour);
             }
         }
 
@@ -426,19 +440,23 @@ const ExecutionTaskAssignPanel = () => {
         const disabledMinutes = (selectedHour) => {
             const minutes = [];
 
-            if (isToday) {
-                // For today: disable past minutes in the current hour
-                if (selectedHour === now.hour()) {
-                    for (let minute = 0; minute < now.minute(); minute++) {
-                        minutes.push(minute);
-                    }
+            if (selectedHour === OFFICE_START_HOUR) {
+                for (let minute = 0; minute < OFFICE_START_MINUTE; minute++) {
+                    minutes.push(minute);
                 }
             }
 
-            // For both today and future dates: disable minutes after 7:30 PM
-            if (selectedHour === latest.hour()) {
-                for (let minute = latest.minute() + 1; minute < 60; minute++) {
+            if (selectedHour === OFFICE_END_HOUR) {
+                for (let minute = 1; minute < 60; minute++) {
                     minutes.push(minute);
+                }
+            }
+
+            if (isToday && selectedHour === now.hour()) {
+                for (let minute = 0; minute < now.minute(); minute++) {
+                    if (!minutes.includes(minute)) {
+                        minutes.push(minute);
+                    }
                 }
             }
 
@@ -691,7 +709,7 @@ const ExecutionTaskAssignPanel = () => {
             emitTaskAdded(taskData);
 
             showSuccess('Task added successfully!');
-            
+
             // Use the same onClose function as the close button - ensures exact same behavior
             onClose();
         } catch (error) {
@@ -709,35 +727,39 @@ const ExecutionTaskAssignPanel = () => {
     };
 
     const renderTabContent = () => {
+        const commonProps = {
+            searchTerm,
+            selectedDateRange,
+            userFilter: taskFilterUser,
+            categoryFilter: taskFilterCategory
+        };
+
         switch (activeTab) {
             case '1':
                 return (
                     <AllTaskEntries
-                        searchTerm={searchTerm}
-                        selectedDateRange={selectedDateRange}
+                        {...commonProps}
+                        statusFilter="all"
                     />
                 );
             case '2':
                 return (
                     <AllTaskEntries
-                        searchTerm={searchTerm}
-                        selectedDateRange={selectedDateRange}
+                        {...commonProps}
                         statusFilter="pending"
                     />
                 );
             case '3':
                 return (
                     <AllTaskEntries
-                        searchTerm={searchTerm}
-                        selectedDateRange={selectedDateRange}
+                        {...commonProps}
                         statusFilter="pending"
                     />
                 );
             case '4':
                 return (
                     <AllTaskEntries
-                        searchTerm={searchTerm}
-                        selectedDateRange={selectedDateRange}
+                        {...commonProps}
                         statusFilter="completed"
                     />
                 );
@@ -840,7 +862,7 @@ const ExecutionTaskAssignPanel = () => {
                                     />
                                 </div>
                             </Col>
-                            <Col xs={24} sm={24} md={8} lg={8}>
+                            <Col xs={24} sm={24} md={12} lg={12}>
                                 <DatePicker.RangePicker
                                     placeholder={['Start Date', 'End Date']}
                                     value={selectedDateRange}
@@ -848,7 +870,37 @@ const ExecutionTaskAssignPanel = () => {
                                     style={{ width: '100%' }}
                                 />
                             </Col>
-                            <Col xs={24} sm={24} md={4} lg={4}>
+                            <Col xs={24} sm={24} md={12} lg={6}>
+                                <Select
+                                    value={taskFilterUser}
+                                    onChange={setTaskFilterUser}
+                                    placeholder="Filter by user"
+                                    style={{ width: '100%' }}
+                                >
+                                    <Select.Option value="all">All users</Select.Option>
+                                    {(allUsersData?.data || []).map((usr) => (
+                                        <Select.Option key={usr.userId} value={usr.userId}>
+                                            {usr.firstName} {usr.lastName}
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                            </Col>
+                            <Col xs={24} sm={24} md={12} lg={6}>
+                                <Select
+                                    value={taskFilterCategory}
+                                    onChange={setTaskFilterCategory}
+                                    placeholder="Filter by category"
+                                    style={{ width: '100%' }}
+                                >
+                                    <Select.Option value="all">All categories</Select.Option>
+                                    {getAvailablePositions().map((position) => (
+                                        <Select.Option key={position.value} value={position.label}>
+                                            {position.label}
+                                        </Select.Option>
+                                    ))}
+                                </Select>
+                            </Col>
+                            <Col xs={24} sm={24} md={12} lg={6}>
                                 <Button
                                     onClick={clearFilters}
                                     style={{ width: '100%' }}
@@ -884,7 +936,7 @@ const ExecutionTaskAssignPanel = () => {
                     </div>
                 }
                 placement="right"
-                width={1000}
+                width={920}
                 onClose={onClose}
                 open={drawerVisible}
                 closable={false}
@@ -897,87 +949,89 @@ const ExecutionTaskAssignPanel = () => {
                         className="task-form"
                         onFinish={handleAddTask}
                     >
-                        <div className="task-form-section task-section-details">
-                            <div className="task-section-header">
-                                <div className="task-section-icon">
-                                    <BsCardChecklist />
+                        <div className="task-section-grid">
+                            <section className="task-form-section task-section-details">
+                                <div className="task-section-header">
+                                    <div className="task-section-icon">
+                                        <BsCardChecklist />
+                                    </div>
+                                    <div>
+                                        <h3>Task Details</h3>
+                                        <p>Give a clear name and client context.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3>Task Details</h3>
-                                    <p>Give a clear name and client context.</p>
-                                </div>
-                            </div>
-                            <Row gutter={[16, 16]}>
-                                <Col xs={24} sm={24} md={12} lg={12}>
-                                    <Form.Item
-                                        label="Task Name"
-                                        name="taskName"
-                                        rules={[{ required: true, message: 'Please enter task name' }]}
-                                    >
-                                        <Input placeholder="Enter task name" />
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={24} md={12} lg={12}>
-                                    <Form.Item
-                                        label="Client Name"
-                                        name="clientName"
-                                        rules={[{ required: true, message: 'Please enter client name' }]}
-                                    >
-                                        <Input placeholder="Enter client name" />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </div>
+                                <Row gutter={[16, 16]}>
+                                    <Col xs={24} sm={24} md={12} lg={12}>
+                                        <Form.Item
+                                            label="Task Name"
+                                            name="taskName"
+                                            rules={[{ required: true, message: 'Please enter task name' }]}
+                                        >
+                                            <Input placeholder="Enter task name" />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={24} md={12} lg={12}>
+                                        <Form.Item
+                                            label="Client Name"
+                                            name="clientName"
+                                            rules={[{ required: true, message: 'Please enter client name' }]}
+                                        >
+                                            <Input placeholder="Enter client name" />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            </section>
 
-                        <div className="task-form-section task-section-assignment">
-                            <div className="task-section-header">
-                                <div className="task-section-icon">
-                                    <BsPersonPlus />
+                            <section className="task-form-section task-section-assignment">
+                                <div className="task-section-header">
+                                    <div className="task-section-icon">
+                                        <BsPersonPlus />
+                                    </div>
+                                    <div>
+                                        <h3>Assign To</h3>
+                                        <p>Select the target position and teammate.</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3>Assign To</h3>
-                                    <p>Select the target position and teammate.</p>
-                                </div>
-                            </div>
-                            <Row gutter={[16, 16]}>
-                                <Col xs={24} sm={24} md={12} lg={12}>
-                                    <Form.Item
-                                        label="Assign Task Category"
-                                        name="category"
-                                        rules={[{ required: true, message: 'Please select a category' }]}
-                                    >
-                                        <Select
-                                            placeholder="Select position"
-                                            onChange={handlePositionChange}
+                                <Row gutter={[16, 16]}>
+                                    <Col xs={24} sm={24} md={12} lg={12}>
+                                        <Form.Item
+                                            label="Assign Task Category"
+                                            name="category"
+                                            rules={[{ required: true, message: 'Please select a category' }]}
                                         >
-                                            {getAvailablePositions().map((position) => (
-                                                <Select.Option key={position.value} value={position.value}>
-                                                    {position.label}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={24} sm={24} md={12} lg={12}>
-                                    <Form.Item
-                                        label="Select User"
-                                        name="selectedUser"
-                                        rules={[{ required: true, message: 'Please select a user' }]}
-                                    >
-                                        <Select
-                                            placeholder={selectedPosition ? "Select user" : "First select a position"}
-                                            disabled={!selectedPosition || availableUsers.length === 0}
-                                            onChange={handleUserSelection}
+                                            <Select
+                                                placeholder="Select position"
+                                                onChange={handlePositionChange}
+                                            >
+                                                {getAvailablePositions().map((position) => (
+                                                    <Select.Option key={position.value} value={position.value}>
+                                                        {position.label}
+                                                    </Select.Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={24} md={12} lg={12}>
+                                        <Form.Item
+                                            label="Select User"
+                                            name="selectedUser"
+                                            rules={[{ required: true, message: 'Please select a user' }]}
                                         >
-                                            {getUsersForPosition().map((user) => (
-                                                <Select.Option key={user.value} value={user.value}>
-                                                    {user.label}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                                            <Select
+                                                placeholder={selectedPosition ? "Select user" : "First select a position"}
+                                                disabled={!selectedPosition || availableUsers.length === 0}
+                                                onChange={handleUserSelection}
+                                            >
+                                                {getUsersForPosition().map((user) => (
+                                                    <Select.Option key={user.value} value={user.value}>
+                                                        {user.label}
+                                                    </Select.Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            </section>
                         </div>
 
                         <div className="task-form-section task-section-schedule">
@@ -1022,28 +1076,61 @@ const ExecutionTaskAssignPanel = () => {
 
                                         {/* Booked Slots Display */}
                                         {selectedSlotDate && (
-                                            <div className="slot-bookings" style={{ marginTop: '18px' }}>
-                                                <span className="slot-suggestions-label">
-                                                    Bookings on {selectedSlotDate.format('ddd, MMM D')}
-                                                </span>
-                                                {bookedSlots.length === 0 ? (
-                                                    <div className="slot-bookings-empty">No slots booked for this date.</div>
+                                            <div className="slot-bookings">
+                                                <div className="slot-bookings-header">
+                                                    <div>
+                                                        <span className="slot-bookings-label">Bookings overview</span>
+                                                        <span className="slot-bookings-date">{selectedSlotDate.format('ddd, MMM D')}</span>
+                                                    </div>
+                                                    <Tag
+                                                        className="slot-bookings-count"
+                                                        color={bookedSlots.length ? 'green' : 'gold'}
+                                                    >
+                                                        {bookedSlots.length
+                                                            ? `${bookedSlots.length} ${bookedSlots.length === 1 ? 'slot' : 'slots'}`
+                                                            : 'No slots'}
+                                                    </Tag>
+                                                </div>
+                                                {isLoadingBookings ? (
+                                                    <InlineLoader
+                                                        text="Checking existing bookings…"
+                                                        color="var(--brand-color)"
+                                                        size={18}
+                                                        className="slot-bookings-loading"
+                                                    />
+                                                ) : bookedSlots.length === 0 ? (
+                                                    <div className="slot-bookings-empty-card">
+                                                        <p>No slots booked for this date.</p>
+                                                        <span>Select a start time below to reserve one.</span>
+                                                    </div>
                                                 ) : (
-                                                    <div className="slot-bookings-list">
+                                                    <div className="slot-bookings-grid">
                                                         {bookedSlots.map((booking, index) => {
                                                             const start = dayjs(booking.start);
                                                             const end = dayjs(booking.end);
+                                                            const statusLabel = (booking.status || 'scheduled').replace(/^./, (char) => char.toUpperCase());
                                                             return (
-                                                                <div key={`booking-${booking.slotId || index}`} className="slot-booking-item">
-                                                                    <div className="slot-booking-time">
-                                                                        {start.format('hh:mm A')} - {end.format('hh:mm A')}
+                                                                <div key={`booking-${booking.slotId || index}`} className="slot-booking-card">
+                                                                    <div className="slot-booking-time-range">
+                                                                        <span>{start.format('hh:mm A')} - {end.format('hh:mm A')}</span>
+                                                                        <span className="slot-booking-duration-chip">
+                                                                            {(booking.durationMinutes ?? 0) + ' mins'}
+                                                                        </span>
                                                                     </div>
-                                                                    <div className="slot-booking-task" style={{ fontSize: '12px', color: 'var(--secondary-text)' }}>
-                                                                        {booking.taskName}
+                                                                    <div className="slot-booking-task-name">
+                                                                        {booking.taskName || 'Untitled task'}
                                                                     </div>
-                                                                    <Tag color={booking.status === 'scheduled' ? 'blue' : 'green'}>
-                                                                        {booking.status || 'scheduled'}
-                                                                    </Tag>
+                                                                    <div className="slot-booking-meta">
+                                                                        <span className="slot-booking-task-ref">
+                                                                            {dayjs(booking.slotDate || booking.start).format('MMM D')}
+                                                                        </span>
+                                                                        <Tag
+                                                                            className="slot-booking-status-tag"
+                                                                            color={getBookingStatusColor(booking.status)}
+                                                                        >
+                                                                            {statusLabel}
+                                                                        </Tag>
+                                                                    </div>
                                                                 </div>
                                                             );
                                                         })}
@@ -1061,7 +1148,7 @@ const ExecutionTaskAssignPanel = () => {
                                                         <Form.Item
                                                             name="slotStart"
                                                             rules={[
-                                                                { required: true, message: 'Please select a start time' },
+                                                                // { required: true, message: 'Please select a start time' },
                                                                 { validator: validateSlotStart }
                                                             ]}
                                                         >
@@ -1238,7 +1325,7 @@ const ExecutionTaskAssignPanel = () => {
                                     >
                                         <Upload {...uploadProps}>
                                             <Button icon={<BsUpload />} loading={uploadingImages}>
-                                                {uploadingImages ? 'Uploading...' : 'Upload Documents'}
+                                                {uploadingImages ? 'Uploading...' : 'Upload Files'}
                                             </Button>
                                         </Upload>
                                     </Form.Item>

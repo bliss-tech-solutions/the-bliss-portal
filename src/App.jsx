@@ -10,6 +10,7 @@ import { NotificationProvider } from './contexts/NotificationContext'
 import OfficeClosingReminder from './components/PortalCommonComponents/OfficeClosingReminder/OfficeClosingReminder'
 import CheckInOutReminder from './components/PortalCommonComponents/CheckInOutReminder/CheckInOutReminder'
 import PostCheckoutGuard from './components/PortalCommonComponents/PostCheckoutGuard/PostCheckoutGuard'
+import PageLoader from './components/CommonComponents/PageLoader/PageLoader'
 
 function App() {
   const dispatch = useDispatch()
@@ -24,6 +25,7 @@ function App() {
 
   return (
     <NotificationProvider>
+      <PageLoader />
       <PortalRoutes />
       <OfficeClosingReminder />
       {isAuthenticated && location.pathname !== '/' && (
