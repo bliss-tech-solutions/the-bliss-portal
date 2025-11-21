@@ -119,3 +119,20 @@
 .ua-container .ant-pagination-item-active a {
     color: #ffffff !important;
 }
+
+/* Copy Button Styling */
+.ua-copy-button {
+    color: var(--secondary-text);
+    transition: all 0.3s ease;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.ua-copy-button:hover {
+    color: var(--brand-color);
+    background-color: var(--hover-bg);
+}
+
+.ua-copy-button:active {
+    transform: scale(0.95);
+}

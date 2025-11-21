@@ -1,8 +1,9 @@
 import { Routes, Route } from 'react-router-dom'
 import UserVerificationForm from '../components/UserVerificationForm/UserVerificationForm'
 import LoginPortal from '../components/LoginPortal/LoginPortal'
+import CreateAccountLogin from '../components/CreateAccountLogin/CreateAccountLogin'
 import Dashboard from '../components/Dashboard/Dashboard'
-import { ProtectedRoute, RedirectIfAuthenticated } from '../components/ProtectedRoute'
+import { ProtectedRoute, RedirectIfAuthenticated, ProtectedCreateAccountRoute } from '../components/ProtectedRoute'
 
 export default function PortalRoutes() {
     return (
@@ -15,8 +16,19 @@ export default function PortalRoutes() {
                     </RedirectIfAuthenticated>
                 } />
 
-                {/* Create New User Route */}
-                <Route path="/CreateNewUser" element={<UserVerificationForm />} />
+                {/* Create Account Login Route */}
+                <Route path="/create-account-login" element={
+                    <RedirectIfAuthenticated>
+                        <CreateAccountLogin />
+                    </RedirectIfAuthenticated>
+                } />
+
+                {/* Create New User Route - Protected */}
+                <Route path="/CreateNewUser" element={
+                    <ProtectedCreateAccountRoute>
+                        <UserVerificationForm />
+                    </ProtectedCreateAccountRoute>
+                } />
 
                 {/* All Dashboard Routes - Single Dynamic Handler */}
                 {/* All authenticated routes are handled by Dashboard component */}

@@ -16,7 +16,9 @@ import UserAttendanceData from '../RoutesComponents/HRWorkComponent/UserAttendan
 import FestiveCalender from '../RoutesComponents/HRWorkComponent/FestiveCalender/FestiveCalender';
 import DocumentGenerator from '../RoutesComponents/HRWorkComponent/DocumentGenerator/DocumentGenerator';
 import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/TaskAndLeaveCalender/TaskAndLeaveCalender';
+
 // Navigation Configuration
+import UserDocumentVerification from '../RoutesComponents/HRWorkComponent/UserDocumentVerification/UserDocumentVerification';
 
 export const navigationConfig = [
     // Admin Only Route
@@ -83,6 +85,14 @@ export const navigationConfig = [
         routeName: "/task-and-leave-calender",
         roles: ["user"],
         component: TaskAndLeaveCalender,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "User Verification Details",
+        icon: UserOutlined,
+        routeName: "/user-verification-details",
+        roles: ["HR"],
+        component: UserDocumentVerification,
         showInSidebar: true
     }
 ];

@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments'],
     endpoints: (builder) => ({
         createLeave: builder.mutation({
             query: (body) => ({
@@ -296,6 +296,38 @@ export const api = createApi({
                 headers: { 'Content-Type': 'application/json' },
             }),
         }),
+        createUserVerificationDocument: builder.mutation({
+            query: (body) => ({
+                url: '/api/userverificationdocuments/create',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['UserDocuments'],
+        }),
+        getAllUserVerificationDocuments: builder.query({
+            query: () => ({
+                url: '/api/userverificationdocuments/getAll',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['UserDocuments'],
+        }),
+        checkCreateAccountSignIn: builder.query({
+            query: () => ({
+                url: '/api/createaccountsignin/check',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        signInCreateAccount: builder.mutation({
+            query: (body) => ({
+                url: '/api/createaccountsignin/signin',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
     }),
 })
 
@@ -334,7 +366,12 @@ export const {
     useGetUserChatMessagesQuery,
     useGetAllUsersQuery,
     useGetAllCheckinsQuery,
-    useGetTodayCheckinQuery
+    useGetTodayCheckinQuery,
+    useCreateUserVerificationDocumentMutation,
+    useGetAllUserVerificationDocumentsQuery,
+    useCheckCreateAccountSignInQuery,
+    useLazyCheckCreateAccountSignInQuery,
+    useSignInCreateAccountMutation
 } = api
 
 

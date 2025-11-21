@@ -2,6 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Spin } from 'antd';
+import { getCreateAccountAuth } from '../utils/authUtils';
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated } = useSelector((state) => state.auth);
@@ -27,4 +28,19 @@ const RedirectIfAuthenticated = ({ children }) => {
     return children;
 };
 
-export { ProtectedRoute, RedirectIfAuthenticated };
+// Protected route for CreateNewUser - requires create account authentication
+const ProtectedCreateAccountRoute = ({ children }) => {
+    const location = useLocation();
+
+    // Check if user has authenticated via create account login
+    const isCreateAccountAuthenticated = getCreateAccountAuth();
+
+    // If not authenticated via create account login, redirect to create account login page
+    if (!isCreateAccountAuthenticated) {
+        return <Navigate to="/create-account-login" state={{ from: location }} replace />;
+    }
+
+    return children;
+};
+
+export { ProtectedRoute, RedirectIfAuthenticated, ProtectedCreateAccountRoute };

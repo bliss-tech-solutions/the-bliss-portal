@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { Table, Button, Space } from 'antd';
-import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
 import './UserAttendanceData.css';
 import { useGetAllUsersQuery, useGetTodayCheckinQuery } from '../../../../store/api';
+import { useNotification } from '../../../../contexts/NotificationContext';
 
 const TodayTime = ({ userId, type }) => {
     const { data } = useGetTodayCheckinQuery(userId, { skip: !userId });
@@ -27,6 +28,7 @@ const TodayDur = ({ userId }) => {
 };
 
 const initialColumns = [
+    { key: 'userId', title: 'User ID', dataIndex: 'userId', width: 100 },
     { key: 'userName', title: 'User Name', dataIndex: 'userName', width: 220 },
     { key: 'todayIn', title: 'Today Punch-In', dataIndex: 'todayIn', width: 160 },
     { key: 'leaveTime', title: 'Leave Time', dataIndex: 'leaveTime', width: 140 },
@@ -41,11 +43,13 @@ const UserAttendanceData = () => {
     const dragFromIndexRef = useRef(null);
     const resizingRef = useRef({ key: null, startX: 0, startWidth: 0 });
 
+    const { success, warning, error: showError } = useNotification();
     const { data: usersResp, isLoading } = useGetAllUsersQuery();
     const dataSource = useMemo(() => {
         const users = usersResp?.data || [];
         return users.map((u, idx) => ({
             key: u.userId || u._id || idx,
+            userId: u.userId || u._id || '-',
             userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.userEmail || u.email || '-',
             todayIn: <TodayTime userId={u.userId} type="in" />,
             leaveTime: <TodayTime userId={u.userId} type="out" />,
@@ -55,6 +59,34 @@ const UserAttendanceData = () => {
             index: idx + 1,
         }));
     }, [usersResp]);
+
+    const handleCopyUserId = useCallback(async (userId) => {
+        if (!userId || userId === '-') {
+            warning('No User ID available to copy');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(userId);
+            success(`User ID "${userId}" copied to clipboard!`, 3000);
+        } catch (error) {
+            // Fallback for older browsers
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = userId;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                success(`User ID "${userId}" copied to clipboard!`, 3000);
+            } catch (fallbackError) {
+                showError(`Failed to copy User ID: ${userId}`);
+                console.error('Copy error:', fallbackError);
+            }
+        }
+    }, [success, warning, showError]);
 
     const onHeaderDragStart = useCallback((index) => () => {
         dragFromIndexRef.current = index;
@@ -123,6 +155,37 @@ const UserAttendanceData = () => {
                 };
             }
 
+            if (col.key === 'userId') {
+                return {
+                    ...col,
+                    width: columnWidths[col.key],
+                    align: 'center',
+                    render: (_, record) => (
+                        <Button
+                            size="small"
+                            type="text"
+                            icon={<CopyOutlined />}
+                            onClick={() => handleCopyUserId(record.userId)}
+                            title={`Copy User ID: ${record.userId}`}
+                            className="ua-copy-button"
+                        />
+                    ),
+                    onHeaderCell: () => ({
+                        draggable: true,
+                        onDragStart: onHeaderDragStart(index),
+                        onDragOver: onHeaderDragOver,
+                        onDrop: onHeaderDrop(index),
+                        style: { width: columnWidths[col.key] },
+                    }),
+                    title: (
+                        <div className="ua-header">
+                            <span className="ua-title">User ID</span>
+                            <span className="ua-resizer" onMouseDown={startResize(col.key, columnWidths[col.key])} />
+                        </div>
+                    ),
+                };
+            }
+
             const icon = col.key === 'userName' ? <UserOutlined className="ua-col-icon" />
                 : col.key === 'todayIn' ? <ClockCircleOutlined className="ua-col-icon" />
                     : col.key === 'leaveTime' ? <LogoutOutlined className="ua-col-icon" />
@@ -146,7 +209,7 @@ const UserAttendanceData = () => {
                 ),
             };
         });
-    }, [orderedColumns, columnWidths, onHeaderDragStart, onHeaderDragOver, onHeaderDrop, startResize]);
+    }, [orderedColumns, columnWidths, onHeaderDragStart, onHeaderDragOver, onHeaderDrop, startResize, handleCopyUserId]);
 
     return (
         <div className="ua-container">

@@ -1,0 +1,500 @@
+/* User Document Verification Container */
+.udv-container {
+    /* padding: 24px; */
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+}
+
+.udv-header {
+    margin-bottom: 24px;
+}
+
+.udv-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+/* Tabs Styling */
+.udv-tabs .ant-tabs-tab {
+    font-weight: 500;
+    color: var(--secondary-text);
+    transition: all 0.3s ease;
+}
+
+.udv-tabs .ant-tabs-tab-active {
+    color: var(--brand-color);
+}
+
+.udv-tabs .ant-tabs-ink-bar {
+    background: var(--brand-color);
+}
+
+.udv-tabs .ant-tabs-tab:hover {
+    color: var(--brand-color);
+}
+
+/* Form Container */
+.udv-form-container {
+    padding: 0;
+}
+
+.udv-form-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.udv-form-card .ant-card-body {
+    padding: 32px;
+}
+
+/* Form Styling */
+.udv-form {
+    width: 100%;
+}
+
+.udv-form-section {
+    margin-bottom: 32px;
+}
+
+.udv-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin-bottom: 20px !important;
+}
+
+.udv-section-icon {
+    color: var(--brand-color);
+    font-size: 20px;
+}
+
+/* Divider */
+.udv-divider {
+    margin: 32px 0;
+    border-color: var(--border-color);
+}
+
+/* Form Item Labels */
+.udv-form .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+}
+
+.udv-form .ant-form-item-label>label.ant-form-item-required::before {
+    color: var(--danger-color) !important;
+}
+
+.udv-form .ant-form-item-label>label.ant-form-item-required::after {
+    content: '' !important;
+}
+
+/* Input Styling */
+.udv-input,
+.udv-select,
+.udv-date-picker,
+.udv-textarea {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.udv-input:hover,
+.udv-select:hover,
+.udv-date-picker:hover {
+    border-color: var(--brand-color);
+}
+
+.udv-input:focus,
+.udv-select:focus,
+.udv-date-picker:focus,
+.udv-textarea:focus {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+}
+
+.udv-input::placeholder,
+.udv-textarea::placeholder {
+    color: var(--secondary-text);
+}
+
+/* Input Prefix Icons */
+.udv-input .anticon,
+.udv-input-prefix {
+    color: var(--secondary-text);
+}
+
+/* Select Styling */
+.udv-select .ant-select-selector {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.udv-select:hover .ant-select-selector {
+    border-color: var(--brand-color) !important;
+}
+
+.udv-select.ant-select-focused .ant-select-selector {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
+}
+
+/* Date Picker Styling */
+.udv-date-picker .ant-picker-input>input {
+    color: var(--primary-text);
+}
+
+.udv-date-picker .ant-picker-suffix {
+    color: var(--secondary-text);
+}
+
+/* Textarea Styling */
+.udv-textarea {
+    resize: vertical;
+}
+
+/* Upload Styling */
+.udv-upload {
+    width: 100%;
+}
+
+.udv-upload .ant-upload-select {
+    width: 100% !important;
+    height: 150px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: var(--secondary-bg);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.udv-upload .ant-upload-select:hover {
+    border-color: var(--brand-color);
+    background-color: var(--hover-bg);
+}
+
+.udv-upload-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--secondary-text);
+    transition: all 0.3s ease;
+}
+
+.udv-upload-icon {
+    font-size: 32px;
+    color: var(--brand-color);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}
+
+.udv-upload-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-text);
+}
+
+.udv-upload .ant-upload-list-item {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+}
+
+.udv-upload .ant-upload-list-item-thumbnail img {
+    border-radius: 4px;
+}
+
+/* Form Actions */
+.udv-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.udv-submit-button {
+    background-color: var(--button-primary);
+    border-color: var(--button-primary);
+    color: var(--button-text);
+    font-weight: 500;
+    height: 44px;
+    padding: 0 32px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.udv-submit-button:hover {
+    background-color: var(--button-primary-hover);
+    border-color: var(--button-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.udv-reset-button {
+    height: 44px;
+    padding: 0 32px;
+    border-color: var(--border-color);
+    color: var(--primary-text);
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.udv-reset-button:hover {
+    border-color: var(--brand-color);
+    color: var(--brand-color);
+}
+
+/* Documents Container */
+.udv-documents-container {
+    padding: 0;
+}
+
+.udv-documents-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.udv-documents-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+    min-height: 400px;
+}
+
+.udv-documents-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.udv-document-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.udv-document-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px var(--shadow);
+    border-color: var(--brand-color);
+}
+
+.udv-document-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.udv-document-card-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.udv-document-card-icon {
+    font-size: 32px;
+    color: var(--brand-color);
+    padding: 8px;
+    background-color: rgba(235, 178, 54, 0.1);
+    border-radius: 8px;
+}
+
+.udv-document-card-title h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.udv-document-user-id {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--secondary-text);
+    font-family: monospace;
+}
+
+.udv-document-badge {
+    margin: 0;
+    font-weight: 500;
+}
+
+.udv-document-divider {
+    margin: 16px 0;
+    border-color: var(--border-color);
+}
+
+.udv-documents-container .ant-divider {
+    margin: 10px 0px !important;
+}
+
+
+.udv-document-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.udv-document-info-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.udv-document-info-icon {
+    font-size: 16px;
+    color: var(--brand-color);
+}
+
+.udv-document-info-label {
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.udv-document-info-value {
+    font-size: 13px;
+    color: var(--primary-text);
+    font-weight: 500;
+}
+
+.udv-document-card-footer {
+    padding-top: 8px;
+}
+
+.udv-document-links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.udv-document-link-button {
+    color: var(--brand-color);
+    padding: 4px 8px;
+    font-size: 13px;
+    height: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.udv-document-link-button:hover {
+    color: var(--button-primary-hover);
+    background-color: var(--hover-bg);
+}
+
+.udv-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.udv-empty-icon {
+    font-size: 64px;
+    color: var(--secondary-text);
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.udv-empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin: 0 0 8px 0;
+}
+
+.udv-empty-state p {
+    font-size: 14px;
+    color: var(--secondary-text);
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .udv-container {
+        padding: 16px;
+    }
+
+    .udv-form-card .ant-card-body {
+        padding: 20px;
+    }
+
+    .udv-form-section {
+        margin-bottom: 24px;
+    }
+
+    .udv-section-title {
+        font-size: 16px;
+    }
+
+    .udv-form-actions {
+        flex-direction: column;
+    }
+
+    .udv-submit-button,
+    .udv-reset-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .udv-title {
+        font-size: 20px;
+    }
+
+    .udv-form-card .ant-card-body {
+        padding: 16px;
+    }
+
+    .udv-upload .ant-upload-select {
+        height: 120px;
+    }
+
+    .udv-documents-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}

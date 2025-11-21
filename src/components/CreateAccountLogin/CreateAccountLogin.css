@@ -1,0 +1,341 @@
+/* Create Account Login Container */
+#CreateAccountLogin {
+    position: relative;
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.CreateAccountLoginBackgroundOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.05;
+}
+
+.CreateAccountLoginBackgroundOverlay img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.CreateAccountLoginImage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.CreateAccountLoginForm {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background-color: var(--primary-bg);
+    transition: background-color 0.3s ease;
+    position: relative;
+    z-index: 1;
+}
+
+.CreateAccountLoginFormInner {
+    width: 70%;
+    margin: 0 auto;
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    /* box-shadow: 0 4px 20px var(--shadow); */
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+/* Header with Back Button and Theme Toggle */
+.create-account-login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.create-account-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.create-account-back-button:hover {
+    color: var(--brand-color);
+    background-color: var(--hover-bg);
+    transform: translateX(-2px);
+}
+
+.create-account-theme-button {
+    color: var(--primary-text);
+}
+
+/* Logo */
+.CreateAccountLoginFormInnerLogo {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.CreateAccountLoginFormInnerLogo img {
+    max-width: 100px;
+    height: auto;
+}
+
+.MarginBottomMedium {
+    margin-bottom: 32px;
+}
+
+/* Form Inputs */
+.create-account-input {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+    transition: all 0.3s ease;
+}
+
+.create-account-input:hover {
+    border-color: var(--brand-color);
+}
+
+.create-account-input:focus,
+.create-account-input:focus-within {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+}
+
+/* Quiz Card */
+.create-account-quiz-card {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.create-account-quiz-card:hover {
+    border-color: var(--brand-color);
+    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.1);
+}
+
+.create-account-quiz-container {
+    padding: 8px;
+}
+
+.create-account-quiz-instructions {
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.create-account-quiz-instructions p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+/* Letter Boxes Grid */
+.create-account-quiz-letters {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 8px 0;
+}
+
+.create-account-letter-box {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-text);
+    cursor: move;
+    transition: all 0.3s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.create-account-letter-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--brand-color), var(--accent-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.create-account-letter-box:hover {
+    border-color: var(--brand-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.2);
+}
+
+.create-account-letter-box:hover::before {
+    opacity: 0.1;
+}
+
+.create-account-letter-box.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    cursor: grabbing;
+}
+
+.create-account-letter-box.correct {
+    border-color: var(--success-color);
+    background-color: rgba(40, 167, 69, 0.1);
+    animation: correctPulse 0.6s ease;
+}
+
+@keyframes correctPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2);
+    }
+}
+
+/* Shuffle Button */
+.create-account-shuffle-button {
+    width: 100%;
+    text-align: center;
+    color: var(--brand-color);
+    font-weight: 500;
+    padding: 8px 0;
+}
+
+.create-account-shuffle-button:hover {
+    color: var(--button-primary-hover);
+    background-color: var(--hover-bg);
+}
+
+/* Submit Button */
+.create-account-submit-btn {
+    height: 48px;
+    border-radius: 8px;
+    background: var(--button-primary);
+    border: none;
+    font-weight: 600;
+    color: var(--button-text);
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.create-account-submit-btn:hover:not(:disabled) {
+    color: var(--accent-color);
+    background: var(--button-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.create-account-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Alt Action */
+.create-account-login-alt-action {
+    text-align: center;
+    color: var(--primary-text);
+    transition: color 0.3s ease;
+    margin-top: 16px;
+}
+
+.create-account-login-alt-action a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.create-account-login-alt-action a:hover {
+    color: var(--button-primary-hover);
+    text-decoration: underline;
+}
+
+/* Form Label Styling */
+.CreateAccountLoginFormInner .ant-form-item-label>label {
+    color: var(--primary-text) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.CreateAccountLoginFormInner .ant-form-item-label>label.ant-form-item-required::before {
+    color: var(--danger-color) !important;
+}
+
+/* Form Help Text */
+.CreateAccountLoginFormInner .ant-form-item-explain {
+    color: var(--secondary-text);
+    font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .CreateAccountLoginImage {
+        display: none;
+    }
+
+    .CreateAccountLoginFormInner {
+        width: 90%;
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .CreateAccountLoginFormInner {
+        width: 95%;
+        padding: 24px;
+    }
+
+    .create-account-quiz-letters {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+    }
+
+    .create-account-letter-box {
+        font-size: 20px;
+    }
+
+    .create-account-login-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .CreateAccountLoginFormInner {
+        padding: 20px;
+    }
+
+    .create-account-quiz-letters {
+        gap: 6px;
+    }
+
+    .create-account-letter-box {
+        font-size: 18px;
+    }
+}

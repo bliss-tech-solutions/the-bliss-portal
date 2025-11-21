@@ -35,3 +35,29 @@ export const isAuthValid = (authState) => {
     // For now, just check if the basic structure is valid
     return true;
 };
+
+// Utility functions for create account authentication (temporary, session-based)
+export const setCreateAccountAuth = () => {
+    try {
+        sessionStorage.setItem('createAccountAuth', 'true');
+    } catch (error) {
+        console.error('Error setting create account auth:', error);
+    }
+};
+
+export const getCreateAccountAuth = () => {
+    try {
+        return sessionStorage.getItem('createAccountAuth') === 'true';
+    } catch (error) {
+        console.error('Error getting create account auth:', error);
+        return false;
+    }
+};
+
+export const clearCreateAccountAuth = () => {
+    try {
+        sessionStorage.removeItem('createAccountAuth');
+    } catch (error) {
+        console.error('Error clearing create account auth:', error);
+    }
+};

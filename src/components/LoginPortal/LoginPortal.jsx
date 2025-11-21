@@ -165,7 +165,7 @@ const LoginPortal = () => {
                                     </Form.Item>
                                     <div className="LoginAltAction">
                                         <span>Don't have an account? </span>
-                                        <Link to="/CreateNewUser">Create new account</Link>
+                                        <Link to="/create-account-login">Create new account</Link>
                                     </div>
                                 </Form>
                             </div>
