@@ -85,16 +85,20 @@ const LoginPortal = () => {
 
                 // Don't set loading to false here - let redirect happen with loader visible
             } else {
-                error(response.message || 'Invalid credentials. Please check your email and password.');
+                // Handle case where API returns success: false
+                const errorMessage = response.message || response.error || 'Invalid credentials. Please check your email and password.';
+                error(errorMessage);
                 setLoading(false);
             }
-        } catch (error) {
-            console.error('Login error:', error);
+        } catch (err) {
+            console.error('Login error:', err);
 
-            if (error.status === 401) {
+            if (err.status === 401) {
                 error('User credentials not found. Please contact administrator.');
-            } else if (error.data?.message) {
-                error(error.data.message);
+            } else if (err.data?.message) {
+                error(err.data.message);
+            } else if (err.message) {
+                error(err.message);
             } else {
                 error('An unexpected error occurred. Please try again.');
             }
@@ -113,9 +117,8 @@ const LoginPortal = () => {
                     <Col lg={12}>
                         <div className="LoginPortalImage">
                             <div>
-                                {/* <img src="/Images/NewImage.jpg" alt="" /> */}
                                 <DotLottieReact
-                                    src="https://lottie.host/54bb85f1-eb2e-4c52-95b9-f9548e173ffb/unkVxXzT9W.lottie"
+                                    src="/Images/Web Design Blue.lottie"
                                     loop
                                     autoplay
                                 />
