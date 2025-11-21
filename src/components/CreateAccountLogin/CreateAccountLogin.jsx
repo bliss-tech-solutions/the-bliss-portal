@@ -99,9 +99,9 @@ const CreateAccountLogin = () => {
             if (signInResponse.success || signInResponse) {
                 // Set create account auth state to allow access to CreateNewUser
                 setCreateAccountAuth();
-                
+
                 success('Credentials verified successfully! Redirecting...');
-                
+
                 // Redirect to CreateNewUser after successful verification
                 setTimeout(() => {
                     navigate('/CreateNewUser', { replace: true });
@@ -111,7 +111,7 @@ const CreateAccountLogin = () => {
             }
         } catch (error) {
             console.error('Create account login error:', error);
-            
+
             if (error.status === 401) {
                 showError('Invalid credentials. Please check your email and password.');
             } else if (error.data?.message) {
@@ -216,7 +216,7 @@ const CreateAccountLogin = () => {
                                         <Card className="create-account-quiz-card">
                                             <div className="create-account-quiz-container">
                                                 <div className="create-account-quiz-instructions">
-                                                    <p>Bliss leads; others follow in a non-sequential dance of four.</p>
+                                                    <p>Bliss leads Business Management Media Portal Kit</p>
                                                 </div>
                                                 <div className="create-account-quiz-letters">
                                                     {letters.map((letter, index) => {
