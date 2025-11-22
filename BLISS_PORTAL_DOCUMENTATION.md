@@ -29,17 +29,29 @@ src/
 │   │   │       └── FestiveCalender.css (Calendar styling)
 │   ├── RoutesComponents/
 │   │   ├── ExecutionTaskAssignPanel/
-│   │   │   ├── ExecutionTaskAssignPanel.jsx (Task assignment panel with filters)
+│   │   │   ├── ExecutionTaskAssignPanel.jsx (Task assignment panel with filters, all file types upload)
 │   │   │   ├── ExecutionTaskAssignPanel.css (Panel styling)
 │   │   │   └── AllTaskEntries/
-│   │   │       ├── AllTaskEntries.jsx (Task list with archive functionality)
-│   │   │       └── AllTaskEntries.css (Task entries styling)
+│   │   │       ├── AllTaskEntries.jsx (Task list with archive, extension requests, scheduled slots)
+│   │   │       └── AllTaskEntries.css (Task entries styling with compact grid layout)
 │   │   ├── UserTaskAssignmentPanel/
-│   │   │   ├── UserTaskAssignmentPanel.jsx (User task panel)
+│   │   │   ├── UserTaskAssignmentPanel.jsx (User task panel with tabs: All, Upcoming, In Progress, Completed)
 │   │   │   ├── UserTaskAssignmentPanel.css (User panel styling)
 │   │   │   └── AllUserTaskEntries/
-│   │   │       ├── AllUserTaskEntries.jsx (User task list with chat)
+│   │   │       ├── AllUserTaskEntries.jsx (User task list with chat, attachment links, real-time updates)
 │   │   │       └── AllUserTaskEntries.css (User task entries styling)
+│   │   ├── HRWorkComponent/
+│   │   │   ├── UserDocumentVerification/
+│   │   │   │   ├── UserDocumentVerification.jsx (Document verification form with Cloudinary uploads, grid view)
+│   │   │   │   └── UserDocumentVerification.css (Document verification styling)
+│   │   │   ├── UserAttendanceData/
+│   │   │   │   ├── UserAttendanceData.jsx (Attendance table with User ID copy button)
+│   │   │   │   └── UserAttendanceData.css (Attendance data styling)
+│   │   │   ├── DocumentGenerator/
+│   │   │   │   └── OffterLetterGenerator/
+│   │   │   │       └── OffterLetterGenerator.jsx (Offer letter generation)
+│   │   │   └── FestiveCalender/
+│   │   │       └── FestiveCalender.jsx (HR-side festive calendar)
 │   │   └── UserRolePanel/
 │   │       ├── UserRolePanel.jsx (Chat testing panel)
 │   │       └── UserRolePanel.css (Chat panel styling)
@@ -50,12 +62,25 @@ src/
 │   │   ├── Dashboard.jsx (Main dashboard layout)
 │   │   └── Dashboard.css (Dashboard layout styling)
 │   ├── LoginPortal/
-│   │   ├── LoginPortal.jsx (Login form with API integration)
+│   │   ├── LoginPortal.jsx (Login form with API integration, lottie animation)
 │   │   └── LoginPortal.css (Login styling)
+│   ├── CreateAccountLogin/
+│   │   ├── CreateAccountLogin.jsx (Account creation login with quiz, drag-and-drop letters)
+│   │   └── CreateAccountLogin.css (Create account login styling)
 │   ├── UserVerificationForm/
 │   │   ├── UserVerificationForm.jsx (User registration form with dynamic positions)
 │   │   └── UserVerificationForm.css (Registration styling)
-│   └── ProtectedRoute.jsx (Route protection logic)
+│   ├── CommonComponents/
+│   │   ├── PageLoader/
+│   │   │   ├── PageLoader.jsx (Global animated logo loader)
+│   │   │   └── PageLoader.css (Loader styling with animations)
+│   │   ├── EmptyState/
+│   │   │   ├── EmptyState.jsx (Reusable empty state component)
+│   │   │   └── EmptyState.css (Empty state styling)
+│   │   └── InlineLoader/
+│   │       ├── InlineLoader.jsx (Inline loading component)
+│   │       └── InlineLoader.css (Inline loader styling)
+│   └── ProtectedRoute.jsx (Route protection logic with create account auth)
 ├── store/
 │   ├── api.js (RTK Query API endpoints - tasks, chat, users)
 │   ├── index.js (Redux store configuration)
@@ -67,10 +92,13 @@ src/
 │   └── PortalRoutes.jsx (Route definitions)
 ├── contexts/
 │   ├── SocketContext.jsx (Socket.IO context provider)
-│   └── NotificationContext.jsx (Notification system context)
+│   ├── NotificationContext.jsx (Notification system context with MUI Snackbar)
+│   ├── LoadingContext.jsx (Global loading state and message context)
+│   └── TaskChatContext.jsx (Task chat context provider)
 ├── utils/
 │   ├── socket.js (Socket.IO utilities)
-│   └── cloudinary.js (Cloudinary upload utilities for media files)
+│   ├── cloudinary.js (Cloudinary upload utilities for media files)
+│   └── authUtils.js (Authentication utilities with create account auth)
 ├── styles/
 │   └── theme.css (Global theme variables)
 └── App.jsx (Main app component)
@@ -90,9 +118,17 @@ src/
    - LoginPortal.jsx → User enters credentials → Calls signInUser API from api.js
    - api.js → Makes API call → Returns user data with role and position
    - authSlice.js → Stores user data, userId, token in Redux state → Saves to localStorage
-   - LoginPortal.jsx → Shows success notification → Redirects to /Dashboard
+   - LoginPortal.jsx → Sets global loading state → Shows animated logo loader → Redirects to /Dashboard
+   - Dashboard.jsx → Monitors API loading states → Hides loader when all APIs are idle
 
-4. USER REGISTRATION FLOW:
+4. CREATE ACCOUNT LOGIN FLOW:
+   - CreateAccountLogin.jsx → Professional login page with drag-and-drop quiz
+   - Quiz: Letters "BMMPK" randomly arranged → User must arrange correctly (Business Management Media Portal Kit)
+   - User enters email/password → Validates quiz sequence → Calls POST /api/createaccountsignin/signin
+   - On success → Sets create account auth state in sessionStorage → Redirects to /CreateNewUser
+   - ProtectedCreateAccountRoute → Protects /CreateNewUser from direct access
+
+5. USER REGISTRATION FLOW:
    - UserVerificationForm.jsx → Dynamic role-based position dropdown
    - Role "Execution" → Shows "SME" position
    - Role "user" → Shows "Graphics Designer", "Developer", "Content Writer", "Video Editor"
@@ -122,14 +158,28 @@ src/
    - ExecutionTaskAssignPanel.jsx → "Add New Task" drawer with dynamic user selection
    - Position selection → Shows users from OTHER roles only
    - User selection → Stores receiverUserId for task assignment
+   - Task References → Upload any file type (images, documents, etc.) via Cloudinary
    - Task creation → API call with userId (creator) and receiverUserId
    - Real-time updates → Socket.IO integration for instant task updates
 
-10. TASK VIEWING FLOW:
-    - AllTaskEntries.jsx → Shows tasks with filtering and search
+10. TASK VIEWING FLOW (EXECUTION ROLE):
+    - AllTaskEntries.jsx → Shows tasks with filtering and search (2-column grid layout)
     - Filter system → Search by task name/client name, date range picker
     - Archive functionality → Modal confirmation with task details
     - View task drawer → Shows full task details with integrated chat
+    - Scheduled Slots → Compact grid display with timing, booking date, extension history
+    - Extension Requests → Real-time pending requests with Approve/Reject buttons
+    - Extension approval → Modal with reason → Updates status via POST /api/taskextension/respond
+    - Real-time extension updates → Socket.IO events update status instantly
+
+11. USER TASK VIEWING FLOW:
+    - UserTaskAssignmentPanel.jsx → Tabs: All, Upcoming, In Progress, Completed
+    - AllUserTaskEntries.jsx → Displays tasks based on active tab prop
+    - Real-time task updates → Socket.IO listener refetches tasks when new task assigned
+    - Task attachment links → Truncated to 60 characters, clickable with View/Download buttons
+    - View button → Opens link in new tab
+    - Download button → Fetches file as blob and triggers download
+    - Completed tasks → Filtered and displayed in "Completed" tab
 
 11. CHAT SYSTEM:
     - TaskChat.jsx → Reusable chat component with emoji picker
@@ -157,6 +207,36 @@ src/
     - Leave approval workflow → HR can approve/reject specific dates with instructions
     - Real-time updates → Socket.IO integration for instant leave status updates
     - Local storage persistence → Selected dates and reasons saved locally
+
+14. USER DOCUMENT VERIFICATION FLOW:
+    - UserDocumentVerification.jsx → Two tabs: "Add Document" and "All Documents Data"
+    - Add Document Tab → Professional form with Cloudinary uploads
+    - Document uploads → Aadhar Card, Passport Photo, Offer Letter via Cloudinary
+    - Loading states → Shows "Uploading..." instead of validation errors during upload
+    - Form submission → POST /api/userverificationdocuments/create with all data and document URLs
+    - All Documents Data Tab → Grid cards displaying all user documents
+    - Document grid → GET /api/userverificationdocuments/getAll → Professional card layout
+    - View buttons → Opens document URLs in new tabs
+
+15. USER ATTENDANCE DATA FLOW:
+    - UserAttendanceData.jsx → Table displaying user attendance records
+    - User ID column → First column with copy button only (no text display)
+    - Copy functionality → Copies User ID to clipboard → Shows success notification
+    - Notification confirmation → MUI Snackbar confirms successful copy
+
+16. MOBILE NAVIGATION FLOW:
+    - PortalHeader.jsx → Detects mobile screen size (< 768px)
+    - Mobile header bar → Shows left navigation button with short greeting/date
+    - Navigation drawer → Ant Design Drawer slides from left on button click
+    - Drawer content → All header functionality (logo, greeting, date, checkout, theme, notifications, profile, navigation)
+    - Desktop view → Full header functionality as before
+
+17. GLOBAL LOADING SYSTEM:
+    - LoadingContext.jsx → Provides global loading state and message
+    - PageLoader.jsx → Animated logo loader with pulse animation
+    - Login to Dashboard → Shows loader during API calls → Hides when all APIs are idle
+    - Minimum display time → 1.2 seconds to prevent merging with dashboard content
+    - API monitoring → Uses RTK Query's useIsFetching and useIsLoading hooks
 
 ================================================================================
 🎯 KEY FEATURES:
@@ -218,6 +298,9 @@ DYNAMIC NAVIGATION:
 RESPONSIVE DESIGN:
 - Mobile-friendly layouts → Theme-aware styling → Smooth transitions
 - Responsive filter section with mobile-optimized layout
+- Mobile navigation drawer → Consolidated header functionality
+- Tablet and mobile breakpoints → Optimized layouts for all screen sizes
+- 2-column grid layout for tasks on desktop → Responsive grid adjustments
 
 ================================================================================
 🔧 TECHNICAL STACK:
@@ -233,6 +316,9 @@ RESPONSIVE DESIGN:
 - Emoji Picker React → Emoji functionality
 - Cloudinary → Media upload and storage (unsigned upload preset)
 - dayjs → Date manipulation and formatting
+- Material UI (MUI) → Snackbar notifications
+- DotLottie React → Lottie animations
+- HTML5 Drag and Drop API → Interactive quiz elements
 
 ================================================================================
 📋 API ENDPOINTS:
@@ -240,13 +326,16 @@ RESPONSIVE DESIGN:
 
 AUTHENTICATION:
 - POST /api/signin → User login
+- POST /api/createaccountsignin/signin → Create account login (CodeNo, Email, Password)
 - POST /api/addUserDetails → User registration
 - GET /api/getUserDetails → Get user data
 
 TASK MANAGEMENT:
-- POST /api/addtaskassign → Create new task
+- POST /api/addtaskassign → Create new task (with taskReferences - all file types)
 - GET /api/getTaskAssign/:userId?isArchived=false → Get user tasks (filtered)
 - PUT /api/addtaskassign/:taskId/archive → Archive task
+- POST /api/taskextension/request → Request task extension
+- POST /api/taskextension/respond → Respond to extension request (approve/reject)
 
 USER MANAGEMENT:
 - GET /api/getUserDetails → Get all users for task assignment
@@ -261,6 +350,13 @@ LEAVE MANAGEMENT:
 - GET /api/leave/getAll/:userId → Get user's leave history
 - GET /api/leave/getAllLeaves → Get all users' leaves (HR-side)
 - POST /api/leave/reject/:userId/:month/:leaveId → Approve/reject leave dates (HR-side)
+
+DOCUMENT VERIFICATION:
+- POST /api/userverificationdocuments/create → Create user document verification
+- GET /api/userverificationdocuments/getAll → Get all user documents
+
+ATTENDANCE:
+- GET /api/userattendance/getAll → Get user attendance data
 
 ================================================================================
 📋 API RESPONSE FORMATS:
@@ -446,10 +542,11 @@ Protected Routes:
 - /task-assignment (Execution role only)
 - /my-tasks (User role only)
 - /chat-test (All authenticated users)
+- /CreateNewUser (Protected by create account authentication - requires sign-in via /create-account-login)
 
 Public Routes:
 - / (Login)
-- /CreateNewUser
+- /create-account-login (Create account login with quiz)
 
 ================================================================================
 🎯 USER EXPERIENCE FLOW:
@@ -470,10 +567,28 @@ EXECUTION ROLE USER:
 REGULAR USER ROLE:
 1. User logs in → Redirected to Dashboard
 2. Dashboard loads → Shows sidebar with User-specific navigation
-3. User clicks "My Tasks" → UserTaskAssignmentPanel loads
-4. User sees assigned tasks → Can view task details
+3. User clicks "My Tasks" → UserTaskAssignmentPanel loads with tabs (All, Upcoming, In Progress, Completed)
+4. User sees assigned tasks → Can view task details (real-time updates when new task assigned)
 5. User can chat on tasks → Bidirectional chat with assigner
 6. User can use emoji picker → 18px emojis in chat messages
+7. User can request task extension → Submits extension request with reason
+8. User can view task attachments → Truncated links with View/Download buttons
+9. Completed tasks → Displayed in "Completed" tab
+
+CREATE ACCOUNT FLOW:
+1. User visits main login → Clicks "Don't have an account? Create new account"
+2. Redirects to /create-account-login → Professional login page with quiz
+3. User arranges letters "BMMPK" in correct order (drag-and-drop)
+4. User enters email and password → Submits credentials
+5. API validates → Sets create account auth → Redirects to /CreateNewUser
+6. User completes registration form → Creates account → Redirects to login
+
+HR WORK FLOW:
+1. HR logs in → Accesses HR Work Component
+2. User Document Verification → Can add/view user documents
+3. User Attendance Data → Views attendance records, copies User IDs
+4. Document Generator → Generates offer letters
+5. Festive Calendar → Manages leaves and tasks
 
 ================================================================================
 🔌 SOCKET.IO INTEGRATION:
@@ -490,7 +605,9 @@ SOCKET EVENTS:
 - leave-task-room → Leave task chat room
 - send-message → Send chat message
 - new-message → Receive new chat message
-- task-added → Receive new task notification
+- task-added → Receive new task notification (real-time task assignment)
+- task-extension-requested → Receive task extension request notification
+- task-extension-updated → Receive task extension status update (approved/rejected)
 - leave-updated → Receive leave status update notification
 - leave-requested → Receive new leave request notification
 
@@ -649,6 +766,63 @@ CALENDAR & LEAVE MANAGEMENT:
 ✓ Real-time leave updates via Socket.IO
 ✓ Local storage persistence for draft leave requests
 ✓ Latest tasks sorted by createdAt (descending) in both panels
+
+TASK EXTENSION SYSTEM:
+✓ Extension request functionality for users
+✓ Scheduled slots display with timing and booking dates
+✓ Extension history tracking
+✓ Real-time extension status updates via Socket.IO
+✓ Approve/Reject buttons for assigners
+✓ Extension request modal with reason
+✓ Indian 12-hour time format (h:mm A)
+✓ Compact grid layout for scheduled slots and extension requests
+
+USER DOCUMENT VERIFICATION:
+✓ Professional document verification form
+✓ Cloudinary integration for document uploads (Aadhar, Passport, Offer Letter)
+✓ Two-tab interface (Add Document, All Documents Data)
+✓ Loading states during document upload
+✓ Grid card display for all documents
+✓ Document view functionality
+
+USER ATTENDANCE DATA:
+✓ Attendance data table
+✓ User ID copy functionality with confirmation notification
+✓ First column User ID with copy button only
+
+MOBILE RESPONSIVENESS:
+✓ Mobile navigation drawer for header
+✓ Consolidated header functionality in drawer
+✓ Short greeting and date on mobile header bar
+✓ Theme toggle and all features accessible in drawer
+
+GLOBAL LOADING SYSTEM:
+✓ LoadingContext for global loading state
+✓ PageLoader component with animated logo
+✓ API-aware loading (shows only when APIs are active)
+✓ Minimum display time to prevent UI merging
+✓ Smooth fade-in/fade-out animations
+
+CREATE ACCOUNT LOGIN:
+✓ Professional login page with quiz
+✓ Drag-and-drop letter arrangement quiz (BMMPK)
+✓ Protected route for /CreateNewUser
+✓ Session-based authentication for account creation
+✓ Real-time quiz validation
+
+TASK ATTACHMENT SYSTEM:
+✓ All file types upload support (images, documents, etc.)
+✓ Attachment link truncation (60 characters)
+✓ View and Download buttons for attachments
+✓ Clickable truncated links
+✓ File download as blob
+
+SEO OPTIMIZATION:
+✓ Comprehensive meta tags in index.html
+✓ Open Graph tags for social media sharing
+✓ Twitter Card tags
+✓ JSON-LD structured data
+✓ Company information integration
 
 ================================================================================
 📊 COMPONENT RELATIONSHIPS:
