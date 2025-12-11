@@ -1,0 +1,344 @@
+/* ============================================
+   USER CLIENT MODAL - PROFESSIONAL STYLING
+   ============================================ */
+
+/* Search Bar Styles */
+.user-client-modal .search-bar-container {
+    width: 100%;
+}
+
+.user-client-modal .user-client-search {
+    width: 100%;
+}
+
+.user-client-modal .user-client-search .ant-select-selector {
+    height: 40px !important;
+    padding: 0 !important;
+}
+
+.user-client-modal .user-client-search .ant-input-affix-wrapper {
+    width: 100% !important;
+    padding: 0 !important;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    transition: all 0.3s !important;
+    height: 40px !important;
+}
+
+.user-client-modal .user-client-search .ant-input-affix-wrapper:hover {
+    border-color: #40a9ff !important;
+}
+
+.user-client-modal .user-client-search .ant-input-affix-wrapper-focused,
+.user-client-modal .user-client-search .ant-input-affix-wrapper:focus,
+.user-client-modal .user-client-search .ant-input-affix-wrapper-focused:not(.ant-input-affix-wrapper-disabled) {
+    border-color: #1890ff !important;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.user-client-modal .user-client-search .ant-input {
+    background-color: transparent !important;
+    border: none !important;
+    font-size: 14px !important;
+    line-height: 1.5715 !important;
+    padding: 4px 11px !important;
+    width: 100% !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.user-client-modal .user-client-search .ant-input::placeholder {
+    color: #bfbfbf !important;
+    font-size: 14px !important;
+}
+
+.user-client-modal .user-client-search .ant-input-prefix {
+    margin-right: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 11px !important;
+}
+
+.user-client-modal .user-client-search .search-icon {
+    color: #8c8c8c !important;
+    font-size: 14px !important;
+}
+
+.user-client-modal .user-client-search .ant-input-suffix {
+    margin-left: 8px !important;
+    padding-right: 11px !important;
+}
+
+.user-client-modal .user-client-search-dropdown {
+    z-index: 1050 !important;
+}
+
+.user-client-modal .user-client-search-dropdown .ant-select-item {
+    padding: 8px 12px !important;
+    line-height: 1.5715 !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    min-height: 32px !important;
+}
+
+.user-client-modal .user-client-search-dropdown .ant-select-item-option-content {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+.user-client-modal .user-client-search-dropdown .ant-select-item-option-selected {
+    background-color: #e6f7ff !important;
+}
+
+.user-client-modal .user-client-search-dropdown .ant-select-item-option-active {
+    background-color: #f5f5f5 !important;
+}
+
+/* Main Modal Container */
+.user-client-modal .ant-modal-content {
+    padding: 0 !important;
+    border-radius: 8px;
+}
+
+.user-client-modal .ant-modal-header {
+    padding: 20px 24px !important;
+    border-bottom: 1px solid #f0f0f0;
+    background: linear-gradient(to right, #fafafa, #ffffff);
+}
+
+.user-client-modal .ant-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #262626;
+}
+
+.user-client-modal .ant-modal-close {
+    top: 16px;
+    right: 16px;
+}
+
+/* Modal Body */
+.user-client-modal .ant-modal-body {
+    padding: 24px !important;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Modal Footer */
+.user-client-modal .ant-modal-footer {
+    padding: 16px 24px !important;
+    border-top: 1px solid #f0f0f0;
+    background-color: #fafafa;
+    text-align: right;
+}
+
+.user-client-modal .ant-modal-footer button {
+    min-width: 80px;
+}
+
+/* ============================================
+     USER CLIENT LIST STYLING
+     ============================================ */
+
+.user-client-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Empty State */
+.user-client-list .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8c8c8c;
+    font-size: 14px;
+    background-color: #fafafa;
+    border-radius: 6px;
+    border: 1px dashed #d9d9d9;
+}
+
+/* ============================================
+     USER CLIENT ITEM STYLING
+     ============================================ */
+
+.user-client-item {
+    background-color: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.user-client-item:hover {
+    border-color: #d9d9d9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* User Header Section */
+.user-client-item .user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background-color: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.user-header .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.user-header .user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #262626;
+}
+
+.user-header .user-email {
+    font-size: 12px;
+    color: #8c8c8c;
+}
+
+.user-header .client-count-tag {
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: 12px;
+}
+
+/* No Clients State */
+.user-client-item .no-clients {
+    padding: 16px;
+    text-align: center;
+    color: #bfbfbf;
+    font-size: 13px;
+    background-color: #fafafa;
+}
+
+/* ============================================
+     CLIENTS TABLE STYLING
+     ============================================ */
+
+.clients-table-wrapper {
+    padding: 0;
+    background-color: #ffffff;
+}
+
+.user-client-table {
+    font-size: 13px;
+}
+
+.user-client-table .ant-table {
+    background-color: transparent;
+    font-size: 13px;
+}
+
+.user-client-table .ant-table-thead>tr>th {
+    background-color: #f5f5f5;
+    color: #262626;
+    font-weight: 600;
+    font-size: 12px;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid #f0f0f0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-client-table .ant-table-tbody>tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.user-client-table .ant-table-tbody>tr:hover {
+    background-color: #fafafa !important;
+}
+
+.user-client-table .ant-table-tbody>tr>td {
+    padding: 12px !important;
+    color: #262626;
+    font-size: 13px;
+}
+
+/* Table Cell Styling */
+.client-name-cell {
+    font-weight: 500;
+    color: #262626;
+}
+
+.client-city-cell {
+    color: #595959;
+}
+
+.status-tag {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-tag.ant-tag-green {
+    background-color: #f6ffed;
+    border-color: #b7eb8f;
+    color: #52c41a;
+}
+
+.status-tag.ant-tag-red {
+    background-color: #fff1f0;
+    border-color: #ffccc7;
+    color: #f5222d;
+}
+
+/* ============================================
+     RESPONSIVE DESIGN
+     ============================================ */
+
+@media (max-width: 768px) {
+    .user-client-modal {
+        width: 95% !important;
+    }
+
+    .user-client-modal .ant-modal-body {
+        max-height: 500px;
+    }
+
+    .user-header {
+        flex-wrap: wrap;
+    }
+
+    .user-header .client-count-tag {
+        margin-left: 0;
+        margin-top: 8px;
+        width: 100%;
+    }
+
+    .user-client-table .ant-table-thead>tr>th,
+    .user-client-table .ant-table-tbody>tr>td {
+        padding: 8px !important;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-client-modal .ant-modal-header {
+        padding: 16px !important;
+    }
+
+    .user-client-modal .ant-modal-body {
+        padding: 16px !important;
+        max-height: 400px;
+    }
+
+    .user-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .user-header .client-count-tag {
+        align-self: flex-start;
+    }
+}

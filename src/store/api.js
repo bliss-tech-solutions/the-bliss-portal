@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams'],
     endpoints: (builder) => ({
         createLeave: builder.mutation({
             query: (body) => ({
@@ -328,6 +328,82 @@ export const api = createApi({
                 headers: { 'Content-Type': 'application/json' },
             }),
         }),
+        createClient: builder.mutation({
+            query: (body) => ({
+                url: '/api/clientmanagement/create',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getAllClients: builder.query({
+            query: () => ({
+                url: '/api/clientmanagement/getAllClientsData',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        getClientsByUserId: builder.query({
+            query: (userId) => ({
+                url: `/api/clientmanagement/getClientsByUserId/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: (result, error, userId) => [
+                { type: 'Clients', id: userId },
+                { type: 'Clients', id: 'LIST' }
+            ],
+        }),
+        updateClient: builder.mutation({
+            query: ({ clientId, body }) => ({
+                url: `/api/clientmanagement/update/${clientId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        addClientAttachment: builder.mutation({
+            query: ({ clientId, body }) => ({
+                url: `/api/clientmanagement/${clientId}/attachments`,
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Clients'],
+        }),
+        getClientAttachmentsByUserId: builder.query({
+            query: ({ clientId, userId }) => ({
+                url: `/api/clientmanagement/${clientId}/attachments/byUserId/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+        createTeam: builder.mutation({
+            query: (body) => ({
+                url: '/api/teammanagement/createTeam',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
+        }),
+        getAllTeams: builder.query({
+            query: () => ({
+                url: '/api/teammanagement/getAllTeams',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Teams'], // Provide tag for cache invalidation
+        }),
+        updateTeam: builder.mutation({
+            query: ({ teamId, body }) => ({
+                url: `/api/teammanagement/updateTeam/${teamId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
+        }),
     }),
 })
 
@@ -371,7 +447,16 @@ export const {
     useGetAllUserVerificationDocumentsQuery,
     useCheckCreateAccountSignInQuery,
     useLazyCheckCreateAccountSignInQuery,
-    useSignInCreateAccountMutation
+    useSignInCreateAccountMutation,
+    useCreateClientMutation,
+    useGetAllClientsQuery,
+    useUpdateClientMutation,
+    useGetClientsByUserIdQuery,
+    useAddClientAttachmentMutation,
+    useGetClientAttachmentsByUserIdQuery,
+    useCreateTeamMutation,
+    useGetAllTeamsQuery,
+    useUpdateTeamMutation
 } = api
 
 

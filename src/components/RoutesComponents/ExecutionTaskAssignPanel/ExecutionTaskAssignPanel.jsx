@@ -9,7 +9,7 @@ import { selectTheme } from "../../../store/slices/themeSlice";
 import { selectUserId, selectUser } from "../../../store/slices/authSlice";
 import { useAddTaskAssignMutation, useGetAllUsersQuery, useLazyGetTaskAssignByDateQuery } from "../../../store/api";
 import { useNotification } from "../../../contexts/NotificationContext";
-import { emitTaskAdded, onTaskAdded, offTaskAdded } from "../../../utils/socket";
+import { emitTaskAdded, onTaskAdded, offTaskAdded, onTaskUpdated, offTaskUpdated } from "../../../utils/socket";
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
 import dayjs from "dayjs";
@@ -58,20 +58,40 @@ const ExecutionTaskAssignPanel = () => {
     // Fetch all users from API
     const { data: allUsersData, isLoading: isLoadingUsers } = useGetAllUsersQuery();
 
-    // Socket.io listener for real-time task updates
+    // Socket.io listener for real-time task updates (notifications only)
+    // Note: AllTaskEntries component handles the actual refetch
     useEffect(() => {
-        // Listen for task added events
-        onTaskAdded((data) => {
-            console.log('✅ New task received:', data);
-            showSuccess(`New task added: ${data.taskName}`);
-            // You can refetch tasks here or update state
-        });
+        // Listen for task added events (show notification)
+        const handleTaskAdded = (data) => {
+            if (!data) return;
+            
+            // Check if this task is created by current user (execution role)
+            const isCreatedByCurrentUser = data.userId === userId;
+            
+            if (isCreatedByCurrentUser) {
+                console.log('✅ New task created via socket:', data);
+                showSuccess(`Task created: ${data.taskName || 'New task'}`);
+                // AllTaskEntries will handle refetch via its own socket listener
+            }
+        };
+
+        // Listen for task update events (show notification)
+        const handleTaskUpdated = (data) => {
+            if (!data) return;
+            console.log('✅ Task updated via socket:', data);
+            // AllTaskEntries will handle refetch via its own socket listener
+        };
+
+        // Set up socket listeners
+        onTaskAdded(handleTaskAdded);
+        onTaskUpdated(handleTaskUpdated);
 
         // Cleanup on unmount
         return () => {
-            offTaskAdded();
+            offTaskAdded(handleTaskAdded);
+            offTaskUpdated(handleTaskUpdated);
         };
-    }, [showSuccess]);
+    }, [userId, showSuccess]);
 
     const handleTabChange = (key) => {
         setActiveTab(key);

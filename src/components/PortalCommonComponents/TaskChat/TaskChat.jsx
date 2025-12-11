@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TaskChat.css';
 import { Card, Avatar, Input, Spin, Button, Popover, Modal } from 'antd';
+import { DownloadOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useLazyGetTaskChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
@@ -289,6 +290,65 @@ const TaskChat = ({
         });
     };
 
+    // Handle download for high-quality files
+    const handleDownload = async (url, type = 'image') => {
+        try {
+            if (!url || typeof url !== 'string') {
+                showError('Invalid file URL');
+                return;
+            }
+
+            // Get filename from URL or generate one based on type
+            const urlParts = url.split('/');
+            let filename = urlParts[urlParts.length - 1].split('?')[0];
+            
+            // Extract extension from URL or use default based on type
+            if (!filename || !filename.includes('.')) {
+                const extension = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'file' ? 'pdf' : 'jpg';
+                filename = `download_${Date.now()}.${extension}`;
+            }
+
+            // Use the original message URL directly (no modifications)
+            const downloadUrl = url;
+            
+            // Fetch the file as blob to force download (not open in browser)
+            const response = await fetch(downloadUrl, {
+                method: 'GET',
+                mode: 'cors',
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            
+            if (!blob || blob.size === 0) {
+                throw new Error('Empty file received');
+            }
+            
+            // Create blob URL and trigger download
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename; // This forces download instead of opening
+            link.style.display = 'none'; // Hide the link
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            }, 100);
+            
+            showSuccess('File downloaded successfully!');
+        } catch (error) {
+            console.error('Download error:', error);
+            showError(`Failed to download file: ${error.message || 'Please try right-clicking the image and "Save As"'}`);
+        }
+    };
+
     const renderChatMessages = () => {
         if (isChatLoading) {
             return (
@@ -340,49 +400,97 @@ const TaskChat = ({
                     <div className="message-content">
                         <div className="message-bubble">
                             {asImage ? (
-                                <img
-                                    src={msg.message}
-                                    alt="chat-img"
-                                    style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                    onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
-                                />
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <img
+                                        src={msg.message}
+                                        alt="chat-img"
+                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
+                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
+                                    />
+                                    <Button
+                                        type="primary"
+                                        icon={<DownloadOutlined />}
+                                        size="small"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 8,
+                                            right: 8,
+                                            zIndex: 10,
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(msg.message, 'image');
+                                        }}
+                                        title="Download high-quality image"
+                                    />
+                                </div>
                             ) : asVideo ? (
-                                <video
-                                    src={msg.message}
-                                    controls
-                                    style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                    onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
-                                />
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <video
+                                        src={msg.message}
+                                        controls
+                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
+                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
+                                    />
+                                    <Button
+                                        type="primary"
+                                        icon={<DownloadOutlined />}
+                                        size="small"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 8,
+                                            right: 8,
+                                            zIndex: 10,
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(msg.message, 'video');
+                                        }}
+                                        title="Download high-quality video"
+                                    />
+                                </div>
                             ) : asFile ? (
-                                isPdf ? (
-                                    // Try inline preview via <object>. If browser can't render, it falls back to the link
-                                    <object data={msg.message} type="application/pdf" width={260} height={360} style={{ borderRadius: 8 }}>
-                                        {pdfThumb ? (
-                                            <a href={msg.message} target="_blank" rel="noreferrer">
-                                                <img src={pdfThumb} alt="PDF preview" style={{ maxWidth: 260, borderRadius: 8 }} />
-                                            </a>
-                                        ) : (
-                                            <a
-                                                href={toAttachmentUrl(msg.message)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                style={{ color: 'inherit', textDecoration: 'underline' }}
-                                            >
-                                                Open PDF
-                                            </a>
-                                        )}
-                                    </object>
-                                ) : (
-                                    <a
-                                        href={toAttachmentUrl(msg.message)}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        download
-                                        style={{ color: 'inherit', textDecoration: 'underline' }}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {isPdf ? (
+                                        // Try inline preview via <object>. If browser can't render, it falls back to the link
+                                        <object data={msg.message} type="application/pdf" width={260} height={360} style={{ borderRadius: 8 }}>
+                                            {pdfThumb ? (
+                                                <a href={msg.message} target="_blank" rel="noreferrer">
+                                                    <img src={pdfThumb} alt="PDF preview" style={{ maxWidth: 260, borderRadius: 8 }} />
+                                                </a>
+                                            ) : (
+                                                <a
+                                                    href={toAttachmentUrl(msg.message)}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    style={{ color: 'inherit', textDecoration: 'underline' }}
+                                                >
+                                                    Open PDF
+                                                </a>
+                                            )}
+                                        </object>
+                                    ) : (
+                                        <a
+                                            href={toAttachmentUrl(msg.message)}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            style={{ color: 'inherit', textDecoration: 'underline' }}
+                                        >
+                                            Open document
+                                        </a>
+                                    )}
+                                    <Button
+                                        type="primary"
+                                        icon={<DownloadOutlined />}
+                                        size="small"
+                                        onClick={() => handleDownload(msg.message, 'file')}
+                                        style={{ alignSelf: 'flex-start' }}
                                     >
-                                        Open document
-                                    </a>
-                                )
+                                        Download
+                                    </Button>
+                                </div>
                             ) : (
                                 <p
                                     className="message-text"
@@ -617,9 +725,19 @@ const TaskChat = ({
             <Modal
                 open={preview.open}
                 onCancel={() => setPreview({ open: false, url: '', type: 'image' })}
-                footer={null}
+                footer={[
+                    <Button
+                        key="download"
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        onClick={() => handleDownload(preview.url, preview.type)}
+                        size="large"
+                    >
+                        Download High Quality
+                    </Button>
+                ]}
                 centered
-                width={900}
+                width={700}
                 zIndex={1100}
                 bodyStyle={{ textAlign: 'center', background: 'var(--card-bg)' }}
             >

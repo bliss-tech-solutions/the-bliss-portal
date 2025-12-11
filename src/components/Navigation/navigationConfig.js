@@ -6,6 +6,8 @@ import { FileTextOutlined } from '@ant-design/icons';
 import { FaCalendarAlt } from "react-icons/fa";
 import { CalendarOutlined } from '@ant-design/icons';
 import { SiGoogleanalytics } from "react-icons/si";
+import { SiDatabricks } from "react-icons/si";
+import { TfiLayoutAccordionSeparated } from "react-icons/tfi";
 
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
@@ -19,6 +21,10 @@ import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/Ta
 
 // Navigation Configuration
 import UserDocumentVerification from '../RoutesComponents/HRWorkComponent/UserDocumentVerification/UserDocumentVerification';
+import ContentProviderPanel from '../RoutesComponents/ContentProviderPanel/ContentProviderPanel';
+import ContentProviderTaskEntriesPage from '../RoutesComponents/ContentProviderPanel/TaskEntries/ContentProviderTaskEntriesPage';
+import ClientsSegregation from '../RoutesComponents/AdminDashboard/ClientsSegregation/ClientsSegregation';
+import ClientAssignManament from '../RoutesComponents/AdminDashboard/ClientAssignManament/ClientAssignManament';
 
 export const navigationConfig = [
     // Admin Only Route
@@ -93,6 +99,38 @@ export const navigationConfig = [
         routeName: "/user-verification-details",
         roles: ["HR"],
         component: UserDocumentVerification,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Content Provider Panel",
+        icon: UserOutlined,
+        routeName: "/content-provider-panel",
+        roles: ["ContentProvider"],
+        component: ContentProviderPanel,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "My Tasks",
+        icon: BiTask,
+        routeName: "/content-provider-tasks",
+        roles: ["ContentProvider"],
+        component: ContentProviderTaskEntriesPage,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Clients Segregation",
+        icon: TfiLayoutAccordionSeparated,
+        routeName: "/clients-segregation",
+        roles: ["Execution"],
+        component: ClientsSegregation,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Client Assign Manament",
+        icon: SiDatabricks,
+        routeName: "/client-assign-manament",
+        roles: ["Execution"],
+        component: ClientAssignManament,
         showInSidebar: true
     }
 ];

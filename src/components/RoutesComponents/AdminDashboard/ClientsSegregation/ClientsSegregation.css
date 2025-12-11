@@ -1,0 +1,470 @@
+#ClientsSegregationContainer {
+    /* padding: 20px; */
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+}
+
+.clients-segregation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.clients-segregation-title {
+    color: var(--primary-text);
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0;
+}
+
+.add-client-button {
+    background-color: var(--button-primary);
+    color: var(--button-text);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.add-client-button:hover {
+    background-color: var(--button-primary-hover);
+}
+
+
+/* Modal Styles - Scoped */
+#ClientsSegregationContainer .add-client-modal .ant-modal-content {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-modal-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-modal-title {
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-modal-body {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-modal-footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-form-item-label > label {
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .add-client-modal .ant-form-item-label > label.ant-form-item-required::before {
+    color: var(--error-color);
+}
+
+/* Input Styles */
+.theme-input {
+    background-color: var(--input-bg);
+    color: var(--primary-text);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.theme-input:focus {
+    outline: none;
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+}
+
+.theme-input::placeholder {
+    color: var(--secondary-text);
+}
+
+/* Modern Date Picker Styles - Scoped to parent */
+#ClientsSegregationContainer .modern-date-picker {
+    width: 100% !important;
+    height: 40px !important;
+    border-radius: 6px !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--input-bg) !important;
+    color: var(--primary-text) !important;
+    transition: all 0.3s ease !important;
+}
+
+#ClientsSegregationContainer .modern-date-picker:hover {
+    border-color: var(--brand-color) !important;
+}
+
+#ClientsSegregationContainer .modern-date-picker.ant-picker-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
+}
+
+#ClientsSegregationContainer .modern-date-picker .ant-picker-input > input {
+    color: var(--primary-text) !important;
+    background-color: transparent !important;
+}
+
+#ClientsSegregationContainer .modern-date-picker .ant-picker-input > input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+#ClientsSegregationContainer .modern-date-picker .ant-picker-suffix {
+    color: var(--secondary-text) !important;
+}
+
+/* Calendar Dropdown Styles - Scoped */
+/* Date picker dropdown needs to be above modal - global scope needed for portal */
+.ant-picker-dropdown {
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure the dropdown container is above modal */
+.ant-picker-dropdown.ant-picker-dropdown-placement-bottomLeft,
+.ant-picker-dropdown.ant-picker-dropdown-placement-bottomRight,
+.ant-picker-dropdown.ant-picker-dropdown-placement-topLeft,
+.ant-picker-dropdown.ant-picker-dropdown-placement-topRight {
+    z-index: 10001 !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure all picker elements are clickable */
+.ant-picker-dropdown * {
+    pointer-events: auto !important;
+}
+
+#ClientsSegregationContainer .ant-picker-panel-container,
+.ant-picker-panel-container {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+    z-index: 10001 !important;
+    position: relative;
+    pointer-events: auto !important;
+}
+
+#ClientsSegregationContainer .ant-picker-panel,
+.ant-picker-panel {
+    background-color: var(--card-bg) !important;
+    pointer-events: auto !important;
+}
+
+#ClientsSegregationContainer .ant-picker-header {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-header button {
+    color: var(--primary-text) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-header-view button {
+    color: var(--primary-text) !important;
+    font-weight: 600 !important;
+}
+
+#ClientsSegregationContainer .ant-picker-content th {
+    color: var(--secondary-text) !important;
+    font-weight: 500 !important;
+}
+
+#ClientsSegregationContainer .ant-picker-cell {
+    color: var(--primary-text) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-cell:hover .ant-picker-cell-inner {
+    background-color: var(--hover-bg) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-cell-selected .ant-picker-cell-inner {
+    background-color: var(--brand-color) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+}
+
+#ClientsSegregationContainer .ant-picker-cell-today .ant-picker-cell-inner {
+    border-color: var(--brand-color) !important;
+    font-weight: 600 !important;
+}
+
+#ClientsSegregationContainer .ant-picker-cell-disabled {
+    color: var(--secondary-text) !important;
+    opacity: 0.5 !important;
+}
+
+#ClientsSegregationContainer .ant-picker-today-btn {
+    color: var(--brand-color) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-ok {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+}
+
+#ClientsSegregationContainer .ant-picker-ok:hover {
+    background-color: var(--button-primary-hover) !important;
+    border-color: var(--button-primary-hover) !important;
+}
+
+/* Position Selects Container - Scoped */
+#ClientsSegregationContainer .position-selects-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#ClientsSegregationContainer .position-select-item {
+    margin-bottom: 8px;
+}
+
+#ClientsSegregationContainer .position-label {
+    color: var(--primary-text);
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+/* Position Users Select Styles - Scoped */
+#ClientsSegregationContainer .position-users-select {
+    width: 100% !important;
+}
+
+#ClientsSegregationContainer .position-users-select .ant-select-selector {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    min-height: 40px !important;
+}
+
+#ClientsSegregationContainer .position-users-select .ant-select-selection-item {
+    background-color: var(--brand-color) !important;
+    color: #000 !important;
+    border-color: var(--brand-color) !important;
+}
+
+#ClientsSegregationContainer .position-users-select .ant-select-selection-placeholder {
+    color: var(--secondary-text) !important;
+}
+
+#ClientsSegregationContainer .position-users-select.ant-select-focused .ant-select-selector {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
+}
+
+/* Selected Users Info - Scoped */
+#ClientsSegregationContainer .selected-users-info {
+    color: var(--secondary-text);
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+#ClientsSegregationContainer .selected-users-tags {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#ClientsSegregationContainer .selected-users-title {
+    color: var(--primary-text);
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+/* Button Styles */
+.theme-button {
+    background-color: transparent;
+    color: var(--primary-text);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.theme-button:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--brand-color);
+}
+
+.theme-button-primary {
+    background-color: var(--button-primary);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    transition: all 0.3s ease;
+}
+
+.theme-button-primary:hover {
+    background-color: var(--button-primary-hover);
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    #ClientsSegregationContainer {
+        padding: 16px;
+    }
+
+    .clients-segregation-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .clients-segregation-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .add-client-button {
+        width: 100%;
+    }
+
+    .add-client-modal {
+        max-width: 95vw !important;
+    }
+
+    .add-client-modal [data-part="footer"] {
+        flex-direction: column-reverse;
+    }
+
+    .add-client-modal [data-part="footer"] button {
+        width: 100%;
+    }
+}
+
+/* Dark Theme Support */
+[data-theme="dark"] #ClientsSegregationContainer {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+}
+
+[data-theme="dark"] .add-client-modal {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .theme-input {
+    background-color: var(--input-bg);
+    color: var(--primary-text);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .theme-button {
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .theme-button:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Clients Table Styles - Scoped to parent */
+#ClientsSegregationContainer .clients-table-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    /* padding: 20px; */
+    margin-top: 24px;
+}
+
+#ClientsSegregationContainer .clients-table {
+    background-color: transparent;
+}
+
+#ClientsSegregationContainer .clients-table .ant-table {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .clients-table .ant-table-thead > tr > th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    padding: 16px;
+}
+
+#ClientsSegregationContainer .clients-table .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+    padding: 16px;
+}
+
+#ClientsSegregationContainer .clients-table .ant-table-tbody > tr:hover > td {
+    background-color: var(--hover-bg);
+}
+
+#ClientsSegregationContainer .clients-table .ant-table-tbody > tr.ant-table-row-selected > td {
+    background-color: rgba(235, 178, 54, 0.1);
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination {
+    margin-top: 16px;
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-item {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-item a {
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-item-active {
+    background-color: var(--brand-color);
+    border-color: var(--brand-color);
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-item-active a {
+    color: #000;
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-prev,
+#ClientsSegregationContainer .clients-table .ant-pagination-next {
+    color: var(--primary-text);
+}
+
+#ClientsSegregationContainer .clients-table .ant-pagination-prev:hover,
+#ClientsSegregationContainer .clients-table .ant-pagination-next:hover {
+    color: var(--brand-color);
+}
+
+#ClientsSegregationContainer .clients-table .ant-switch {
+    background-color: var(--border-color);
+}
+
+#ClientsSegregationContainer .clients-table .ant-switch-checked {
+    background-color: var(--success-color);
+}
+
+#ClientsSegregationContainer .clients-table .ant-tag {
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    #ClientsSegregationContainer .clients-table-container {
+        /* padding: 12px; */
+        overflow-x: auto;
+    }
+
+    #ClientsSegregationContainer .clients-table .ant-table {
+        min-width: 600px;
+    }
+}

@@ -1,0 +1,557 @@
+import React, { useState, useEffect } from "react";
+import './ClientsSegregation.css';
+import { Modal, DatePicker, Table, Switch, Tag, Button, Select, Input, Form, Row, Col, Space } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import { useCreateClientMutation, useGetAllClientsQuery, useUpdateClientMutation, useGetAllUsersQuery } from "../../../../store/api";
+import { useNotification } from "../../../../contexts/NotificationContext";
+const ClientsSegregation = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [editingClient, setEditingClient] = useState(null);
+    const [formData, setFormData] = useState({
+        clientName: '',
+        city: '',
+        onboardDate: null,
+        status: 'active',
+        itsDataReceived: false,
+        assignedUsers: []
+    });
+
+    // Debug: Log formData changes
+    useEffect(() => {
+        console.log('FormData status changed:', formData.status);
+    }, [formData.status]);
+
+    const { success, error: showError } = useNotification();
+    const [createClient, { isLoading: isCreating }] = useCreateClientMutation();
+    const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
+    const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetAllClientsQuery();
+    const { data: allUsersData } = useGetAllUsersQuery();
+
+    // Get all users
+    const allUsers = allUsersData?.data || [];
+
+    // Get unique positions from all users - Position based
+    const getUniquePositions = () => {
+        const positionsMap = new Map();
+
+        allUsers.forEach(user => {
+            const role = user.role;
+            const position = user.position;
+
+            // Map positions based on role and position
+            if (role === 'Execution' && position === 'SME') {
+                positionsMap.set('All SME', { label: 'All SME', role: 'Execution', position: 'SME' });
+            } else if (role === 'user' && position === 'Graphics Designer') {
+                positionsMap.set('All Graphics Designer', { label: 'All Graphics Designer', role: 'user', position: 'Graphics Designer' });
+            } else if (role === 'user' && position === 'Video Editor') {
+                positionsMap.set('All Video Editor', { label: 'All Video Editor', role: 'user', position: 'Video Editor' });
+            } else if (role === 'ContentProvider' && position === 'Content Writer') {
+                positionsMap.set('All Content Writer', { label: 'All Content Writer', role: 'ContentProvider', position: 'Content Writer' });
+            }
+        });
+
+        return Array.from(positionsMap.values());
+    };
+
+    const positionOptions = getUniquePositions();
+
+    // Track selected users for each position separately
+    const [selectedUsersByPosition, setSelectedUsersByPosition] = useState({
+        'Select SME': [],
+        'Select Graphics Designer': [],
+        'Select Video Editor': [],
+        'Select Content Writer': []
+    });
+
+    // Get users for a specific position
+    const getUsersForPosition = (positionLabel) => {
+        const posOption = positionOptions.find(p => p.label === positionLabel);
+        if (!posOption) return [];
+
+        return allUsers.filter(user =>
+            user.role === posOption.role && user.position === posOption.position
+        );
+    };
+
+    // Handle user selection for a specific position
+    const handleUserSelectionForPosition = (positionLabel, selectedUserIds) => {
+        const updatedSelection = {
+            ...selectedUsersByPosition,
+            [positionLabel]: selectedUserIds || []
+        };
+
+        setSelectedUsersByPosition(updatedSelection);
+
+        // Update assignedUsers by combining all selected users from all positions
+        const allSelectedUsers = [];
+        Object.keys(updatedSelection).forEach(pos => {
+            const users = getUsersForPosition(pos);
+            users.forEach(u => {
+                if (updatedSelection[pos].includes(u.userId)) {
+                    allSelectedUsers.push({
+                        userId: u.userId,
+                        name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || u.userId
+                    });
+                }
+            });
+        });
+
+        // Remove duplicates
+        const uniqueUsers = Array.from(new Map(allSelectedUsers.map(u => [u.userId, u])).values());
+
+        setFormData(prev => ({
+            ...prev,
+            assignedUsers: uniqueUsers
+        }));
+    };
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleEdit = (client) => {
+        setEditingClient(client);
+        const assignedUsers = client.assignedUsers || [];
+
+        // Reconstruct selected users by position from assigned users
+        const usersByPos = {
+            'All SME': [],
+            'All Graphics Designer': [],
+            'All Video Editor': [],
+            'All Content Writer': []
+        };
+
+        if (assignedUsers.length > 0) {
+            assignedUsers.forEach(au => {
+                const user = allUsers.find(u => u.userId === au.userId);
+                if (user) {
+                    const posOption = positionOptions.find(p =>
+                        p.role === user.role && p.position === user.position
+                    );
+                    if (posOption && usersByPos[posOption.label]) {
+                        usersByPos[posOption.label].push(user.userId);
+                    }
+                }
+            });
+        }
+
+        setSelectedUsersByPosition(usersByPos);
+
+        setFormData({
+            clientName: client.clientName || '',
+            city: client.city || '',
+            onboardDate: client.onboardDate ? dayjs(client.onboardDate).format('YYYY-MM-DD') : null,
+            status: client.status || 'active',
+            itsDataReceived: client.itsDataReceived || false,
+            assignedUsers: assignedUsers
+        });
+        setIsOpen(true);
+    };
+
+    const handleSubmit = async () => {
+        // For edit mode, only validate if fields are provided (all optional)
+        // For create mode, validate required fields
+        if (!editingClient) {
+            if (!formData.clientName.trim()) {
+                showError('Please enter client name');
+                return;
+            }
+            if (!formData.city.trim()) {
+                showError('Please enter city');
+                return;
+            }
+            if (!formData.onboardDate) {
+                showError('Please select onboard date');
+                return;
+            }
+        }
+
+        try {
+            const requestBody = {};
+
+            // Only include fields that have values (all optional for update)
+            if (formData.clientName.trim()) {
+                requestBody.clientName = formData.clientName.trim();
+            }
+            if (formData.city.trim()) {
+                requestBody.city = formData.city.trim();
+            }
+            if (formData.onboardDate) {
+                requestBody.onboardDate = formData.onboardDate;
+            }
+            if (formData.status) {
+                requestBody.status = formData.status;
+            }
+            if (formData.itsDataReceived !== undefined) {
+                requestBody.itsDataReceived = formData.itsDataReceived;
+            }
+            if (formData.assignedUsers && formData.assignedUsers.length > 0) {
+                requestBody.assignedUsers = formData.assignedUsers;
+            }
+
+            if (editingClient) {
+                // Update existing client
+                const response = await updateClient({
+                    clientId: editingClient._id,
+                    body: requestBody
+                }).unwrap();
+
+                console.log('Client updated successfully, response:', response);
+
+                // Reset form and close modal
+                setFormData({
+                    clientName: '',
+                    city: '',
+                    onboardDate: null,
+                    status: 'active',
+                    itsDataReceived: false,
+                    assignedUsers: []
+                });
+                setSelectedUsersByPosition({
+                    'All SME': [],
+                    'All Graphics Designer': [],
+                    'All Video Editor': [],
+                    'All Content Writer': []
+                });
+                setEditingClient(null);
+                setIsOpen(false);
+
+                // Refetch clients list
+                refetchClients();
+
+                // Show success notification
+                setTimeout(() => {
+                    success('Client updated successfully!');
+                }, 300);
+            } else {
+                // Create new client
+                const response = await createClient(requestBody).unwrap();
+
+                console.log('Client created successfully, response:', response);
+
+                // Reset form first
+                setFormData({
+                    clientName: '',
+                    city: '',
+                    onboardDate: null,
+                    status: 'active',
+                    itsDataReceived: false,
+                    assignedUsers: []
+                });
+                setSelectedUsersByPosition({
+                    'All SME': [],
+                    'All Graphics Designer': [],
+                    'All Video Editor': [],
+                    'All Content Writer': []
+                });
+
+                // Close modal immediately
+                setIsOpen(false);
+
+                // Refetch clients list
+                refetchClients();
+
+                // Show success notification after modal closes
+                setTimeout(() => {
+                    console.log('Showing success notification');
+                    success('Client created successfully!');
+                }, 300);
+            }
+        } catch (error) {
+            console.error('Error saving client:', error);
+            const errorMessage = error?.data?.message || error?.message || `Failed to ${editingClient ? 'update' : 'create'} client. Please try again.`;
+            showError(errorMessage);
+        }
+    };
+
+    const handleClose = () => {
+        setIsOpen(false);
+        setEditingClient(null);
+        setSelectedUsersByPosition({
+            'All SME': [],
+            'All Graphics Designer': [],
+            'All Video Editor': [],
+            'All Content Writer': [],
+            'Social Media Manager': []
+        });
+        // Reset form on close
+        setFormData({
+            clientName: '',
+            city: '',
+            onboardDate: null,
+            status: 'active',
+            itsDataReceived: false,
+            assignedUsers: []
+        });
+    };
+
+
+    return (
+        <div id="ClientsSegregationContainer" className="theme-light">
+            <div className="clients-segregation-header">
+                <h2 className="clients-segregation-title">Client Management Panel</h2>
+                <Button
+                    type="primary"
+                    onClick={() => setIsOpen(true)}
+                    className="add-client-button"
+                    size="large"
+                >
+                    Add Client
+                </Button>
+            </div>
+
+            <Modal
+                title={editingClient ? 'Edit Client' : 'Add New Client'}
+                open={isOpen}
+                onCancel={handleClose}
+                onOk={handleSubmit}
+                width={800}
+                okText={editingClient ? 'Update Client' : 'Add Client'}
+                cancelText="Cancel"
+                confirmLoading={isCreating || isUpdating}
+                className="add-client-modal"
+            >
+                <Form layout="vertical">
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Client Name" required={!editingClient}>
+                                <Input
+                                    placeholder="Enter client name"
+                                    value={formData.clientName}
+                                    onChange={(e) => handleInputChange('clientName', e.target.value)}
+                                    className="theme-input"
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="City" required={!editingClient}>
+                                <Input
+                                    placeholder="Enter city"
+                                    value={formData.city}
+                                    onChange={(e) => handleInputChange('city', e.target.value)}
+                                    className="theme-input"
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Onboard Date" required={!editingClient}>
+                                <DatePicker
+                                    placeholder="Select onboard date"
+                                    value={formData.onboardDate ? dayjs(formData.onboardDate) : null}
+                                    onChange={(date) => {
+                                        const dateValue = date ? date.format('YYYY-MM-DD') : null;
+                                        handleInputChange('onboardDate', dateValue);
+                                    }}
+                                    style={{ width: '100%' }}
+                                    format="YYYY-MM-DD"
+                                    className="modern-date-picker"
+                                    getPopupContainer={(trigger) => trigger.parentElement}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Status">
+                                <Space>
+                                    <Switch
+                                        checked={formData.status === 'active'}
+                                        onChange={(checked) => {
+                                            handleInputChange('status', checked ? 'active' : 'inactive');
+                                        }}
+                                        checkedChildren="Active"
+                                        unCheckedChildren="Inactive"
+                                    />
+                                    <Tag color={formData.status === 'active' ? 'green' : 'red'}>
+                                        {formData.status === 'active' ? 'Active' : 'Non-Active'}
+                                    </Tag>
+                                </Space>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="ITS Data Received">
+                                <Space>
+                                    <Switch
+                                        checked={formData.itsDataReceived}
+                                        onChange={(checked) => {
+                                            handleInputChange('itsDataReceived', checked);
+                                        }}
+                                        checkedChildren="Yes"
+                                        unCheckedChildren="No"
+                                    />
+                                    <Tag color={formData.itsDataReceived ? 'green' : 'gray'}>
+                                        {formData.itsDataReceived ? 'Data Received' : 'Data Not Received'}
+                                    </Tag>
+                                </Space>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24}>
+                            <Form.Item label="Assign Users by Position">
+                                <Row gutter={[16, 16]}>
+                                    {positionOptions.map((position) => {
+                                        const usersForPosition = getUsersForPosition(position.label);
+                                        const selectedUserIds = selectedUsersByPosition[position.label] || [];
+
+                                        if (usersForPosition.length === 0) return null;
+
+                                        return (
+                                            <Col xs={24} sm={12} key={position.label}>
+                                                <div className="position-select-item">
+                                                    <div className="position-label">{position.label}</div>
+                                                    <Select
+                                                        mode="multiple"
+                                                        placeholder={`Select ${position.label} users`}
+                                                        value={selectedUserIds}
+                                                        onChange={(selectedIds) => {
+                                                            handleUserSelectionForPosition(position.label, selectedIds);
+                                                        }}
+                                                        style={{ width: '100%' }}
+                                                        className="position-users-select"
+                                                        showSearch
+                                                        filterOption={(input, option) => {
+                                                            const label = option?.label || option?.children || '';
+                                                            return label.toLowerCase().includes(input.toLowerCase());
+                                                        }}
+                                                        getPopupContainer={(trigger) => trigger.parentElement}
+                                                    >
+                                                        {usersForPosition.map((user) => {
+                                                            const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || user.userId;
+                                                            return (
+                                                                <Select.Option
+                                                                    key={user.userId}
+                                                                    value={user.userId}
+                                                                    label={userName}
+                                                                >
+                                                                    {userName}
+                                                                    {user.email && (
+                                                                        <span style={{ color: 'var(--secondary-text)', fontSize: '12px', marginLeft: '8px' }}>
+                                                                            ({user.email})
+                                                                        </span>
+                                                                    )}
+                                                                </Select.Option>
+                                                            );
+                                                        })}
+                                                    </Select>
+                                                </div>
+                                            </Col>
+                                        );
+                                    })}
+                                </Row>
+                                <div className="selected-users-info">
+                                    {formData.assignedUsers.length > 0
+                                        ? `${formData.assignedUsers.length} user(s) selected across all positions`
+                                        : 'Select users from each position dropdown above'}
+                                </div>
+                                {formData.assignedUsers.length > 0 && (
+                                    <div className="selected-users-tags">
+                                        <div className="selected-users-title">
+                                            Selected Users ({formData.assignedUsers.length}):
+                                        </div>
+                                        <Space wrap>
+                                            {formData.assignedUsers.map((user, index) => (
+                                                <Tag key={index} color="blue">
+                                                    {user.name}
+                                                </Tag>
+                                            ))}
+                                        </Space>
+                                    </div>
+                                )}
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
+            </Modal>
+
+            {/* Clients Table */}
+            <div className="clients-table-container">
+                <Table
+                    columns={[
+                        {
+                            title: 'Client Name',
+                            dataIndex: 'clientName',
+                            key: 'clientName',
+                            width: '25%',
+                            render: (text) => <strong style={{ color: 'var(--primary-text)' }}>{text}</strong>
+                        },
+                        {
+                            title: 'Client Onboard Date',
+                            dataIndex: 'onboardDate',
+                            key: 'onboardDate',
+                            width: '25%',
+                            render: (date) => {
+                                if (!date) return '-';
+                                return dayjs(date).format('MMM DD, YYYY');
+                            }
+                        },
+                        {
+                            title: 'City',
+                            dataIndex: 'city',
+                            key: 'city',
+                            width: '20%',
+                            render: (text) => <span style={{ color: 'var(--secondary-text)' }}>{text || '-'}</span>
+                        },
+                        {
+                            title: 'Status',
+                            dataIndex: 'status',
+                            key: 'status',
+                            width: '20%',
+                            render: (status, record) => (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Switch
+                                        checked={status === 'active'}
+                                        onChange={(checked) => {
+                                            // For now, just log - will be dynamic later
+                                            console.log('Status toggle:', record._id, checked ? 'active' : 'inactive');
+                                        }}
+                                        checkedChildren="Active"
+                                        unCheckedChildren="Inactive"
+                                    />
+                                    <Tag color={status === 'active' ? 'green' : 'red'}>
+                                        {status === 'active' ? 'Active' : 'Non-Active'}
+                                    </Tag>
+                                </div>
+                            )
+                        },
+                        {
+                            title: 'Actions',
+                            key: 'actions',
+                            width: '10%',
+                            render: (_, record) => (
+                                <Button
+                                    type="primary"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEdit(record)}
+                                    size="small"
+                                >
+                                    Edit
+                                </Button>
+                            )
+                        }
+                    ]}
+                    dataSource={clientsData?.data || []}
+                    loading={isLoadingClients}
+                    rowKey="_id"
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Total ${total} clients`
+                    }}
+                    className="clients-table"
+                />
+            </div>
+        </div>
+    );
+};
+
+export default ClientsSegregation;

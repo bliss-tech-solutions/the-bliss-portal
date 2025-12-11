@@ -1,0 +1,445 @@
+#ContentProviderPanel {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+    /* padding: 24px; */
+}
+
+#ContentProviderPanel .ContentProviderPanel-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+#ContentProviderPanel .panel-title {
+    color: var(--primary-text);
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+}
+
+#ContentProviderPanel .clients-segregation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+#ContentProviderPanel .clients-table-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    /* padding: 24px; */
+    margin-bottom: 24px;
+}
+
+#ContentProviderPanel .clients-table {
+    background-color: transparent;
+}
+
+#ContentProviderPanel .clients-table .ant-table {
+    background-color: transparent;
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .clients-table .ant-table-thead>tr>th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+    padding: 16px;
+}
+
+#ContentProviderPanel .clients-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+    padding: 16px;
+}
+
+#ContentProviderPanel .clients-table .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg);
+}
+
+#ContentProviderPanel .clients-table .ant-pagination {
+    margin-top: 16px;
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-item {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-item a {
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-item-active {
+    background-color: var(--brand-color);
+    border-color: var(--brand-color);
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-item-active a {
+    color: #000;
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-prev,
+#ContentProviderPanel .clients-table .ant-pagination-next {
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .clients-table .ant-pagination-prev:hover,
+#ContentProviderPanel .clients-table .ant-pagination-next:hover {
+    color: var(--brand-color);
+}
+
+#ContentProviderPanel .clients-table .ant-tag {
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Tasks Section */
+#ContentProviderPanel .tasks-section {
+    margin-top: 40px;
+}
+
+#ContentProviderPanel .AntdTabsNames {
+    margin-bottom: 20px;
+}
+
+/* Filter Section Styles - Matching UserTaskAssignmentPanel */
+#ContentProviderPanel .AddFilterButton {
+    background-color: var(--button-primary);
+    color: var(--button-text);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+#ContentProviderPanel .AddFilterButton:hover {
+    background-color: var(--button-primary-hover);
+}
+
+#ContentProviderPanel .AddFilterButton.filter-active {
+    background-color: var(--brand-color);
+    color: #000;
+}
+
+#ContentProviderPanel .filters-section {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Upload Doc Modal Styles */
+#ContentProviderPanel .upload-doc-modal .ant-modal-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-modal-title {
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-modal-body {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-modal-footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-form-item-label>label {
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-input,
+#ContentProviderPanel .upload-doc-modal .ant-input:focus,
+#ContentProviderPanel .upload-doc-modal .ant-input-focused {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-input::placeholder {
+    color: var(--secondary-text);
+}
+
+#ContentProviderPanel .upload-doc-modal .ant-input-textarea,
+#ContentProviderPanel .upload-doc-modal .ant-input-textarea:focus,
+#ContentProviderPanel .upload-doc-modal .ant-input-textarea-focused {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+    color: var(--primary-text);
+}
+
+/* Month Checkbox Group - Compact Layout */
+#ContentProviderPanel .month-checkbox-group {
+    width: 100%;
+}
+
+#ContentProviderPanel .month-checkbox-group .ant-checkbox-wrapper {
+    color: var(--primary-text);
+    margin-bottom: 8px;
+}
+
+#ContentProviderPanel .month-checkbox-group .ant-checkbox {
+    margin-right: 8px;
+}
+
+#ContentProviderPanel .month-checkbox-group .ant-checkbox-inner {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+}
+
+#ContentProviderPanel .month-checkbox-group .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: var(--brand-color);
+    border-color: var(--brand-color);
+}
+
+#ContentProviderPanel .month-checkbox-group .ant-checkbox:hover .ant-checkbox-inner {
+    border-color: var(--brand-color);
+}
+
+/* Document History Modal Styles */
+#ContentProviderPanel .document-history-modal .ant-modal-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .document-history-modal .ant-modal-title {
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .document-history-modal .ant-modal-body {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#ContentProviderPanel .document-history-modal .ant-modal-footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .document-history-modal .ant-collapse {
+    background-color: transparent;
+    border: none;
+}
+
+#ContentProviderPanel .document-history-modal .ant-collapse-item {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-color: var(--secondary-bg);
+}
+
+#ContentProviderPanel .document-history-modal .ant-collapse-header {
+    color: var(--primary-text);
+    background-color: var(--secondary-bg);
+    padding: 12px 16px;
+}
+
+#ContentProviderPanel .document-history-modal .ant-collapse-content {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+    border-top: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .document-history-modal .ant-table {
+    background-color: transparent;
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .document-history-modal .ant-table-thead > tr > th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    border-bottom: 1px solid var(--border-color);
+}
+
+#ContentProviderPanel .document-history-modal .ant-table-tbody > tr > td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .document-history-modal .ant-table-tbody > tr:hover > td {
+    background-color: var(--hover-bg);
+}
+
+/* Document Cards Grid - Compact and Slick Design */.document-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 8px 0;
+}
+.document-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.document-card:hover {
+    border-color: var(--brand-color);
+    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.1);
+    transform: translateY(-2px);
+}
+.document-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+.document-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+.document-time {
+    font-size: 11px;
+    color: var(--secondary-text);
+    font-weight: 400;
+}
+.document-link-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.document-link-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    padding: 6px 10px;
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+.link-icon {
+    color: var(--brand-color);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.document-link-text {
+    font-size: 12px;
+    color: var(--primary-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+.copy-link-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-text);
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.copy-link-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--brand-color);
+}
+.copy-icon {
+    font-size: 13px;
+}
+.copy-icon.copied {
+    color: #52c41a;
+}
+.open-link-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    background-color: var(--brand-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.open-link-btn:hover {
+    background-color: #d4a02a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(235, 178, 54, 0.3);
+}
+.document-notes {
+    font-size: 12px;
+    color: var(--secondary-text);
+    line-height: 1.5;
+    padding: 8px;
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    border-left: 3px solid var(--brand-color);
+    margin-top: 4px;
+}
+.document-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+.document-uploaded-by {
+    font-size: 11px;
+    color: var(--secondary-text);
+    font-style: italic;
+}
+
+/* Responsive Document Cards */
+@media (max-width: 768px) {
+.document-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+.document-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (min-width: 1025px) {
+.document-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #ContentProviderPanel {
+        padding: 16px;
+    }
+
+    #ContentProviderPanel .clients-table-container {
+        padding: 16px;
+        overflow-x: auto;
+    }
+
+    #ContentProviderPanel .clients-table .ant-table {
+        min-width: 600px;
+    }
+}

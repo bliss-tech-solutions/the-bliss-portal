@@ -1,5 +1,5 @@
-/* All User Task Entries Styles - Unique Classes */
-.all-user-task-entries {
+/* Common Task Entries Styles - Reusable Component */
+.task-entries {
     display: flex;
     flex-direction: column;
     gap: 16px;

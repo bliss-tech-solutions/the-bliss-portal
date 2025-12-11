@@ -60,15 +60,98 @@ export const emitTaskAdded = (taskData) => {
     }
 };
 
+// Listen for task creation events (backend emits: task:new, task:created, task:assigned)
 export const onTaskAdded = (callback) => {
     if (socket) {
+        const wrappedCallback = (data) => {
+            // Backend format: { taskId, task }
+            const task = data.task || data;
+            callback(task);
+        };
+        
         socket.on('taskAdded', callback);
+        // Also listen to backend socket events with wrapped callback
+        socket.on('task:new', wrappedCallback);
+        socket.on('task:created', wrappedCallback);
+        socket.on('task:assigned', wrappedCallback);
+        
+        // Store the wrapped callback so we can remove it later
+        if (!socket._taskAddedCallbacks) {
+            socket._taskAddedCallbacks = new Map();
+        }
+        socket._taskAddedCallbacks.set(callback, wrappedCallback);
     }
 };
 
-export const offTaskAdded = () => {
-    if (socket) {
+export const offTaskAdded = (callback) => {
+    if (socket && callback) {
+        // Remove specific callback
+        socket.off('taskAdded', callback);
+        // Remove wrapped callback for backend events using stored reference
+        if (socket._taskAddedCallbacks && socket._taskAddedCallbacks.has(callback)) {
+            const wrappedCallback = socket._taskAddedCallbacks.get(callback);
+            socket.off('task:new', wrappedCallback);
+            socket.off('task:created', wrappedCallback);
+            socket.off('task:assigned', wrappedCallback);
+            socket._taskAddedCallbacks.delete(callback);
+        }
+    } else if (socket) {
+        // If no callback provided, remove all listeners (for backward compatibility)
+        if (socket._taskAddedCallbacks) {
+            socket._taskAddedCallbacks.forEach((wrappedCallback) => {
+                socket.off('task:new', wrappedCallback);
+                socket.off('task:created', wrappedCallback);
+                socket.off('task:assigned', wrappedCallback);
+            });
+            socket._taskAddedCallbacks.clear();
+        }
         socket.off('taskAdded');
+        socket.off('task:new');
+        socket.off('task:created');
+        socket.off('task:assigned');
+    }
+};
+
+// Listen for task update events (backend emits: task:updated, task:statusUpdated)
+export const onTaskUpdated = (callback) => {
+    if (socket) {
+        const wrappedCallback = (data) => {
+            // Backend format: { taskId, taskStatus, task }
+            const task = data.task || data;
+            callback(task);
+        };
+        
+        socket.on('task:updated', wrappedCallback);
+        socket.on('task:statusUpdated', wrappedCallback);
+        
+        // Store the wrapped callback so we can remove it later
+        if (!socket._taskUpdatedCallbacks) {
+            socket._taskUpdatedCallbacks = new Map();
+        }
+        socket._taskUpdatedCallbacks.set(callback, wrappedCallback);
+    }
+};
+
+export const offTaskUpdated = (callback) => {
+    if (socket && callback) {
+        // Remove specific callback using stored wrapper
+        if (socket._taskUpdatedCallbacks && socket._taskUpdatedCallbacks.has(callback)) {
+            const wrappedCallback = socket._taskUpdatedCallbacks.get(callback);
+            socket.off('task:updated', wrappedCallback);
+            socket.off('task:statusUpdated', wrappedCallback);
+            socket._taskUpdatedCallbacks.delete(callback);
+        }
+    } else if (socket) {
+        // If no callback provided, remove all listeners (for backward compatibility)
+        if (socket._taskUpdatedCallbacks) {
+            socket._taskUpdatedCallbacks.forEach((wrappedCallback) => {
+                socket.off('task:updated', wrappedCallback);
+                socket.off('task:statusUpdated', wrappedCallback);
+            });
+            socket._taskUpdatedCallbacks.clear();
+        }
+        socket.off('task:updated');
+        socket.off('task:statusUpdated');
     }
 };
 

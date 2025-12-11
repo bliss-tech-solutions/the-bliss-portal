@@ -33,7 +33,11 @@ const UserVerificationForm = () => {
             return [
                 { value: "Graphics Designer", label: "Graphics Designer" },
                 { value: "Video Editor", label: "Video Editor" },
-                { value: "Developer", label: "Developer" },
+                // { value: "Developer", label: "Developer" },
+                // { value: "Content Writer", label: "Content Writer" }
+            ];
+        } else if (role === "ContentProvider") {
+            return [
                 { value: "Content Writer", label: "Content Writer" }
             ];
         }
@@ -136,7 +140,8 @@ const UserVerificationForm = () => {
                                                                     }}
                                                                 >
                                                                     <Select.Option value="Execution">Execution (User Manager)</Select.Option>
-                                                                    <Select.Option value="user">User (Graphics Designer, Developer, Content Writer, Video Editor) etc.</Select.Option>
+                                                                    <Select.Option value="user">User (Graphics Designer, Video Editor) etc.</Select.Option>
+                                                                    <Select.Option value="ContentProvider">ContentProvider (Content Writer)</Select.Option>
                                                                     <Select.Option value="HR">HR</Select.Option>
                                                                 </Select>
                                                             </Form.Item>

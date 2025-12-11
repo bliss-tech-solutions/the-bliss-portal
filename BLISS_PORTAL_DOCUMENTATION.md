@@ -40,6 +40,12 @@ src/
 │   │   │   └── AllUserTaskEntries/
 │   │   │       ├── AllUserTaskEntries.jsx (User task list with chat, attachment links, real-time updates)
 │   │   │       └── AllUserTaskEntries.css (User task entries styling)
+│   │   ├── ContentProviderPanel/
+│   │   │   ├── ContentProviderPanel.jsx (Content provider dashboard with client management, document upload/history)
+│   │   │   ├── ContentProviderPanel.css (Panel styling)
+│   │   │   └── TaskEntries/
+│   │   │       ├── ContentProviderTaskEntriesPage.jsx (Task entries page with tabs and filters)
+│   │   │       └── ContentProviderTaskEntries.jsx (Task entries wrapper component)
 │   │   ├── HRWorkComponent/
 │   │   │   ├── UserDocumentVerification/
 │   │   │   │   ├── UserDocumentVerification.jsx (Document verification form with Cloudinary uploads, grid view)
@@ -77,9 +83,15 @@ src/
 │   │   ├── EmptyState/
 │   │   │   ├── EmptyState.jsx (Reusable empty state component)
 │   │   │   └── EmptyState.css (Empty state styling)
-│   │   └── InlineLoader/
-│   │       ├── InlineLoader.jsx (Inline loading component)
-│   │       └── InlineLoader.css (Inline loader styling)
+│   │   ├── InlineLoader/
+│   │   │   ├── InlineLoader.jsx (Inline loading component)
+│   │   │   └── InlineLoader.css (Inline loader styling)
+│   │   └── TaskEntries/
+│   │       ├── TaskEntries.jsx (Reusable task entries component with drawer, chat integration)
+│   │       └── TaskEntries.css (Task entries styling)
+│   │   └── TaskEntries/
+│   │       ├── TaskEntries.jsx (Reusable task entries component with drawer, chat integration)
+│   │       └── TaskEntries.css (Task entries styling)
 │   └── ProtectedRoute.jsx (Route protection logic with create account auth)
 ├── store/
 │   ├── api.js (RTK Query API endpoints - tasks, chat, users)
@@ -174,12 +186,27 @@ src/
 
 11. USER TASK VIEWING FLOW:
     - UserTaskAssignmentPanel.jsx → Tabs: All, Upcoming, In Progress, Completed
-    - AllUserTaskEntries.jsx → Displays tasks based on active tab prop
+    - TaskEntries.jsx (Common component) → Displays tasks based on active tab prop with drawer and chat
     - Real-time task updates → Socket.IO listener refetches tasks when new task assigned
     - Task attachment links → Truncated to 60 characters, clickable with View/Download buttons
     - View button → Opens link in new tab
     - Download button → Fetches file as blob and triggers download
     - Completed tasks → Filtered and displayed in "Completed" tab
+    - View Details → Opens drawer with full task details and integrated chat
+    - Chat integration → TaskChat component integrated in drawer for real-time communication
+
+17. CONTENT PROVIDER PANEL FLOW:
+    - ContentProviderPanel.jsx → Content provider dashboard for client management
+    - Client table → Displays clients with: Client Name, Team Members, Status, Onboard Date, Document History, Upload Doc
+    - Team Members column → Shows assigned team members as compact avatars (first 3 visible, "+X more" for additional)
+    - Upload Doc column → Button to upload documents for clients
+    - Document upload modal → Form with: Link, Message, Month selection (checkboxes for all 12 months)
+    - Document History column → Button to view uploaded document history
+    - Document History modal → Month-wise grouped display with Collapse panels
+    - Each month panel → Table showing: Date, Link, Notes, Uploaded By
+    - Real-time updates → Socket.IO integration for client and document updates (no polling)
+    - Socket events → Listens for client:created, client:updated, client:deleted, client:attachment:added
+    - API optimization → Removed 30-second polling, uses socket events only
 
 11. CHAT SYSTEM:
     - TaskChat.jsx → Reusable chat component with emoji picker
@@ -224,14 +251,29 @@ src/
     - Copy functionality → Copies User ID to clipboard → Shows success notification
     - Notification confirmation → MUI Snackbar confirms successful copy
 
-16. MOBILE NAVIGATION FLOW:
+16. CONTENT PROVIDER PANEL FLOW:
+    - ContentProviderPanel.jsx → Content provider dashboard for client management
+    - Client table → Displays clients with: Client Name, Team Members, Status, Onboard Date, Document History, Upload Doc
+    - Team Members column → Shows assigned team members as compact avatars (first 3 visible, "+X more" for additional)
+    - Upload Document column → Button to upload documents for clients
+    - Document upload modal → Form with: Link, Message, Month selection (checkboxes for all 12 months)
+    - Document History column → Button to view uploaded document history
+    - Document History modal → Month-wise grouped display with Collapse panels
+    - Each month panel → Table showing: Date, Link, Notes, Uploaded By
+    - Real-time updates → Socket.IO integration for client and document updates (no polling)
+    - Socket events → Listens for client:created, client:updated, client:deleted, client:attachment:added
+    - API optimization → Removed 30-second polling, uses socket events only
+    - Task management → ContentProviderTaskEntriesPage with tabs (All, Upcoming, In Progress, Completed) and filters
+    - Task viewing → Uses reusable TaskEntries component with drawer and integrated chat
+
+17. MOBILE NAVIGATION FLOW:
     - PortalHeader.jsx → Detects mobile screen size (< 768px)
     - Mobile header bar → Shows left navigation button with short greeting/date
     - Navigation drawer → Ant Design Drawer slides from left on button click
     - Drawer content → All header functionality (logo, greeting, date, checkout, theme, notifications, profile, navigation)
     - Desktop view → Full header functionality as before
 
-17. GLOBAL LOADING SYSTEM:
+19. GLOBAL LOADING SYSTEM:
     - LoadingContext.jsx → Provides global loading state and message
     - PageLoader.jsx → Animated logo loader with pulse animation
     - Login to Dashboard → Shows loader during API calls → Hides when all APIs are idle
@@ -357,6 +399,14 @@ DOCUMENT VERIFICATION:
 
 ATTENDANCE:
 - GET /api/userattendance/getAll → Get user attendance data
+
+CLIENT MANAGEMENT:
+- POST /api/clientmanagement/create → Create new client
+- GET /api/clientmanagement/getAllClientsData → Get all clients
+- GET /api/clientmanagement/getClientsByUserId/:userId → Get clients by user ID (for Content Provider)
+- PUT /api/clientmanagement/update/:clientId → Update client
+- POST /api/clientmanagement/:clientId/attachments → Add client attachment/document
+- GET /api/clientmanagement/:clientId/attachments/byUserId/:userId → Get client attachments by user ID
 
 ================================================================================
 📋 API RESPONSE FORMATS:
@@ -484,6 +534,43 @@ LEAVE APPROVAL API REQUEST BODY:
     "rejectedDates": ["2025-10-03", "2025-10-04", "2025-10-05"]
 }
 
+CLIENT ATTACHMENT API REQUEST BODY:
+{
+    "link": "https://docs.google.com/document/d/example123",
+    "notes": "Content writing work for January month",
+    "month": "Jan",
+    "uploadedBy": {
+        "userId": "user123",
+        "name": "Content Writer Name"
+    }
+}
+
+CLIENT ATTACHMENT API RESPONSE (byUserId):
+{
+    "success": true,
+    "message": "Attachments retrieved successfully",
+    "data": {
+        "clientId": "6938046bc7eaecd566f546f0",
+        "userId": "test-bliss-3645",
+        "userName": null,
+        "attachments": [
+            {
+                "uploadedBy": {
+                    "userId": "content-bliss-5535",
+                    "name": "Content Provider"
+                },
+                "link": "https://docs.google.com/document/d/1WIeJ4CZdZcr4LlG6pFCYzHGD_opj_2LLkdV6gLXkC20/edit",
+                "notes": "This is the bliss client document",
+                "month": "Dec",
+                "_id": "6939755d928833db8d06e966",
+                "createdAt": "2025-12-10T13:27:57.202Z",
+                "updatedAt": "2025-12-10T13:27:57.202Z"
+            }
+        ],
+        "count": 1
+    }
+}
+
 ================================================================================
 🎨 THEME VARIABLES:
 ================================================================================
@@ -520,6 +607,7 @@ navigationConfig.js:
 - AdminDashboard: roles: ["admin", "Executive"] → Route: /admin-dashboard
 - ExecutionTaskAssignPanel: roles: ["Executive"] → Route: /task-assignment
 - UserTaskAssignmentPanel: roles: ["user"] → Route: /my-tasks
+- ContentProviderPanel: roles: ["ContentProvider"] → Route: /content-provider-panel
 - UserRolePanel: roles: ["Executive", "user"] → Route: /chat-test
 
 ================================================================================
@@ -541,6 +629,7 @@ Protected Routes:
 - /admin-dashboard (Executive role only)
 - /task-assignment (Execution role only)
 - /my-tasks (User role only)
+- /content-provider-panel (ContentProvider role only)
 - /chat-test (All authenticated users)
 - /CreateNewUser (Protected by create account authentication - requires sign-in via /create-account-login)
 
@@ -590,6 +679,20 @@ HR WORK FLOW:
 4. Document Generator → Generates offer letters
 5. Festive Calendar → Manages leaves and tasks
 
+CONTENT PROVIDER FLOW:
+1. Content Provider logs in → Accesses ContentProviderPanel
+2. Views client table → Sees all assigned clients with team members
+3. Team Members column → Hover to see full names, click avatars for details
+4. Upload Document → Clicks "Upload Doc" button → Modal opens
+5. Fills form → Enters link, message, selects month(s) → Submits
+6. Document uploaded → Success notification → Socket event triggers real-time update
+7. Document History → Clicks "History" button → Modal opens
+8. Views documents → Month-wise grouped display with Collapse panels
+9. Expands months → Sees all documents in table format (Date, Link, Notes, Uploaded By)
+10. Real-time updates → New documents appear automatically via socket events
+11. Task management → Accesses TaskEntriesPage with tabs and filters
+12. View task details → Opens drawer with full task info and integrated chat
+
 ================================================================================
 🔌 SOCKET.IO INTEGRATION:
 ================================================================================
@@ -606,10 +709,22 @@ SOCKET EVENTS:
 - send-message → Send chat message
 - new-message → Receive new chat message
 - task-added → Receive new task notification (real-time task assignment)
+- task:new → Backend socket event for task creation
+- task:created → Backend socket event for task creation
+- task:assigned → Backend socket event for task assignment
+- task:updated → Backend socket event for task updates
+- task:statusUpdated → Backend socket event for task status changes
 - task-extension-requested → Receive task extension request notification
 - task-extension-updated → Receive task extension status update (approved/rejected)
 - leave-updated → Receive leave status update notification
 - leave-requested → Receive new leave request notification
+- client:created → Receive client creation notification
+- client:updated → Receive client update notification
+- client:deleted → Receive client deletion notification
+- client:attachment:added → Receive client attachment creation notification
+- client:attachment:updated → Receive client attachment update notification
+- client:attachment:deleted → Receive client attachment deletion notification
+- client:change → Generic client update event
 
 ================================================================================
 📝 DEVELOPMENT SERVER:
@@ -709,6 +824,32 @@ CALENDAR & LEAVE MANAGEMENT:
 🚀 RECENT ADDITIONS (Latest Updates):
 ================================================================================
 
+CONTENT PROVIDER PANEL & CLIENT MANAGEMENT:
+✓ ContentProviderPanel component for content provider role
+✓ Client management table with multiple columns
+✓ Team Members column → Shows assigned users as avatars with tooltips
+✓ Upload Document column → Modal to upload client documents
+✓ Document upload form → Link, Message, Month selection (all 12 months)
+✓ Document History column → View month-wise document history
+✓ Document History modal → Collapse panels grouped by month
+✓ Month-wise document tables → Date, Link, Notes, Uploaded By columns
+✓ Real-time updates → Socket.IO integration for clients and documents
+✓ API optimization → Removed polling, uses socket events only
+✓ Socket listeners for client and attachment events
+✓ Client attachment API integration
+✓ Document history API with user filtering
+✓ Responsive modal designs
+✓ Theme-aware styling
+
+TASK ENTRIES IMPROVEMENTS:
+✓ Fixed chat module scope error (isCompleted variable)
+✓ Reusable TaskEntries component for all roles
+✓ ContentProviderTaskEntries wrapper component
+✓ TaskEntriesPage with tabs and filters
+✓ Integrated chat in task drawer
+✓ Real-time task updates
+✓ Extension request and management
+
 FILTER & SEARCH SYSTEM:
 ✓ Real-time search by task name and client name
 ✓ Date range picker (ready for backend integration)
@@ -790,6 +931,29 @@ USER ATTENDANCE DATA:
 ✓ User ID copy functionality with confirmation notification
 ✓ First column User ID with copy button only
 
+CONTENT PROVIDER PANEL:
+✓ Client management dashboard for content providers
+✓ Client table with comprehensive columns
+✓ Team Members display → Compact avatar display showing assigned users
+✓ Upload Document functionality → Modal with link, message, and month selection
+✓ Document History → Month-wise grouped document history with tables
+✓ Real-time client updates → Socket.IO integration (no polling)
+✓ Socket-based real-time document updates
+✓ API optimization → Removed 30-second polling, uses socket events only
+✓ Document upload API integration
+✓ Document history API integration with user filtering
+✓ Month-wise document grouping and display
+✓ Responsive design for all screen sizes
+
+TASK ENTRIES COMPONENT:
+✓ Reusable TaskEntries component for all user roles
+✓ Task drawer with full details view
+✓ Integrated TaskChat component in drawer
+✓ Real-time task updates via Socket.IO
+✓ Extension request functionality
+✓ Scheduled slots display
+✓ Task status management
+
 MOBILE RESPONSIVENESS:
 ✓ Mobile navigation drawer for header
 ✓ Consolidated header functionality in drawer
@@ -824,6 +988,32 @@ SEO OPTIMIZATION:
 ✓ JSON-LD structured data
 ✓ Company information integration
 
+CONTENT PROVIDER PANEL & CLIENT MANAGEMENT:
+✓ ContentProviderPanel component for content provider role
+✓ Client management table with multiple columns
+✓ Team Members column → Shows assigned users as avatars with tooltips
+✓ Upload Document column → Modal to upload client documents
+✓ Document upload form → Link, Message, Month selection (all 12 months)
+✓ Document History column → View month-wise document history
+✓ Document History modal → Collapse panels grouped by month
+✓ Month-wise document tables → Date, Link, Notes, Uploaded By columns
+✓ Real-time updates → Socket.IO integration for clients and documents
+✓ API optimization → Removed polling, uses socket events only
+✓ Socket listeners for client and attachment events
+✓ Client attachment API integration
+✓ Document history API with user filtering
+✓ Responsive modal designs
+✓ Theme-aware styling
+
+TASK ENTRIES IMPROVEMENTS:
+✓ Fixed chat module scope error (isCompleted variable)
+✓ Reusable TaskEntries component for all roles
+✓ ContentProviderTaskEntries wrapper component
+✓ TaskEntriesPage with tabs and filters
+✓ Integrated chat in task drawer
+✓ Real-time task updates
+✓ Extension request and management
+
 ================================================================================
 📊 COMPONENT RELATIONSHIPS:
 ================================================================================
@@ -844,6 +1034,23 @@ TaskChat Component
 ├── Message persistence API
 ├── Auto-scroll functionality
 └── Media previews (image, video, PDF)
+
+TaskEntries Component (Common)
+├── Task list display with filtering
+├── Task drawer with full details
+├── TaskChat integration
+├── Extension request functionality
+├── Scheduled slots display
+├── Real-time updates via Socket.IO
+└── Used by UserTaskAssignmentPanel and ContentProviderPanel
+
+ContentProviderPanel
+├── Client management table
+├── Team Members display (avatars)
+├── Upload Document modal
+├── Document History modal (month-wise)
+├── Real-time socket updates
+└── TaskEntries integration
 
 CalenderModule Component
 ├── Dynamic calendar rendering

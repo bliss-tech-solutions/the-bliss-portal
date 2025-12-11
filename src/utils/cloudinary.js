@@ -60,14 +60,27 @@ export function isCloudinaryFileUrl(message) {
 }
 
 // Add fl_attachment to force download-friendly delivery; works for raw/image/video
+// Cloudinary format: /upload/{transformations}/{file_path}
+// For download: /upload/fl_attachment:filename/{file_path}
 export function toAttachmentUrl(url, filename) {
     try {
         const idx = url.indexOf('/upload/');
         if (idx === -1) return url;
         const prefix = url.substring(0, idx + '/upload/'.length);
         const suffix = url.substring(idx + '/upload/'.length);
+        
+        // Remove query parameters if any
+        const suffixClean = suffix.split('?')[0];
+        
+        // Extract filename from suffix if not provided
+        if (!filename) {
+            const parts = suffixClean.split('/');
+            filename = parts[parts.length - 1];
+        }
+        
+        // Build URL: /upload/fl_attachment:filename/{rest_of_path}
         const attach = filename ? `fl_attachment:${encodeURIComponent(filename)}` : 'fl_attachment';
-        return `${prefix}${attach}/${suffix}`;
+        return `${prefix}${attach}/${suffixClean}`;
     } catch {
         return url;
     }

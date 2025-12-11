@@ -22,7 +22,7 @@ import { AiOutlineEye, AiOutlineEdit, AiOutlineDelete, AiOutlineExclamationCircl
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../../PortalCommonComponents/TaskChat/TaskChat';
 import dayjs from 'dayjs';
-import { emitTaskExtensionResponded, onTaskExtensionUpdated, offTaskExtensionUpdated } from '../../../../utils/socket';
+import { emitTaskExtensionResponded, onTaskExtensionUpdated, offTaskExtensionUpdated, onTaskAdded, offTaskAdded, onTaskUpdated, offTaskUpdated } from '../../../../utils/socket';
 import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 import InlineLoader from '../../../CommonComponents/InlineLoader/InlineLoader';
 
@@ -185,7 +185,37 @@ const AllTaskEntries = ({
         }
     }, [tasksData]);
 
+    // Real-time task updates via socket
     useEffect(() => {
+        // Handle task creation events
+        const handleTaskAdded = (taskData) => {
+            if (!taskData) return;
+            
+            // Check if this task is created by current user (execution role)
+            const isCreatedByCurrentUser = taskData.userId === userId;
+            
+            if (isCreatedByCurrentUser) {
+                console.log('✅ New task created via socket:', taskData);
+                // Refetch tasks to show the new task in the list
+                refetch();
+            }
+        };
+
+        // Handle task update events
+        const handleTaskUpdated = (taskData) => {
+            if (!taskData) return;
+            
+            console.log('✅ Task updated via socket:', taskData);
+            // Refetch tasks to get updated task data
+            refetch();
+            
+            // Update selected task if it's the one that was updated
+            if (selectedTaskRef.current && selectedTaskRef.current._id === taskData._id) {
+                setSelectedTask(taskData);
+            }
+        };
+
+        // Handle extension updates
         const handleExtensionUpdate = (payload) => {
             if (!payload) return;
             const { receiverUserId, userId: creatorUserId, requestedBy } = payload;
@@ -195,8 +225,15 @@ const AllTaskEntries = ({
             }
         };
 
+        // Set up all socket listeners
+        onTaskAdded(handleTaskAdded);
+        onTaskUpdated(handleTaskUpdated);
         onTaskExtensionUpdated(handleExtensionUpdate);
+
+        // Cleanup listeners on unmount
         return () => {
+            offTaskAdded(handleTaskAdded);
+            offTaskUpdated(handleTaskUpdated);
             offTaskExtensionUpdated(handleExtensionUpdate);
         };
     }, [refetch, userId]);
