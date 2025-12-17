@@ -10,7 +10,8 @@ const AllUserTaskEntries = ({
     searchTerm = '',
     selectedDateRange = null,
     priorityFilter = 'all',
-    assignerFilter = 'all'
+    assignerFilter = 'all',
+    refreshKey = 0
 }) => {
     return (
         <TaskEntries
@@ -19,6 +20,8 @@ const AllUserTaskEntries = ({
             selectedDateRange={selectedDateRange}
             priorityFilter={priorityFilter}
             assignerFilter={assignerFilter}
+            // Changing this key forces TaskEntries (and its RTK Query hook) to re-mount and refetch fresh data
+            key={refreshKey}
         />
     );
 };

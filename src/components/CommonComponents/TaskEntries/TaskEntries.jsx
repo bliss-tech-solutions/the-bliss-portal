@@ -932,7 +932,7 @@ const TaskEntries = ({
                 onOk={() => extensionForm.submit()}
                 okText="Send Request"
                 confirmLoading={requestingExtension}
-                destroyOnClose
+                destroyOnHidden
                 className="user-extension-modal"
             >
                 <div className="user-extension-modal-meta">

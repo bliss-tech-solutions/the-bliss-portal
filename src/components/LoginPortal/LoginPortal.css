@@ -63,20 +63,8 @@
     background: var(--button-primary);
     border: none;
     font-weight: 600;
-    color: var(--button-text);
+    color: white !important;
     transition: all 0.3s ease;
-}
-
-.LoginSubmitBtn:hover {
-    color: var(--accent-color) !important;
-    background: var(--button-primary-hover) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-.LoginSubmitBtn:focus {
-    color: var(--accent-color) !important;
-    background: var(--button-primary-hover) !important;
 }
 
 .LoginSubmitBtn:disabled {
@@ -85,7 +73,7 @@
 }
 
 /* Theme-aware Ant Design form styling */
-.LoginPortalFormInner .ant-form-item-label > label {
+.LoginPortalFormInner .ant-form-item-label>label {
     color: var(--primary-text) !important;
     font-weight: 500;
     transition: color 0.3s ease;
@@ -185,12 +173,12 @@
         padding: 30px 20px;
         margin: 20px auto;
     }
-    
+
     .login-theme-toggle {
         top: 15px;
         right: 15px;
     }
-    
+
     .login-theme-button {
         padding: 6px 10px !important;
         font-size: 12px !important;

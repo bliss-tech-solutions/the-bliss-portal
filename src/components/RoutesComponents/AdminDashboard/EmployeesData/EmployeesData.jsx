@@ -1,13 +1,29 @@
-import React, { useState, useMemo } from 'react';
-import { Table, Input, Select, Button, Avatar, Checkbox, Space, Spin, Typography } from 'antd';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Table, Input, Select, Button, Avatar, Space, Spin, Typography, Card } from 'antd';
 import { SearchOutlined, PlusOutlined, SortAscendingOutlined, ExportOutlined, DownOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
-import { useGetAllUsersQuery } from '../../../../store/api';
+import {
+    BsPeople,
+    BsBuilding,
+    BsGraphUp,
+    BsActivity,
+    BsDatabase,
+    BsFilter,
+    BsDownload,
+    BsArrowUpRight,
+    BsFileEarmarkSpreadsheet,
+    BsArrowDownRight
+} from 'react-icons/bs';
+import { useGetAllUsersQuery, useGetAnalyticsOverviewQuery } from '../../../../store/api';
+import { useSocket } from '../../../../contexts/SocketContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectShowUserDetails, showUserDetailsView } from '../../../../store/slices/adminDashboardSlice';
+import UserWiseAnalytics from '../UserWiseAnalytics/UserWiseAnalytics';
 import dayjs from 'dayjs';
 import './EmployeesData.css';
 
 const { Search } = Input;
 const { Option } = Select;
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 // Map position to department (e.g., "Video Editor" -> "Video Editing")
 const getDepartmentFromPosition = (position) => {
@@ -58,12 +74,23 @@ const formatDate = (dateString) => {
 };
 
 const EmployeesData = () => {
+    const dispatch = useDispatch();
+    const showUserDetails = useSelector(selectShowUserDetails);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState(null);
+    const { socket } = useSocket();
 
     // Fetch all users from API
     const { data: usersData, isLoading, error } = useGetAllUsersQuery();
+
+    // Fetch analytics overview from API
+    const {
+        data: analyticsData,
+        isLoading: isLoadingAnalytics,
+        error: analyticsError,
+        refetch: refetchAnalytics
+    } = useGetAnalyticsOverviewQuery();
 
     // Transform API data to table format
     const employees = useMemo(() => {
@@ -81,16 +108,118 @@ const EmployeesData = () => {
         }));
     }, [usersData]);
 
-    // Summary statistics (calculated from real data)
+    // Real-time analytics updates via socket
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleAnalyticsUpdate = () => {
+            console.log('✅ Analytics data changed - refetching...');
+            refetchAnalytics();
+        };
+
+        // Listen for analytics update events
+        socket.on('analytics:updated', handleAnalyticsUpdate);
+        socket.on('analytics:overview:updated', handleAnalyticsUpdate);
+        socket.on('employee:created', handleAnalyticsUpdate);
+        socket.on('employee:updated', handleAnalyticsUpdate);
+        socket.on('employee:deleted', handleAnalyticsUpdate);
+
+        return () => {
+            socket.off('analytics:updated', handleAnalyticsUpdate);
+            socket.off('analytics:overview:updated', handleAnalyticsUpdate);
+            socket.off('employee:created', handleAnalyticsUpdate);
+            socket.off('employee:updated', handleAnalyticsUpdate);
+            socket.off('employee:deleted', handleAnalyticsUpdate);
+        };
+    }, [socket, refetchAnalytics]);
+
+    // Summary statistics with icons - using API data
     const summaryStats = useMemo(() => {
-        const totalEmployees = employees.length;
+        const analytics = analyticsData?.data;
+
+        if (!analytics) {
+            // Fallback to calculated values if API data not available
+            const totalEmployees = employees.length;
+            const uniqueDepartments = [...new Set(employees.map(emp => emp.department))].length;
+            const activeEmployees = totalEmployees;
+
+            return [
+                {
+                    label: 'Total Employees',
+                    value: totalEmployees.toString(),
+                    icon: <BsPeople className="stat-icon" />,
+                    trend: null,
+                    isLoading: isLoadingAnalytics
+                },
+                {
+                    label: 'Active Members',
+                    value: activeEmployees.toString(),
+                    icon: <BsActivity className="stat-icon" />,
+                    trend: '100%',
+                    isLoading: isLoadingAnalytics
+                },
+                {
+                    label: 'Departments',
+                    value: uniqueDepartments.toString(),
+                    icon: <BsBuilding className="stat-icon" />,
+                    trend: null,
+                    isLoading: isLoadingAnalytics
+                },
+                {
+                    label: 'Growth Rate',
+                    value: '0%',
+                    icon: <BsGraphUp className="stat-icon" />,
+                    trend: null,
+                    isLoading: isLoadingAnalytics
+                },
+            ];
+        }
+
+        // Use API data
+        const totalEmployees = analytics.totalEmployees || 0;
+        const activeMembers = analytics.activeMembers?.count || 0;
+        const inactiveMembers = analytics.activeMembers?.inactiveCount || 0;
+        const departmentsCount = analytics.departments?.count || 0;
+        const growthRate = analytics.growthRate?.monthly || 0;
+        const isPositiveGrowth = growthRate >= 0;
+
+        // Calculate active percentage
+        const activePercentage = totalEmployees > 0
+            ? ((activeMembers / totalEmployees) * 100).toFixed(0)
+            : 0;
+
         return [
-            { label: 'Total Employees', value: totalEmployees.toString(), color: '#000000', bgColor: '#f5f5f5' },
-            { label: 'Active', value: totalEmployees.toString(), color: '#000000', bgColor: '#FFD700' },
-            { label: 'Departments', value: [...new Set(employees.map(emp => emp.department))].length.toString(), color: '#000000', bgColor: '#f5f5f5' },
-            { label: 'Output', value: '14%', color: '#000000', bgColor: '#f5f5f5' },
+            {
+                label: 'Total Employees',
+                value: totalEmployees.toString(),
+                icon: <BsPeople className="stat-icon" />,
+                trend: null,
+                isLoading: isLoadingAnalytics
+            },
+            {
+                label: 'Active Members',
+                value: activeMembers.toString(),
+                icon: <BsActivity className="stat-icon" />,
+                trend: `${activePercentage}%`,
+                isLoading: isLoadingAnalytics
+            },
+            {
+                label: 'Departments',
+                value: departmentsCount.toString(),
+                icon: <BsBuilding className="stat-icon" />,
+                trend: null,
+                isLoading: isLoadingAnalytics
+            },
+            {
+                label: 'Growth Rate',
+                value: `${Math.abs(growthRate).toFixed(1)}%`,
+                icon: isPositiveGrowth ? <BsGraphUp className="stat-icon" /> : <BsGraphUp className="stat-icon" />,
+                trend: isPositiveGrowth ? `+${growthRate.toFixed(1)}%` : `${growthRate.toFixed(1)}%`,
+                isNegative: !isPositiveGrowth,
+                isLoading: isLoadingAnalytics
+            },
         ];
-    }, [employees]);
+    }, [analyticsData, employees, isLoadingAnalytics]);
 
     // Get unique departments for filters
     const departments = useMemo(() => {
@@ -122,8 +251,8 @@ const EmployeesData = () => {
             sorter: (a, b) => a.name.localeCompare(b.name),
             render: (text, record) => (
                 <Space>
-                    <Avatar icon={<UserOutlined />} src={record.avatar} />
-                    <span>{text}</span>
+                    <Avatar icon={<UserOutlined />} src={record.avatar} className="employee-avatar" />
+                    <span className="employee-name">{text}</span>
                 </Space>
             ),
         },
@@ -132,41 +261,56 @@ const EmployeesData = () => {
             dataIndex: 'jobTitle',
             key: 'jobTitle',
             sorter: (a, b) => a.jobTitle.localeCompare(b.jobTitle),
+            render: (text) => <Text className="table-cell-text">{text}</Text>,
         },
         {
             title: 'Department',
             dataIndex: 'department',
             key: 'department',
             sorter: (a, b) => a.department.localeCompare(b.department),
+            render: (text) => (
+                <span className="department-badge">
+                    <BsBuilding className="department-icon" />
+                    {text}
+                </span>
+            ),
         },
         {
             title: 'Salary',
             dataIndex: 'salary',
             key: 'salary',
             sorter: (a, b) => parseInt(a.salary) - parseInt(b.salary),
-            render: (salary) => `$${salary}`,
+            render: (salary) => <Text className="table-cell-text">${salary}</Text>,
         },
         {
             title: 'Start date',
             dataIndex: 'startDate',
             key: 'startDate',
             sorter: (a, b) => new Date(a.startDate) - new Date(b.startDate),
-            render: (date) => formatDate(date),
+            render: (date) => (
+                <Text className="table-cell-text date-text">{formatDate(date)}</Text>
+            ),
         },
         {
             title: 'View Details',
             key: 'viewDetails',
-            width: 120,
+            width: 140,
             render: (_, record) => (
-                <Space>
-                    <EyeOutlined style={{ color: '#1890ff', fontSize: '16px' }} />
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {record.viewDetails?.userEmail || record.viewDetails?.email || 'N/A'}
-                    </Text>
-                </Space>
+                <Button
+                    type="link"
+                    icon={<EyeOutlined />}
+                    onClick={() => handleViewDetails(record.id)}
+                    className="view-details-button"
+                >
+                    View Details
+                </Button>
             ),
         },
     ];
+
+    const handleViewDetails = (userId) => {
+        dispatch(showUserDetailsView(userId));
+    };
 
     const rowSelection = {
         selectedRowKeys,
@@ -183,116 +327,173 @@ const EmployeesData = () => {
         },
     };
 
+    // Show UserWiseAnalytics if user details view is enabled
+    if (showUserDetails) {
+        return <UserWiseAnalytics />;
+    }
+
     return (
         <div className="employees-data-container">
-            {/* Header */}
-            <div className="employees-header">
-                <h1 className="employees-title">People</h1>
+            {/* Background overlay effects */}
+            <div className="dashboard-overlay"></div>
+            <div className="dashboard-grid-pattern"></div>
 
-                {/* Top navigation buttons */}
-                {/* <div className="employees-nav-buttons">
-                    <Button type="text" className="nav-button">Directory</Button>
-                    <Button type="text" className="nav-button">Org Chat</Button>
-                    <Button type="text" className="nav-button">Insights</Button>
-                </div> */}
+            {/* Header Section */}
+            <div className="dashboard-header">
+                <div className="header-content">
+                    <div className="header-title-wrapper">
+                        <BsDatabase className="header-icon" />
+                        <div>
+                            <Title level={2} className="dashboard-title">Employee Analytics</Title>
+                            <Text className="dashboard-subtitle">Comprehensive workforce data analysis</Text>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Summary Statistics */}
-            <div className="summary-stats">
+            {/* Summary Statistics Cards */}
+            <div className="stats-grid">
                 {summaryStats.map((stat, index) => (
-                    <div
+                    <Card
                         key={index}
-                        className="stat-item"
-                        style={{ backgroundColor: stat.bgColor, color: stat.color }}
+                        className="stat-card"
+                        bordered={false}
                     >
-                        <span className="stat-label">{stat.label}</span>
-                        <span className="stat-value">{stat.value}</span>
-                    </div>
+                        <div className="stat-card-content">
+                            <div className="stat-icon-wrapper">
+                                {stat.isLoading ? (
+                                    <Spin size="small" />
+                                ) : (
+                                    stat.icon
+                                )}
+                            </div>
+                            <div className="stat-info">
+                                <Text className="stat-label">{stat.label}</Text>
+                                <div className="stat-value-wrapper">
+                                    {stat.isLoading ? (
+                                        <Spin size="small" />
+                                    ) : (
+                                        <>
+                                            <Text className="stat-value">{stat.value}</Text>
+                                            {stat.trend && (
+                                                <span className={`stat-trend ${stat.isNegative ? 'negative' : ''}`}>
+                                                    {stat.isNegative ? (
+                                                        <BsArrowDownRight />
+                                                    ) : (
+                                                        <BsArrowUpRight />
+                                                    )}
+                                                    {stat.trend}
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 ))}
             </div>
 
             {/* Filter and Action Bar */}
-            <div className="filter-action-bar">
-                {/* Filter Dropdowns */}
-                <div className="filter-dropdowns">
-                    <Select
-                        placeholder="Department"
-                        suffixIcon={<DownOutlined />}
-                        className="filter-select"
-                        style={{ width: 150 }}
-                        value={departmentFilter}
-                        onChange={setDepartmentFilter}
-                        allowClear
-                    >
-                        {departments.map(dept => (
-                            <Option key={dept} value={dept}>{dept}</Option>
-                        ))}
-                    </Select>
-                </div>
+            <Card className="filter-action-card" bordered={false}>
+                <div className="filter-action-content">
+                    <div className="filter-section">
+                        <BsFilter className="filter-section-icon" />
+                        <Select
+                            placeholder="Filter by Department"
+                            suffixIcon={<DownOutlined />}
+                            className="filter-select"
+                            style={{ width: 200 }}
+                            value={departmentFilter}
+                            onChange={setDepartmentFilter}
+                            allowClear
+                        >
+                            {departments.map(dept => (
+                                <Option key={dept} value={dept}>{dept}</Option>
+                            ))}
+                        </Select>
+                    </div>
 
-                {/* Search and Action Buttons */}
-                <div className="search-actions">
-                    <Search
-                        placeholder="Search"
-                        prefix={<SearchOutlined />}
-                        allowClear
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        className="employees-search"
-                        style={{ width: 200 }}
-                    />
+                    <div className="action-section">
+                        <Search
+                            placeholder="Search employees..."
+                            prefix={<SearchOutlined />}
+                            allowClear
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            className="dashboard-search"
+                            style={{ width: 280 }}
+                        />
 
-                    <Space>
-                        <Button
-                            type="primary"
-                            icon={<PlusOutlined />}
-                            className="action-button"
-                        >
-                            Add
-                        </Button>
-                        <Button
-                            icon={<SortAscendingOutlined />}
-                            className="action-button"
-                        >
-                            Sort
-                        </Button>
-                        <Button
-                            icon={<ExportOutlined />}
-                            className="action-button"
-                        >
-                            Export
-                        </Button>
-                    </Space>
+                        <Space size="middle">
+                            <Button
+                                type="default"
+                                icon={<PlusOutlined />}
+                                className="action-btn"
+                            >
+                                Add Employee
+                            </Button>
+                            <Button
+                                icon={<SortAscendingOutlined />}
+                                className="action-btn secondary"
+                            >
+                                Sort
+                            </Button>
+                            <Button
+                                icon={<BsDownload />}
+                                className="action-btn secondary"
+                            >
+                                Export
+                            </Button>
+                        </Space>
+                    </div>
                 </div>
-            </div>
+            </Card>
 
             {/* Employee Table */}
-            <div className="employees-table-container">
-                {isLoading ? (
-                    <div style={{ textAlign: 'center', padding: '50px' }}>
-                        <Spin size="large" />
-                        <div style={{ marginTop: '16px' }}>
-                            <Text>Loading employees data...</Text>
+            <Card className="table-card" bordered={false}>
+                <div className="table-card-header">
+                    <div className="table-header-info">
+                        <BsFileEarmarkSpreadsheet className="table-header-icon" />
+                        <div>
+                            <Text className="table-header-title">Employee Database</Text>
+                            <Text className="table-header-subtitle">
+                                {filteredEmployees.length} {filteredEmployees.length === 1 ? 'record' : 'records'} found
+                            </Text>
                         </div>
                     </div>
-                ) : error ? (
-                    <div style={{ textAlign: 'center', padding: '50px' }}>
-                        <Text type="danger">Error loading employees data. Please try again.</Text>
-                    </div>
-                ) : (
-                    <Table
-                        columns={columns}
-                        dataSource={filteredEmployees}
-                        rowKey="id"
-                        rowSelection={rowSelection}
-                        pagination={{ pageSize: 10, showSizeChanger: true }}
-                        className="employees-table"
-                    />
-                )}
-            </div>
+                </div>
+
+                <div className="employees-table-container">
+                    {isLoading ? (
+                        <div className="loading-state">
+                            <Spin size="large" />
+                            <Text className="loading-text">Analyzing employee data...</Text>
+                        </div>
+                    ) : error ? (
+                        <div className="error-state">
+                            <Text type="danger" className="error-text">
+                                Unable to load employee data. Please try again.
+                            </Text>
+                        </div>
+                    ) : (
+                        <Table
+                            columns={columns}
+                            dataSource={filteredEmployees}
+                            rowKey="id"
+                            rowSelection={rowSelection}
+                            pagination={{
+                                pageSize: 10,
+                                showSizeChanger: true,
+                                showTotal: (total) => `Total ${total} employees`
+                            }}
+                            className="employees-table"
+                        />
+                    )}
+                </div>
+            </Card>
         </div>
     );
 };
 
 export default EmployeesData;
-

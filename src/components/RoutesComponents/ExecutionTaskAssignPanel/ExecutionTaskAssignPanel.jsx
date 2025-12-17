@@ -64,10 +64,10 @@ const ExecutionTaskAssignPanel = () => {
         // Listen for task added events (show notification)
         const handleTaskAdded = (data) => {
             if (!data) return;
-            
+
             // Check if this task is created by current user (execution role)
             const isCreatedByCurrentUser = data.userId === userId;
-            
+
             if (isCreatedByCurrentUser) {
                 console.log('✅ New task created via socket:', data);
                 showSuccess(`Task created: ${data.taskName || 'New task'}`);
@@ -762,13 +762,6 @@ const ExecutionTaskAssignPanel = () => {
                         statusFilter="all"
                     />
                 );
-            case '2':
-                return (
-                    <AllTaskEntries
-                        {...commonProps}
-                        statusFilter="pending"
-                    />
-                );
             case '3':
                 return (
                     <AllTaskEntries
@@ -781,6 +774,15 @@ const ExecutionTaskAssignPanel = () => {
                     <AllTaskEntries
                         {...commonProps}
                         statusFilter="completed"
+                    />
+                );
+            case '5':
+                // Deleted tab → show ONLY archived tasks
+                return (
+                    <AllTaskEntries
+                        {...commonProps}
+                        statusFilter="all"
+                        showArchivedOnly={true}
                     />
                 );
             default:
@@ -831,17 +833,17 @@ const ExecutionTaskAssignPanel = () => {
                                         key: '1',
                                         label: 'All Tasks'
                                     },
-                                    {
-                                        key: '2',
-                                        label: 'Upcoming Changes'
-                                    },
-                                    {
-                                        key: '3',
-                                        label: 'In Progress'
-                                    },
+                                    // {
+                                    //     key: '3',
+                                    //     label: 'In Progress'
+                                    // },
                                     {
                                         key: '4',
                                         label: 'Completed'
+                                    },
+                                    {
+                                        key: '5',
+                                        label: 'Deleted'
                                     }
                                 ]}
                             />

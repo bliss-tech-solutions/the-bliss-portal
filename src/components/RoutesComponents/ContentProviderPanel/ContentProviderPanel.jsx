@@ -6,6 +6,7 @@ import { selectTheme } from '../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../store/slices/authSlice';
 import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetTaskAssignQuery, useAddClientAttachmentMutation, useGetClientAttachmentsByUserIdQuery } from '../../../store/api';
 import ContentProviderTaskEntries from './TaskEntries/ContentProviderTaskEntries';
+import EmptyState from '../../CommonComponents/EmptyState/EmptyState';
 import { BsFilter, BsSearch, BsUpload, BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import { useSocket } from '../../../contexts/SocketContext';
@@ -288,7 +289,7 @@ const ContentProviderPanel = () => {
                                     {dayjs(doc.createdAt).format('hh:mm A')}
                                 </div>
                             </div>
-                            
+
                             <div className="document-link-section">
                                 <div className="document-link-container">
                                     <BsLink45Deg className="link-icon" />
@@ -646,9 +647,13 @@ const ContentProviderPanel = () => {
                             defaultActiveKey={Object.keys(documentsByMonth)}
                         />
                     ) : (
-                        <div style={{ textAlign: 'center', padding: '40px', color: 'var(--secondary-text)' }}>
-                            No documents found for this client.
-                        </div>
+                        <EmptyState
+                            image="/Images/NoTaskAvaible.png"
+                            imageAlt="No documents available"
+                            title="No documents found"
+                            description="This client doesn't have any uploaded documents yet. Upload a document to get started."
+                            className="compact"
+                        />
                     )}
                 </Modal>
 

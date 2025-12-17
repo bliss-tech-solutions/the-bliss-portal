@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat'],
     endpoints: (builder) => ({
         createLeave: builder.mutation({
             query: (body) => ({
@@ -274,6 +274,52 @@ export const api = createApi({
             providesTags: ['TaskChat'],
         }),
 
+        // Global Chat - Create a new global chat message
+        addGlobalChat: builder.mutation({
+            query: ({ senderId, senderName, senderEmail, message, messageType, time }) => ({
+                url: '/api/globalchat/messages',
+                method: 'POST',
+                body: {
+                    senderId,
+                    senderName,
+                    senderEmail: senderEmail || '',
+                    message,
+                    messageType: messageType || 'text',
+                    time
+                },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
+
+        // Global Chat - Get all global chat messages (with pagination)
+        getGlobalChatMessages: builder.query({
+            query: ({ limit = 100, skip = 0, sort = 'asc' } = {}) => ({
+                url: `/api/globalchat/messages?limit=${limit}&skip=${skip}&sort=${sort}`,
+                method: 'GET',
+            }),
+            providesTags: ['GlobalChat'],
+        }),
+
+        // Global Chat - Get recent messages (last N messages)
+        getRecentGlobalChatMessages: builder.query({
+            query: ({ count = 50 } = {}) => ({
+                url: `/api/globalchat/messages/recent?count=${count}`,
+                method: 'GET',
+            }),
+            providesTags: ['GlobalChat'],
+        }),
+
+        // Global Chat - Archive/Delete message
+        archiveGlobalChatMessage: builder.mutation({
+            query: ({ messageId, userId, archived = true }) => ({
+                url: '/api/globalchat/messages/archive',
+                method: 'POST',
+                body: { messageId, userId, archived },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['GlobalChat'],
+        }),
+
         // Get all users
         getAllUsers: builder.query({
             query: () => ({
@@ -281,6 +327,24 @@ export const api = createApi({
                 method: 'GET',
             }),
             providesTags: ['Users'],
+        }),
+        // Get analytics overview
+        getAnalyticsOverview: builder.query({
+            query: () => ({
+                url: '/api/analytics/overview',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Analytics'],
+        }),
+        // Get user-wise analytics
+        getUserWiseAnalytics: builder.query({
+            query: (userId) => ({
+                url: `/api/analytics/userwise/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Analytics', 'User'],
         }),
         getAllCheckins: builder.query({
             query: () => ({
@@ -440,6 +504,12 @@ export const {
     useGetTaskChatMessagesQuery,
     useLazyGetTaskChatMessagesQuery,
     useGetUserChatMessagesQuery,
+    useAddGlobalChatMutation,
+    useGetGlobalChatMessagesQuery,
+    useLazyGetGlobalChatMessagesQuery,
+    useGetRecentGlobalChatMessagesQuery,
+    useLazyGetRecentGlobalChatMessagesQuery,
+    useArchiveGlobalChatMessageMutation,
     useGetAllUsersQuery,
     useGetAllCheckinsQuery,
     useGetTodayCheckinQuery,
@@ -456,7 +526,9 @@ export const {
     useGetClientAttachmentsByUserIdQuery,
     useCreateTeamMutation,
     useGetAllTeamsQuery,
-    useUpdateTeamMutation
+    useUpdateTeamMutation,
+    useGetAnalyticsOverviewQuery,
+    useGetUserWiseAnalyticsQuery
 } = api
 
 

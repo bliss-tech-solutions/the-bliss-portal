@@ -1,5 +1,5 @@
 // Navigation Configuration with Role-Based Access Control
-import { DashboardOutlined, UserOutlined } from '@ant-design/icons';
+import { DashboardOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
 import { BiTask } from "react-icons/bi";
 import { SlCalender } from "react-icons/sl";
 import { FileTextOutlined } from '@ant-design/icons';
@@ -8,6 +8,7 @@ import { CalendarOutlined } from '@ant-design/icons';
 import { SiGoogleanalytics } from "react-icons/si";
 import { SiDatabricks } from "react-icons/si";
 import { TfiLayoutAccordionSeparated } from "react-icons/tfi";
+import { AiFillDatabase } from "react-icons/ai";
 
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
@@ -18,6 +19,7 @@ import UserAttendanceData from '../RoutesComponents/HRWorkComponent/UserAttendan
 import FestiveCalender from '../RoutesComponents/HRWorkComponent/FestiveCalender/FestiveCalender';
 import DocumentGenerator from '../RoutesComponents/HRWorkComponent/DocumentGenerator/DocumentGenerator';
 import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/TaskAndLeaveCalender/TaskAndLeaveCalender';
+import GlobalChatPage from '../RoutesComponents/GlobalChatPage/GlobalChatPage';
 
 // Navigation Configuration
 import UserDocumentVerification from '../RoutesComponents/HRWorkComponent/UserDocumentVerification/UserDocumentVerification';
@@ -25,6 +27,7 @@ import ContentProviderPanel from '../RoutesComponents/ContentProviderPanel/Conte
 import ContentProviderTaskEntriesPage from '../RoutesComponents/ContentProviderPanel/TaskEntries/ContentProviderTaskEntriesPage';
 import ClientsSegregation from '../RoutesComponents/AdminDashboard/ClientsSegregation/ClientsSegregation';
 import ClientAssignManament from '../RoutesComponents/AdminDashboard/ClientAssignManament/ClientAssignManament';
+import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAndData/ClientAndData';
 
 export const navigationConfig = [
     // Admin Only Route
@@ -86,6 +89,14 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
+        componentLabelName: "Clients & Data",
+        icon: AiFillDatabase,
+        routeName: "/clients-and-data",
+        roles: ["user"],
+        component: ClientAndData,
+        showInSidebar: true
+    },
+    {
         componentLabelName: "Task and Leave Calender",
         icon: CalendarOutlined,
         routeName: "/task-and-leave-calender",
@@ -131,6 +142,14 @@ export const navigationConfig = [
         routeName: "/client-assign-manament",
         roles: ["Execution"],
         component: ClientAssignManament,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Global Chat",
+        icon: MessageOutlined,
+        routeName: "/global-chat",
+        roles: ["Execution", "user", "admin", "HR", "ContentProvider"],
+        component: GlobalChatPage,
         showInSidebar: true
     }
 ];
