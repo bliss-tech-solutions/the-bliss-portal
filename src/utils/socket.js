@@ -163,15 +163,25 @@ export const emitTaskExtensionRequested = (payload) => {
 
 export const onTaskExtensionUpdated = (callback) => {
     if (socket) {
+        // Existing kebab-case events
         socket.on('task-extension-requested', callback);
         socket.on('task-extension-updated', callback);
+
+        // New backend colon-cased events
+        socket.on('task:extensionRequested', callback);
+        socket.on('task:extensionResponded', callback);
+        // Global task update broadcast (backend-mentioned)
+        socket.on('task:update', callback);
     }
 };
 
 export const offTaskExtensionUpdated = (callback) => {
     if (socket) {
-        socket.off('task-extension-requested', callback);
+        socket.off('task-extension-requested', callback)
         socket.off('task-extension-updated', callback);
+        socket.off('task:extensionRequested', callback);
+        socket.off('task:extensionResponded', callback);
+        socket.off('task:update', callback);
     }
 };
 

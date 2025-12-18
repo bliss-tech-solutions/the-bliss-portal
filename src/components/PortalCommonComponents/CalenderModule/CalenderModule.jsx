@@ -26,6 +26,7 @@ const CalenderModule = ({
     selectedColor,
     setSelectedColor,
     taskColors = [],
+    disabledDate,
 }) => {
     const handleDateClick = (date, info) => {
         if (typeof onDateSelect === 'function') {
@@ -151,6 +152,7 @@ const CalenderModule = ({
                 <Calendar
                     dateCellRender={dateCellRender}
                     onSelect={handleDateClick}
+                    disabledDate={disabledDate}
                     className="fc-calendar"
                     headerRender={({ value, type, onChange }) => {
                         const monthOptions = [];

@@ -59,12 +59,31 @@
 
 .LoginSubmitBtn {
     height: 48px;
-    border-radius: 8px;
-    background: var(--button-primary);
-    border: none;
-    font-weight: 600;
-    color: var(--button-text);
-    transition: all 0.3s ease;
+    border-radius: var(--button-border-radius) !important;
+    background: var(--button-primary) !important;
+    border: none !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    letter-spacing: 0.3px !important;
+    color: var(--button-primary-text) !important;
+    box-shadow: var(--button-shadow) !important;
+    transition: all var(--transition-fast) ease !important;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+}
+
+.LoginSubmitBtn:hover:not(:disabled) {
+    background: var(--button-primary-hover) !important;
+    box-shadow: var(--button-shadow-hover) !important;
+    transform: translateY(-1px) !important;
+    color: var(--button-text) !important;
+}
+
+.LoginSubmitBtn:active:not(:disabled) {
+    background: var(--button-primary-hover) !important;
+    box-shadow: var(--button-shadow-active) !important;
+    transform: translateY(0) !important;
 }
 
 .LoginSubmitBtn:hover {
@@ -80,66 +99,134 @@
 }
 
 .LoginSubmitBtn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    background: var(--button-primary) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.LoginSubmitBtn .ant-spin {
+    color: var(--button-primary-text) !important;
 }
 
 /* Theme-aware Ant Design form styling */
-.LoginPortalFormInner .ant-form-item-label > label {
+#LoginPortal .LoginPortalFormInner .ant-form-item-label>label {
     color: var(--primary-text) !important;
-    font-weight: 500;
-    transition: color 0.3s ease;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+    transition: color var(--transition-medium) ease;
 }
 
-.LoginPortalFormInner .ant-input {
+#LoginPortal .LoginPortalFormInner .ant-input,
+#LoginPortal .LoginPortalFormInner .ant-input-password {
     background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
+    border: 1px solid var(--input-border) !important;
+    border-radius: var(--button-border-radius) !important;
     color: var(--primary-text) !important;
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    transition: all var(--transition-fast) ease !important;
 }
 
-.LoginPortalFormInner .ant-input:hover {
-    border-color: var(--accent-color) !important;
+#LoginPortal .LoginPortalFormInner .ant-input:hover,
+#LoginPortal .LoginPortalFormInner .ant-input-password:hover {
+    border-color: var(--input-border-hover) !important;
 }
 
-.LoginPortalFormInner .ant-input:focus {
-    border-color: var(--accent-color) !important;
-    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2) !important;
+#LoginPortal .LoginPortalFormInner .ant-input:focus,
+#LoginPortal .LoginPortalFormInner .ant-input-password:focus,
+#LoginPortal .LoginPortalFormInner .ant-input-focused,
+#LoginPortal .LoginPortalFormInner .ant-input-affix-wrapper-focused {
+    border-color: var(--input-border-focus) !important;
+    box-shadow: var(--input-focus-shadow) !important;
+    outline: none !important;
 }
 
-.LoginPortalFormInner .ant-input::placeholder {
+#LoginPortal .LoginPortalFormInner .ant-input::placeholder {
     color: var(--secondary-text) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
 }
 
-.LoginPortalFormInner .ant-checkbox-wrapper {
+#LoginPortal .LoginPortalFormInner .ant-input-affix-wrapper {
+    background-color: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    border-radius: var(--button-border-radius) !important;
+    padding: 0px !important;
+    transition: all var(--transition-fast) ease !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-input-affix-wrapper .ant-input {
+    padding: 8px 12px !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-input-affix-wrapper:hover {
+    border-color: var(--input-border-hover) !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-input-affix-wrapper-focused {
+    border-color: var(--input-border-focus) !important;
+    box-shadow: var(--input-focus-shadow) !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-input-password-icon {
+    color: var(--secondary-text) !important;
+    transition: color var(--transition-fast) ease !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-input-password-icon:hover {
     color: var(--primary-text) !important;
-    transition: color 0.3s ease;
 }
 
-.LoginPortalFormInner .ant-checkbox-wrapper a {
+#LoginPortal .LoginPortalFormInner .ant-checkbox-wrapper {
+    color: var(--primary-text) !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    transition: color var(--transition-medium) ease;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-checkbox-wrapper a {
     color: var(--accent-color) !important;
     text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast) ease;
 }
 
-.LoginPortalFormInner .ant-checkbox-wrapper a:hover {
+#LoginPortal .LoginPortalFormInner .ant-checkbox-wrapper a:hover {
     color: var(--button-primary-hover) !important;
     text-decoration: underline;
 }
 
-.LoginPortalFormInner .ant-checkbox-inner {
+#LoginPortal .LoginPortalFormInner .ant-checkbox-inner {
     background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    border: 1px solid var(--input-border) !important;
+    border-radius: 3px !important;
+    width: 16px !important;
+    height: 16px !important;
+    transition: all var(--transition-fast) ease !important;
 }
 
-.LoginPortalFormInner .ant-checkbox-checked .ant-checkbox-inner {
+#LoginPortal .LoginPortalFormInner .ant-checkbox:hover .ant-checkbox-inner {
+    border-color: var(--input-border-hover) !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-checkbox-checked .ant-checkbox-inner {
     background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+#LoginPortal .LoginPortalFormInner .ant-checkbox-checked::after {
     border-color: var(--accent-color) !important;
 }
 
 /* Logo styling */
 .LoginPortalFormInnerLogo img {
-    transition: filter 0.3s ease;
+    transition: filter var(--transition-medium) ease;
     max-width: 200px;
     height: auto;
 }
@@ -152,30 +239,38 @@
     z-index: 10;
 }
 
-.login-theme-button {
+#LoginPortal .login-theme-button {
     color: var(--primary-text) !important;
     background: var(--card-bg) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
+    border-radius: var(--button-border-radius) !important;
+    padding: 8px 16px !important;
     height: auto !important;
     font-weight: 500 !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 2px 8px var(--shadow) !important;
+    font-size: 14px !important;
+    transition: all var(--transition-fast) ease !important;
+    box-shadow: var(--button-shadow) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
 }
 
-.login-theme-button:hover {
+#LoginPortal .login-theme-button:hover {
     color: var(--accent-color) !important;
     background: var(--hover-bg) !important;
     border-color: var(--accent-color) !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px var(--shadow) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--button-shadow-hover) !important;
 }
 
-.login-theme-button:focus {
+#LoginPortal .login-theme-button:focus {
     color: var(--accent-color) !important;
     background: var(--hover-bg) !important;
     border-color: var(--accent-color) !important;
+}
+
+#LoginPortal .login-theme-button .anticon {
+    font-size: 16px !important;
 }
 
 /* Form container responsive adjustments */
@@ -190,7 +285,7 @@
         top: 15px;
         right: 15px;
     }
-    
+
     .login-theme-button {
         padding: 6px 10px !important;
         font-size: 12px !important;

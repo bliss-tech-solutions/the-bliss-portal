@@ -64,24 +64,24 @@ const PortalHeader = () => {
 
     // Notification dropdown items
     const notificationItems = [
-        {
-            key: '1',
-            label: (
-                <div className="notification-item">
-                    <div className="notification-title">New Task Assigned</div>
-                    <div className="notification-time">2 minutes ago</div>
-                </div>
-            ),
-        },
-        {
-            key: '2',
-            label: (
-                <div className="notification-item">
-                    <div className="notification-title">Meeting Reminder</div>
-                    <div className="notification-time">1 hour ago</div>
-                </div>
-            ),
-        },
+            {
+                key: '1',
+                label: (
+                    <div className="notification-item">
+                        <div className="notification-title">New Task Assigned</div>
+                        <div className="notification-time">2 minutes ago</div>
+                    </div>
+                ),
+            },
+            {
+                key: '2',
+                label: (
+                    <div className="notification-item">
+                        <div className="notification-title">Meeting Reminder</div>
+                        <div className="notification-time">1 hour ago</div>
+                    </div>
+                ),
+            },
         {
             key: '3',
             label: (

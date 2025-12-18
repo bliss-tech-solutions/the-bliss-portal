@@ -130,10 +130,10 @@ const UserTaskAssignmentPanel = () => {
                                         key: '1',
                                         label: 'All Tasks'
                                     },
-                                    {
-                                        key: '2',
-                                        label: 'Upcoming Tasks'
-                                    },
+                                    // {
+                                    //     key: '2',
+                                    //     label: 'Upcoming Tasks'
+                                    // },
                                     {
                                         key: '3',
                                         label: 'In Progress'

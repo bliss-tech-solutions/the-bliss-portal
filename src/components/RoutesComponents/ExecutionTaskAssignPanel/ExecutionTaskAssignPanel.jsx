@@ -120,8 +120,10 @@ const ExecutionTaskAssignPanel = () => {
         setTaskFilterCategory('all');
     };
 
-    const onClose = () => {
-        setDrawerVisible(false);
+    const TASK_DRAFT_STORAGE_KEY = 'executionTaskAssignDraft';
+
+    // Reset all drawer-related state and form fields + clear localStorage draft
+    const resetDrawerState = () => {
         form.resetFields();
         form.setFieldsValue({
             category: undefined,
@@ -147,6 +149,14 @@ const ExecutionTaskAssignPanel = () => {
         setAvailableUsers([]);
         setSelectedSlotDate(dayjs().startOf('day'));
         setBookedSlots([]);
+        try {
+            localStorage.removeItem(TASK_DRAFT_STORAGE_KEY);
+        } catch { }
+    };
+
+    const onClose = () => {
+        setDrawerVisible(false);
+        // Do NOT reset here so the user can continue later; draft is kept in localStorage
     };
 
     const handleFileChange = async ({ fileList: newFileList, file }) => {
@@ -525,6 +535,35 @@ const ExecutionTaskAssignPanel = () => {
         setSlotEnd(computedEnd);
     };
 
+    // Persist draft form + scheduling state to localStorage
+    const persistDraftToStorage = () => {
+        try {
+            const formValues = form.getFieldsValue([
+                'category',
+                'selectedUser',
+                'taskName',
+                'clientName',
+                'priority',
+                'description',
+                'slotStart',
+                'slotDuration'
+            ]);
+
+            const draft = {
+                ...formValues,
+                slotStart: formValues.slotStart ? formValues.slotStart.toISOString() : null,
+                slotDuration: formValues.slotDuration ?? null,
+                selectedReceiverUserId,
+                selectedPosition,
+                selectedSlotDate: selectedSlotDate ? selectedSlotDate.toISOString() : null,
+            };
+
+            localStorage.setItem(TASK_DRAFT_STORAGE_KEY, JSON.stringify(draft));
+        } catch {
+            // ignore storage errors
+        }
+    };
+
     const handleSlotStartChange = (value) => {
         if (!value) {
             setSlotStart(null);
@@ -546,6 +585,7 @@ const ExecutionTaskAssignPanel = () => {
         }
         setConflictMessage(null);
         setConflictSuggestions([]);
+        persistDraftToStorage();
     };
 
     const handleSlotDurationChange = (valueOrEvent) => {
@@ -569,6 +609,7 @@ const ExecutionTaskAssignPanel = () => {
         }
         setConflictMessage(null);
         setConflictSuggestions([]);
+        persistDraftToStorage();
     };
 
     const validateSlotStart = (_, value) => {
@@ -640,6 +681,75 @@ const ExecutionTaskAssignPanel = () => {
 
         return Promise.resolve();
     };
+
+    // Persist draft whenever form values change
+    const handleFormValuesChange = () => {
+        persistDraftToStorage();
+    };
+
+    // Hydrate draft from localStorage on mount
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem(TASK_DRAFT_STORAGE_KEY);
+            if (!stored) return;
+            const draft = JSON.parse(stored);
+            if (!draft || typeof draft !== 'object') return;
+
+            const {
+                category,
+                selectedUser,
+                taskName,
+                clientName,
+                priority,
+                description,
+                slotStart: draftSlotStart,
+                slotDuration: draftSlotDuration,
+                selectedReceiverUserId: draftReceiverId,
+                selectedPosition: draftPosition,
+                selectedSlotDate: draftSlotDate,
+            } = draft;
+
+            form.setFieldsValue({
+                category,
+                selectedUser,
+                taskName,
+                clientName,
+                priority,
+                description,
+                slotDuration: draftSlotDuration ?? undefined,
+            });
+
+            if (draftPosition) {
+                setSelectedPosition(draftPosition);
+            }
+            if (draftReceiverId) {
+                setSelectedReceiverUserId(draftReceiverId);
+            }
+            if (draftSlotDate) {
+                const restoredDate = dayjs(draftSlotDate);
+                if (restoredDate.isValid()) {
+                    setSelectedSlotDate(restoredDate);
+                }
+            }
+            if (draftSlotStart) {
+                const restoredStart = dayjs(draftSlotStart);
+                if (restoredStart.isValid()) {
+                    setSlotStart(restoredStart);
+                }
+            }
+            if (draftSlotStart && draftSlotDuration && draftSlotDate) {
+                const restoredStart = dayjs(draftSlotStart);
+                if (restoredStart.isValid()) {
+                    const computedEnd = restoredStart.add(Number(draftSlotDuration), 'minute');
+                    setSlotEnd(computedEnd);
+                    setSlotDuration(Number(draftSlotDuration));
+                }
+            }
+        } catch {
+            // ignore storage errors
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const isDurationDisabled = (value) => {
         if (!slotStart || !selectedSlotDate) return false;
@@ -730,8 +840,9 @@ const ExecutionTaskAssignPanel = () => {
 
             showSuccess('Task added successfully!');
 
-            // Use the same onClose function as the close button - ensures exact same behavior
-            onClose();
+            // After successful submit, close drawer and clear draft
+            resetDrawerState();
+            setDrawerVisible(false);
         } catch (error) {
             if (error?.status === 409) {
                 const message = error?.data?.message || 'Selected slot is unavailable. Please choose a different time.';
@@ -968,6 +1079,7 @@ const ExecutionTaskAssignPanel = () => {
                         layout="vertical"
                         className="task-form"
                         onFinish={handleAddTask}
+                        onValuesChange={handleFormValuesChange}
                     >
                         <div className="task-section-grid">
                             <section className="task-form-section task-section-details">
@@ -1377,15 +1489,22 @@ const ExecutionTaskAssignPanel = () => {
                             </Form.Item>
                         </div>
 
-                        <Row>
-                            <Col span={24} style={{ display: "flex", justifyContent: "end" }}>
-                                <Form.Item>
+                        <Row justify="space-between" gutter={16}>
+                            <Col xs={24} sm={12} style={{ marginBottom: 8 }}>
+                                <Button
+                                    style={{ width: '100%' }}
+                                    onClick={resetDrawerState}
+                                >
+                                    Reset Form
+                                </Button>
+                            </Col>
+                            <Col xs={24} sm={12} style={{ display: "flex", justifyContent: "flex-end" }}>
+                                <Form.Item style={{ width: '100%', marginBottom: 0 }}>
                                     <Button
-                                        style={{ maxWidth: "200px" }}
+                                        style={{ maxWidth: "200px", width: '100%' }}
                                         type="primary"
                                         htmlType="submit"
                                         loading={isLoading}
-                                        block
                                         size="large"
                                     >
                                         {isLoading ? 'Adding Task...' : 'Add Task'}

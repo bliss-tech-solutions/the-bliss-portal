@@ -12,6 +12,7 @@ import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../PortalCommonComponents/TaskChat/TaskChat';
 import EmptyState from '../EmptyState/EmptyState';
+import InlineLoader from '../InlineLoader/InlineLoader';
 import dayjs from 'dayjs';
 import {
     emitTaskExtensionRequested,
@@ -40,7 +41,8 @@ const TaskEntries = ({
     searchTerm = '',
     selectedDateRange = null,
     priorityFilter = 'all',
-    assignerFilter = 'all'
+    assignerFilter = 'all',
+    refreshKey = 0
 }) => {
     const theme = useSelector(selectTheme);
     const loggedInUserId = useSelector(selectUserId);
@@ -105,6 +107,13 @@ const TaskEntries = ({
     useEffect(() => {
         selectedTaskRef.current = selectedTask;
     }, [selectedTask]);
+
+    // Trigger a refetch when refreshKey changes (from Refresh button)
+    useEffect(() => {
+        if (refetch) {
+            refetch();
+        }
+    }, [refreshKey, refetch]);
 
     // Real-time update for relative time display
     const [currentTime, setCurrentTime] = useState(Date.now());
@@ -252,6 +261,14 @@ const TaskEntries = ({
     };
 
     // Handle loading and error states
+    if (isLoading) {
+        return (
+            <div className="execution-task-loading">
+                <InlineLoader text="Fetching assigned tasks…" color="var(--brand-color)" />
+            </div>
+        );
+    }
+
     // Filter out archived tasks and sort latest first
     const allTasks = (tasksData?.data?.filter(task => task.isArchived !== true) || [])
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -371,11 +388,20 @@ const TaskEntries = ({
 
     const handleExtensionSubmit = async (values) => {
         try {
+            const minutesRequested = Number(values.minutesRequested || 0);
+            if (!minutesRequested || minutesRequested <= 0) {
+                showError('Please select a valid additional duration');
+                return;
+            }
+
             await requestTaskExtension({
                 taskId: activeTask._id,
                 slotId: activeSlot._id,
-                extensionMinutes: values.minutesRequested,
-                reason: values.reason || ''
+                body: {
+                    requestedBy: user?.userId || loggedInUserId,
+                    minutesRequested,
+                    reason: values.reason || ''
+                }
             }).unwrap();
 
             showSuccess('Extension request submitted successfully!');

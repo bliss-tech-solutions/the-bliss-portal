@@ -233,6 +233,10 @@ const TaskAndLeaveCalender = () => {
                             getTasksForDate={getTasksForDate}
                             onDateSelect={toggleDate}
                             maxTasksPerDate={8}
+                            // Disable all past dates; allow today and future
+                            disabledDate={(current) =>
+                                current && current.startOf('day').isBefore(dayjs().startOf('day'))
+                            }
                         />
                     </Card>
                 </Col>

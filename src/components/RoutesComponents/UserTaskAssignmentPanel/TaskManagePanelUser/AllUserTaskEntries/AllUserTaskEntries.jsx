@@ -5,7 +5,7 @@ import TaskEntries from '../../../../CommonComponents/TaskEntries/TaskEntries';
  * AllUserTaskEntries - Wrapper component that uses the common TaskEntries component
  * This maintains backward compatibility while using the shared component
  */
-const AllUserTaskEntries = ({ 
+const AllUserTaskEntries = ({
     activeTab = '1',
     searchTerm = '',
     selectedDateRange = null,
@@ -19,6 +19,9 @@ const AllUserTaskEntries = ({
             selectedDateRange={selectedDateRange}
             priorityFilter={priorityFilter}
             assignerFilter={assignerFilter}
+            refreshKey={refreshKey}
+            // Changing this key forces TaskEntries to remount
+            key={refreshKey}
         />
     );
 };
