@@ -177,7 +177,7 @@
 
 .message-text {
     margin: 0;
-    color: var(--primary-text);
+    color: var(--primary-text) !important;
 }
 
 .message-text .emoji-large {
