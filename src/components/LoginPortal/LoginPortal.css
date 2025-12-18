@@ -86,18 +86,6 @@
     transform: translateY(0) !important;
 }
 
-.LoginSubmitBtn:hover {
-    color: var(--accent-color) !important;
-    background: var(--button-primary-hover) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--shadow);
-}
-
-.LoginSubmitBtn:focus {
-    color: var(--accent-color) !important;
-    background: var(--button-primary-hover) !important;
-}
-
 .LoginSubmitBtn:disabled {
     opacity: 0.6 !important;
     cursor: not-allowed !important;
@@ -280,7 +268,7 @@
         padding: 30px 20px;
         margin: 20px auto;
     }
-    
+
     .login-theme-toggle {
         top: 15px;
         right: 15px;

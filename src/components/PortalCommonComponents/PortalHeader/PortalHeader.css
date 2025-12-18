@@ -168,8 +168,34 @@
 }
 
 .portal-profile-dropdown .ant-dropdown-menu-item-disabled {
-    cursor: default !important;
+    cursor: wait !important;
     opacity: 1 !important;
+}
+
+/* Logout Loading State */
+.portal-profile-dropdown .ant-dropdown-menu-item[style*="rgba(255, 77, 79"] {
+    background-color: rgba(255, 77, 79, 0.05) !important;
+    position: relative;
+}
+
+.portal-profile-dropdown .ant-dropdown-menu-item[style*="rgba(255, 77, 79"]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: #ff4d4f;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 /* Profile Header Section */
@@ -268,8 +294,14 @@
 
 /* Notification Items */
 .notification-item {
-    padding: 8px 0;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: var(--hover-bg);
 }
 
 .notification-item:last-child {
@@ -286,6 +318,131 @@
 .notification-time {
     font-size: 12px;
     color: var(--secondary-text);
+}
+
+/* Task Notification Styling */
+.notification-item.task-notification {
+    padding: 12px 16px;
+}
+
+.notification-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.notification-task-header .notification-title.task-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin-bottom: 0;
+    flex: 1;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.notification-task-header .notification-time {
+    font-size: 11px;
+    color: var(--secondary-text);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notification-task-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.notification-assigner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.assigner-label {
+    color: var(--secondary-text);
+    font-weight: 400;
+}
+
+.assigner-name {
+    color: var(--primary-text);
+    font-weight: 500;
+}
+
+.notification-assign-date {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--secondary-text);
+}
+
+.notification-assign-date .date-icon {
+    font-size: 11px;
+    color: var(--secondary-text);
+    opacity: 0.7;
+}
+
+/* Execution Notification Styling */
+.notification-item.execution-notification {
+    padding: 12px 16px;
+}
+
+.notification-item.execution-notification .notification-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.notification-item.execution-notification .notification-title.task-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin-bottom: 0;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.notification-item.execution-notification .notification-time {
+    font-size: 11px;
+    color: var(--secondary-text);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notification-item.execution-notification .notification-task-details {
+    margin-top: 6px;
+}
+
+.notification-item.execution-notification .notification-assigner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.notification-item.execution-notification .assigner-label {
+    color: var(--secondary-text);
+    font-weight: 400;
+}
+
+.notification-item.execution-notification .assigner-name.count-badge {
+    color: var(--primary-text);
+    font-weight: 700;
+    font-size: 16px;
+    background: var(--hover-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    min-width: 24px;
+    text-align: center;
+    display: inline-block;
 }
 
 .PortalProfileDetailsContainer {

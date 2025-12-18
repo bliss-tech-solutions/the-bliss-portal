@@ -17,24 +17,25 @@ const UserTaskAssignmentPanel = () => {
     const [selectedDateRange, setSelectedDateRange] = useState(null);
     const [priorityFilter, setPriorityFilter] = useState('all');
     const [assignerFilter, setAssignerFilter] = useState('all');
+    const [refreshKey, setRefreshKey] = useState(0);
     const theme = useSelector(selectTheme);
     const user = useSelector(selectUser);
     const userId = useSelector(selectUserId);
     const userFullName = (user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email || 'Your').trim();
-    
+
     // Fetch all users to populate assigner filter
     const { data: allUsersData } = useGetAllUsersQuery();
-    
+
     // Fetch tasks to get suggestions for search
     const { data: tasksData } = useGetTaskAssignQuery(userId);
-    
+
     // Generate search suggestions from tasks
     const searchSuggestions = useMemo(() => {
         if (!tasksData?.data || !searchTerm) return [];
-        
+
         const term = searchTerm.toLowerCase();
         const suggestions = new Set();
-        
+
         tasksData.data.forEach(task => {
             // Task name suggestions
             if (task.taskName && task.taskName.toLowerCase().includes(term)) {
@@ -49,13 +50,13 @@ const UserTaskAssignmentPanel = () => {
                 suggestions.add(task.category);
             }
         });
-        
+
         return Array.from(suggestions).slice(0, 5).map(suggestion => ({
             value: suggestion,
             label: suggestion
         }));
     }, [tasksData, searchTerm]);
-    
+
     // Quick date range options for suggestions
     const dateRangeOptions = useMemo(() => [
         {
@@ -102,15 +103,15 @@ const UserTaskAssignmentPanel = () => {
             priorityFilter,
             assignerFilter
         };
-        
+
         switch (activeTab) {
             case '1':
             case '2':
             case '3':
             case '4':
-                return <AllUserTaskEntries activeTab={activeTab} {...filterProps} />;
+                return <AllUserTaskEntries activeTab={activeTab} refreshKey={refreshKey} {...filterProps} />;
             default:
-                return <AllUserTaskEntries activeTab="1" {...filterProps} />;
+                return <AllUserTaskEntries activeTab="1" refreshKey={refreshKey} {...filterProps} />;
         }
     };
 
@@ -148,6 +149,11 @@ const UserTaskAssignmentPanel = () => {
                     </Col>
                     <Col lg={6} md={6} sm={24} xs={24}>
                         <div className="AddFilterButton" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <Button
+                                onClick={() => setRefreshKey(prev => prev + 1)}
+                            >
+                                Refresh
+                            </Button>
                             <Button
                                 icon={<BsFilter />}
                                 onClick={toggleFilters}

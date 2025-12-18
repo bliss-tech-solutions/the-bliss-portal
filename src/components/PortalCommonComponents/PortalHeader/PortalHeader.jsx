@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import "./PortalHeader.css";
 import { Row, Col, Dropdown, Badge, Avatar, Space, Button, Spin, Modal, Input } from "antd";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,7 +7,11 @@ import { selectCurrentHeaderLogo, toggleTheme, selectTheme } from "../../../stor
 import { logout } from "../../../store/slices/authSlice";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined, ExportOutlined } from "@ant-design/icons";
-import { useCheckoutMutation } from '../../../store/api';
+import { useCheckoutMutation, useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../store/api';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const PortalHeader = () => {
     const dispatch = useDispatch();
@@ -15,7 +19,7 @@ const PortalHeader = () => {
     const { user } = useSelector((state) => state.auth);
     const currentHeaderLogo = useSelector(selectCurrentHeaderLogo);
     const theme = useSelector(selectTheme);
-    const { success } = useNotification();
+    const { success, info } = useNotification();
     const [greeting, setGreeting] = useState('Good Morning');
     const [currentDate, setCurrentDate] = useState({
         date: '',
@@ -28,6 +32,17 @@ const PortalHeader = () => {
     const [checkoutReason, setCheckoutReason] = useState('');
     const [checkout, { isLoading: isCheckoutLoading }] = useCheckoutMutation();
 
+    // Fetch user tasks for notifications (only for user role)
+    const userRole = user?.role?.toLowerCase();
+    const { data: tasksData } = useGetTaskAssignQuery(userId, {
+        skip: !userId || (userRole !== 'user' && userRole !== 'execution'),
+    });
+
+    // Fetch all users to get assigner/receiver names
+    const { data: allUsersData } = useGetAllUsersQuery(undefined, {
+        skip: userRole !== 'user' && userRole !== 'execution',
+    });
+
     const handleThemeToggle = () => {
         dispatch(toggleTheme());
     };
@@ -35,6 +50,9 @@ const PortalHeader = () => {
     // Handle logout with loading state
     const handleLogout = async () => {
         setIsLoggingOut(true);
+
+        // Show loading notification immediately so user knows logout is processing
+        info('Logging out... Please wait', 2000);
 
         // Show loading for 1.5-2 seconds
         setTimeout(() => {
@@ -62,8 +80,184 @@ const PortalHeader = () => {
             lastName ? lastName :
                 'User';
 
-    // Notification dropdown items
-    const notificationItems = [
+    // Function to get assigner/receiver name by userId
+    const getUserName = (targetUserId) => {
+        if (!allUsersData?.data || !targetUserId) return 'Unknown';
+
+        const targetUser = allUsersData.data.find(u => u.userId === targetUserId || u._id === targetUserId);
+        if (!targetUser) return 'Unknown';
+
+        // Return full name if available, otherwise email or userId
+        if (targetUser.firstName && targetUser.lastName) {
+            return `${targetUser.firstName} ${targetUser.lastName}`;
+        } else if (targetUser.firstName) {
+            return targetUser.firstName;
+        } else if (targetUser.email || targetUser.userEmail) {
+            return targetUser.email || targetUser.userEmail;
+        } else {
+            return targetUser.userId || 'Unknown';
+        }
+    };
+
+    // Notification dropdown items - Show pending tasks for user role, user counts for execution role
+    const notificationItems = useMemo(() => {
+        // For user role, show pending tasks
+        if (userRole === 'user' && tasksData?.data && Array.isArray(tasksData.data)) {
+            // Filter only pending tasks and sort by creation date (newest first)
+            const pendingTasks = tasksData.data
+                .filter(task => task.taskStatus === 'pending' || task.taskStatus === 'Pending')
+                .sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.updatedAt || 0);
+                    const dateB = new Date(b.createdAt || b.updatedAt || 0);
+                    return dateB - dateA; // Newest first
+                })
+                .slice(0, 5); // Show max 5 notifications
+
+            if (pendingTasks.length === 0) {
+                return [
+                    {
+                        key: 'no-tasks',
+                        label: (
+                            <div className="notification-item">
+                                <div className="notification-title">No Pending Tasks</div>
+                                <div className="notification-time">All tasks are completed</div>
+                            </div>
+                        ),
+                        disabled: true,
+                    },
+                ];
+            }
+
+            return pendingTasks.map((task, index) => {
+                const assignDate = task.createdAt || task.updatedAt || new Date();
+                const assignerName = getUserName(task.userId);
+                const relativeTime = dayjs(assignDate).fromNow();
+
+                return {
+                    key: task._id || `task-${index}`,
+                    label: (
+                        <div className="notification-item task-notification">
+                            <div className="notification-task-header">
+                                <div className="notification-title task-name">{task.taskName || 'Untitled Task'}</div>
+                                <div className="notification-time">{relativeTime}</div>
+                            </div>
+                            <div className="notification-task-details">
+                                <div className="notification-assigner">
+                                    <span className="assigner-label">Assigned by:</span>
+                                    <span className="assigner-name">{assignerName}</span>
+                                </div>
+                                <div className="notification-assign-date">
+                                    <ClockCircleOutlined className="date-icon" />
+                                    <span>{dayjs(assignDate).format('MMM DD, YYYY')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ),
+                };
+            });
+        }
+
+        // For execution role, show users with pending task counts
+        if (userRole === 'execution' && tasksData?.data && Array.isArray(tasksData.data)) {
+            // Filter only pending tasks
+            const pendingTasks = tasksData.data.filter(
+                task => (task.taskStatus === 'pending' || task.taskStatus === 'Pending') && !task.isArchived
+            );
+
+            if (pendingTasks.length === 0) {
+                return [
+                    {
+                        key: 'no-pending-tasks',
+                        label: (
+                            <div className="notification-item">
+                                <div className="notification-title">No Pending Tasks</div>
+                                <div className="notification-time">All tasks are completed</div>
+                            </div>
+                        ),
+                        disabled: true,
+                    },
+                ];
+            }
+
+            // Group tasks by receiverUserId and count
+            const userTaskCounts = {};
+            pendingTasks.forEach(task => {
+                const receiverId = task.receiverUserId;
+                if (receiverId) {
+                    if (!userTaskCounts[receiverId]) {
+                        userTaskCounts[receiverId] = {
+                            count: 0,
+                            latestTaskDate: null,
+                        };
+                    }
+                    userTaskCounts[receiverId].count++;
+                    const taskDate = new Date(task.createdAt || task.updatedAt || 0);
+                    if (!userTaskCounts[receiverId].latestTaskDate || taskDate > userTaskCounts[receiverId].latestTaskDate) {
+                        userTaskCounts[receiverId].latestTaskDate = taskDate;
+                    }
+                }
+            });
+
+            // Convert to array and sort by count (descending), then by date (newest first)
+            const userCountsArray = Object.entries(userTaskCounts)
+                .map(([receiverId, data]) => ({
+                    receiverId,
+                    count: data.count,
+                    latestTaskDate: data.latestTaskDate,
+                }))
+                .sort((a, b) => {
+                    // First sort by count (more tasks first)
+                    if (b.count !== a.count) {
+                        return b.count - a.count;
+                    }
+                    // If counts are equal, sort by latest task date (newer first)
+                    return new Date(b.latestTaskDate) - new Date(a.latestTaskDate);
+                })
+                .slice(0, 8); // Show max 8 users
+
+            if (userCountsArray.length === 0) {
+                return [
+                    {
+                        key: 'no-users',
+                        label: (
+                            <div className="notification-item">
+                                <div className="notification-title">No Pending Tasks</div>
+                                <div className="notification-time">All tasks are completed</div>
+                            </div>
+                        ),
+                        disabled: true,
+                    },
+                ];
+            }
+
+            return userCountsArray.map((userData, index) => {
+                const userName = getUserName(userData.receiverId);
+                const relativeTime = userData.latestTaskDate ? dayjs(userData.latestTaskDate).fromNow() : '';
+
+                return {
+                    key: `user-${userData.receiverId}-${index}`,
+                    label: (
+                        <div className="notification-item execution-notification">
+                            <div className="notification-task-header">
+                                <div className="notification-title task-name">{userName}</div>
+                                {relativeTime && (
+                                    <div className="notification-time">{relativeTime}</div>
+                                )}
+                            </div>
+                            <div className="notification-task-details">
+                                <div className="notification-assigner">
+                                    <span className="assigner-label">Pending Tasks:</span>
+                                    <span className="assigner-name count-badge">{userData.count}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ),
+                };
+            });
+        }
+
+        // Default notifications for other roles (or fallback)
+        return [
             {
                 key: '1',
                 label: (
@@ -82,16 +276,32 @@ const PortalHeader = () => {
                     </div>
                 ),
             },
-        {
-            key: '3',
-            label: (
-                <div className="notification-item">
-                    <div className="notification-title">System Update</div>
-                    <div className="notification-time">3 hours ago</div>
-                </div>
-            ),
-        },
-    ];
+        ];
+    }, [tasksData, allUsersData, userRole]);
+
+    // Count of pending tasks for badge
+    const pendingTasksCount = useMemo(() => {
+        if (!tasksData?.data || !Array.isArray(tasksData.data)) return 0;
+
+        if (userRole === 'user') {
+            // For user role, count their pending tasks
+            const count = tasksData.data.filter(
+                task => (task.taskStatus === 'pending' || task.taskStatus === 'Pending') && !task.isArchived
+            ).length;
+            return count > 0 ? count : 0;
+        }
+
+        if (userRole === 'execution') {
+            // For execution role, count unique users with pending tasks
+            const pendingTasks = tasksData.data.filter(
+                task => (task.taskStatus === 'pending' || task.taskStatus === 'Pending') && !task.isArchived && task.receiverUserId
+            );
+            const uniqueUsers = new Set(pendingTasks.map(task => task.receiverUserId));
+            return uniqueUsers.size;
+        }
+
+        return 0;
+    }, [tasksData, userRole]);
 
     // Profile dropdown items
     const profileItems = [
@@ -141,10 +351,20 @@ const PortalHeader = () => {
         },
         {
             key: 'logout',
-            icon: isLoggingOut ? <LoadingOutlined spin /> : <LogoutOutlined />,
-            label: isLoggingOut ? 'Logging out...' : 'Logout',
+            icon: isLoggingOut ? <LoadingOutlined spin style={{ color: '#ff4d4f' }} /> : <LogoutOutlined />,
+            label: isLoggingOut ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <LoadingOutlined spin style={{ fontSize: '14px' }} />
+                    Logging out...
+                </span>
+            ) : 'Logout',
             danger: true,
             disabled: isLoggingOut,
+            style: isLoggingOut ? {
+                opacity: 1,
+                cursor: 'wait',
+                backgroundColor: 'rgba(255, 77, 79, 0.05)'
+            } : {},
         },
     ];
 
@@ -260,7 +480,7 @@ const PortalHeader = () => {
                                             overlayClassName="portal-notification-dropdown"
                                         >
                                             <Button type="text" className="portal-notification-button">
-                                                <Badge count={3} size="small">
+                                                <Badge count={pendingTasksCount > 0 ? pendingTasksCount : 0} size="small">
                                                     <BellOutlined className="portal-header-icon" />
                                                 </Badge>
                                             </Button>

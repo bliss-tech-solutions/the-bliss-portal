@@ -31,7 +31,9 @@ const AllTaskEntries = ({
     selectedDateRange = null,
     statusFilter = 'all',
     userFilter = 'all',
-    categoryFilter = 'all'
+    categoryFilter = 'all',
+    // When true → show ONLY archived tasks; when false → hide archived tasks
+    showArchivedOnly = false
 }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
@@ -239,8 +241,20 @@ const AllTaskEntries = ({
     }, [refetch, userId]);
 
     const filteredTasks = (tasksData?.data || []).filter(task => {
-        // First filter out archived tasks
-        if (task.isArchived === true) return false;
+        // Normalize archived flag in case backend sends boolean, string, or number
+        const isArchivedFlag =
+            task.isArchived === true ||
+            task.isArchived === 'true' ||
+            task.isArchived === 1;
+
+        // Archived filter handling
+        if (showArchivedOnly) {
+            // In "Deleted" tab → only show archived tasks
+            if (!isArchivedFlag) return false;
+        } else {
+            // In normal tabs → hide archived tasks
+            if (isArchivedFlag) return false;
+        }
 
         // Status filter: 'completed' or 'pending' or 'all'
         if (statusFilter && statusFilter !== 'all') {

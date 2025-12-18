@@ -89,3 +89,6 @@ a {
   background: var(--secondary-bg) !important;
 }
 
+.Capitalize {
+  text-transform: capitalize;
+}

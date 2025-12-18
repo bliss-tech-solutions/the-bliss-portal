@@ -9,6 +9,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { App as AntdApp, ConfigProvider } from 'antd'
 import { SocketProvider } from './contexts/SocketContext'
 import { TaskChatProvider } from './contexts/TaskChatContext'
+import { GlobalChatProvider } from './contexts/GlobalChatContext'
 import { LoadingProvider } from './contexts/LoadingContext'
 import { ChakraUIProvider } from './components/ui/provider'
 
@@ -22,7 +23,9 @@ createRoot(document.getElementById('root')).render(
               <LoadingProvider>
                 <SocketProvider>
                   <TaskChatProvider>
-                    <App />
+                    <GlobalChatProvider>
+                      <App />
+                    </GlobalChatProvider>
                   </TaskChatProvider>
                 </SocketProvider>
               </LoadingProvider>

@@ -208,9 +208,12 @@
 }
 
 @keyframes correctPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.1);
         box-shadow: 0 0 0 8px rgba(40, 167, 69, 0.2);
@@ -238,22 +241,22 @@
     background: var(--button-primary);
     border: none;
     font-weight: 600;
-    color: var(--button-text);
+    color: white !important;
     transition: all 0.3s ease;
     margin-top: 8px;
 }
 
-.create-account-submit-btn:hover:not(:disabled) {
+/* .create-account-submit-btn:hover:not(:disabled) {
     color: var(--accent-color);
     background: var(--button-primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--shadow);
-}
+} */
 
-.create-account-submit-btn:disabled {
+/* .create-account-submit-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-}
+} */
 
 /* Alt Action */
 .create-account-login-alt-action {
