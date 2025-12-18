@@ -123,7 +123,7 @@ const AllTaskEntries = ({
         }
 
         if (!start || !end || !start.isValid() || !end.isValid()) return null;
-        
+
         // Indian 12-hour format: h:mm A (e.g., "9:30 AM" instead of "09:30 AM")
         return `${start.format('h:mm A')} - ${end.format('h:mm A')}`;
     };
@@ -192,10 +192,10 @@ const AllTaskEntries = ({
         // Handle task creation events
         const handleTaskAdded = (taskData) => {
             if (!taskData) return;
-            
+
             // Check if this task is created by current user (execution role)
             const isCreatedByCurrentUser = taskData.userId === userId;
-            
+
             if (isCreatedByCurrentUser) {
                 console.log('✅ New task created via socket:', taskData);
                 // Refetch tasks to show the new task in the list
@@ -206,11 +206,11 @@ const AllTaskEntries = ({
         // Handle task update events
         const handleTaskUpdated = (taskData) => {
             if (!taskData) return;
-            
+
             console.log('✅ Task updated via socket:', taskData);
             // Refetch tasks to get updated task data
             refetch();
-            
+
             // Update selected task if it's the one that was updated
             if (selectedTaskRef.current && selectedTaskRef.current._id === taskData._id) {
                 setSelectedTask(taskData);
@@ -546,10 +546,16 @@ const AllTaskEntries = ({
                                     <Button
                                         icon={<AiOutlineEye />}
                                         onClick={() => handleViewTask(task)}
+                                        className="global-secondary-btn"
+                                        style={{ flex: 1 }}
                                     >
-                                        View Details
+                                        View
                                     </Button>
-                                    <Button icon={<AiOutlineEdit />}>
+                                    <Button
+                                        icon={<AiOutlineEdit />}
+                                        className="global-secondary-btn"
+                                        style={{ flex: 1 }}
+                                    >
                                         Edit
                                     </Button>
                                     <Button
@@ -557,6 +563,8 @@ const AllTaskEntries = ({
                                         icon={<AiOutlineDelete />}
                                         loading={isArchiving}
                                         onClick={() => handleShowArchiveModal(task)}
+                                        className="global-secondary-btn"
+                                        style={{ flex: 1, borderColor: '#ff4d4f', color: '#ff4d4f' }}
                                     >
                                         Delete
                                     </Button>
@@ -796,11 +804,11 @@ const AllTaskEntries = ({
                                                             // Indian 12-hour format: h:mm A (e.g., "9:30 AM" instead of "09:30 AM")
                                                             const startTime = parseTimeSlotValue(slot.start);
                                                             const endTime = parseTimeSlotValue(slot.end);
-                                                            
+
                                                             // Format times in Indian 12-hour format
                                                             let startTimeFormatted = 'Not set';
                                                             let endTimeFormatted = 'Not set';
-                                                            
+
                                                             if (startTime && startTime.isValid()) {
                                                                 startTimeFormatted = startTime.format('h:mm A');
                                                             } else if (slot.start) {
@@ -812,7 +820,7 @@ const AllTaskEntries = ({
                                                                     startTimeFormatted = slot.start;
                                                                 }
                                                             }
-                                                            
+
                                                             if (endTime && endTime.isValid()) {
                                                                 endTimeFormatted = endTime.format('h:mm A');
                                                             } else if (slot.end) {
@@ -824,9 +832,9 @@ const AllTaskEntries = ({
                                                                     endTimeFormatted = slot.end;
                                                                 }
                                                             }
-                                                            
-                                                            const hasValidTiming = (startTime && startTime.isValid()) && (endTime && endTime.isValid()) || 
-                                                                                  (slot.start && dayjs(slot.start).isValid() && slot.end && dayjs(slot.end).isValid());
+
+                                                            const hasValidTiming = (startTime && startTime.isValid()) && (endTime && endTime.isValid()) ||
+                                                                (slot.start && dayjs(slot.start).isValid() && slot.end && dayjs(slot.end).isValid());
 
                                                             return (
                                                                 <div key={`slot-${slot._id || index}`} className="details-slot-card-compact">
@@ -907,75 +915,75 @@ const AllTaskEntries = ({
                                                                                 Extension Requests:
                                                                             </div>
                                                                             <div id='details-slot-extension-item'>
-                                                                            {slot.extensionHistory.map((entry, entryIndex) => {
-                                                                                const status = (entry.status || 'pending').toLowerCase();
-                                                                                const minutes = entry.minutesApproved ?? entry.minutesRequested ?? 0;
-                                                                                const statusColor = getExtensionStatusColor(entry.status);
-                                                                                return (
-                                                                                    <div key={`slot-history-${slot._id || index}-${entry._id || entryIndex}`} className="details-slot-extension-item">
-                                                                                        {/* Extension Header: Status, Time, Date */}
-                                                                                        <div className="details-slot-extension-header">
-                                                                                            <Tag color={statusColor} className="details-slot-extension-status">
-                                                                                                {(entry.status || 'pending').replace(/^./, c => c.toUpperCase())}
-                                                                                            </Tag>
-                                                                                            <div className="details-slot-extension-meta">
-                                                                                                <span className="details-slot-extension-time">{minutes} mins</span>
-                                                                                                {entry.requestedAt && (
-                                                                                                    <span className="details-slot-extension-date">{formatExtensionTimestamp(entry.requestedAt)}</span>
-                                                                                                )}
-                                                                                                {entry.requestedBy && (
-                                                                                                    <span className="details-slot-extension-user">By: {entry.requestedBy}</span>
-                                                                                                )}
+                                                                                {slot.extensionHistory.map((entry, entryIndex) => {
+                                                                                    const status = (entry.status || 'pending').toLowerCase();
+                                                                                    const minutes = entry.minutesApproved ?? entry.minutesRequested ?? 0;
+                                                                                    const statusColor = getExtensionStatusColor(entry.status);
+                                                                                    return (
+                                                                                        <div key={`slot-history-${slot._id || index}-${entry._id || entryIndex}`} className="details-slot-extension-item">
+                                                                                            {/* Extension Header: Status, Time, Date */}
+                                                                                            <div className="details-slot-extension-header">
+                                                                                                <Tag color={statusColor} className="details-slot-extension-status">
+                                                                                                    {(entry.status || 'pending').replace(/^./, c => c.toUpperCase())}
+                                                                                                </Tag>
+                                                                                                <div className="details-slot-extension-meta">
+                                                                                                    <span className="details-slot-extension-time">{minutes} mins</span>
+                                                                                                    {entry.requestedAt && (
+                                                                                                        <span className="details-slot-extension-date">{formatExtensionTimestamp(entry.requestedAt)}</span>
+                                                                                                    )}
+                                                                                                    {entry.requestedBy && (
+                                                                                                        <span className="details-slot-extension-user">By: {entry.requestedBy}</span>
+                                                                                                    )}
+                                                                                                </div>
                                                                                             </div>
+
+                                                                                            {/* Extension Details: Reason and Note */}
+                                                                                            {(entry.reason || entry.note) && (
+                                                                                                <div className="details-slot-extension-details">
+                                                                                                    {entry.reason && (
+                                                                                                        <div className="details-slot-extension-detail-item">
+                                                                                                            <span className="details-slot-extension-detail-label">Reason:</span>
+                                                                                                            <span className="details-slot-extension-detail-text">{entry.reason}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                    {entry.note && (
+                                                                                                        <div className="details-slot-extension-detail-item">
+                                                                                                            <span className="details-slot-extension-detail-label">Assigner note:</span>
+                                                                                                            <span className="details-slot-extension-detail-text">{entry.note}</span>
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
+
+                                                                                            {/* Extension Actions */}
+                                                                                            {status === 'pending' && isAssigner && (
+                                                                                                <div className="details-slot-extension-actions">
+                                                                                                    <Button
+                                                                                                        type="primary"
+                                                                                                        size="small"
+                                                                                                        onClick={() => openExtensionResponseModal('approved', slot, entry, selectedTask)}
+                                                                                                        className="details-slot-extension-btn"
+                                                                                                    >
+                                                                                                        Approve
+                                                                                                    </Button>
+                                                                                                    <Button
+                                                                                                        danger
+                                                                                                        size="small"
+                                                                                                        onClick={() => openExtensionResponseModal('rejected', slot, entry, selectedTask)}
+                                                                                                        className="details-slot-extension-btn"
+                                                                                                    >
+                                                                                                        Reject
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {status === 'pending' && !isAssigner && (
+                                                                                                <div className="details-slot-extension-waiting">
+                                                                                                    Waiting for assigner approval...
+                                                                                                </div>
+                                                                                            )}
                                                                                         </div>
-
-                                                                                        {/* Extension Details: Reason and Note */}
-                                                                                        {(entry.reason || entry.note) && (
-                                                                                            <div className="details-slot-extension-details">
-                                                                                                {entry.reason && (
-                                                                                                    <div className="details-slot-extension-detail-item">
-                                                                                                        <span className="details-slot-extension-detail-label">Reason:</span>
-                                                                                                        <span className="details-slot-extension-detail-text">{entry.reason}</span>
-                                                                                                    </div>
-                                                                                                )}
-                                                                                                {entry.note && (
-                                                                                                    <div className="details-slot-extension-detail-item">
-                                                                                                        <span className="details-slot-extension-detail-label">Assigner note:</span>
-                                                                                                        <span className="details-slot-extension-detail-text">{entry.note}</span>
-                                                                                                    </div>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        )}
-
-                                                                                        {/* Extension Actions */}
-                                                                                        {status === 'pending' && isAssigner && (
-                                                                                            <div className="details-slot-extension-actions">
-                                                                                                <Button
-                                                                                                    type="primary"
-                                                                                                    size="small"
-                                                                                                    onClick={() => openExtensionResponseModal('approved', slot, entry, selectedTask)}
-                                                                                                    className="details-slot-extension-btn"
-                                                                                                >
-                                                                                                    Approve
-                                                                                                </Button>
-                                                                                                <Button
-                                                                                                    danger
-                                                                                                    size="small"
-                                                                                                    onClick={() => openExtensionResponseModal('rejected', slot, entry, selectedTask)}
-                                                                                                    className="details-slot-extension-btn"
-                                                                                                >
-                                                                                                    Reject
-                                                                                                </Button>
-                                                                                            </div>
-                                                                                        )}
-                                                                                        {status === 'pending' && !isAssigner && (
-                                                                                            <div className="details-slot-extension-waiting">
-                                                                                                Waiting for assigner approval...
-                                                                                            </div>
-                                                                                        )}
-                                                                                    </div>
-                                                                                );
-                                                                            })}
+                                                                                    );
+                                                                                })}
                                                                             </div>
                                                                         </div>
                                                                     )}
@@ -1105,9 +1113,10 @@ const AllTaskEntries = ({
             {/* Archive Confirmation Modal */}
             <Modal
                 title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AiOutlineExclamationCircle style={{ color: '#ff4d4f', fontSize: '20px' }} />
+                    <div className="archive-modal-title">
+                        <AiOutlineExclamationCircle />
                         <span>Delete Task</span>
+                        <br/>   <br/>
                     </div>
                 }
                 open={archiveModalVisible}
@@ -1118,54 +1127,39 @@ const AllTaskEntries = ({
                 okButtonProps={{
                     danger: true,
                     loading: isArchiving,
-                    style: { backgroundColor: '#ff4d4f', borderColor: '#ff4d4f' }
+                    className: 'archive-confirm-btn'
                 }}
                 cancelButtonProps={{
-                    style: { borderColor: 'var(--border-color)' }
+                    
+                    className: 'global-secondary-btn'
                 }}
                 className="archive-confirmation-modal"
                 centered
                 width={480}
             >
-                <div style={{ padding: '16px 0' }}>
-                    <p style={{ marginBottom: '16px', fontSize: '16px', color: 'var(--primary-text)' }}>
+                <div className="archive-modal-body">
+                    <p className="archive-warning">
                         Are you sure you want to archive this task?
                     </p>
 
                     {taskToArchive && (
-                        <div style={{
-                            backgroundColor: 'var(--secondary-bg)',
-                            padding: '16px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)'
-                        }}>
-                            <div style={{ marginBottom: '8px' }}>
-                                <strong style={{ color: 'var(--primary-text)' }}>Task Name:</strong>
-                                <span style={{ color: 'var(--secondary-text)', marginLeft: '8px' }}>
-                                    {taskToArchive.taskName}
-                                </span>
+                        <div className="archive-task-summary">
+                            <div className="archive-task-row">
+                                <strong>Task Name:</strong>
+                                <span>{taskToArchive.taskName}</span>
                             </div>
-                            <div style={{ marginBottom: '8px' }}>
-                                <strong style={{ color: 'var(--primary-text)' }}>Client:</strong>
-                                <span style={{ color: 'var(--secondary-text)', marginLeft: '8px' }}>
-                                    {taskToArchive.clientName}
-                                </span>
+                            <div className="archive-task-row">
+                                <strong>Client:</strong>
+                                <span>{taskToArchive.clientName}</span>
                             </div>
-                            <div>
-                                <strong style={{ color: 'var(--primary-text)' }}>Priority:</strong>
-                                <span style={{ color: 'var(--secondary-text)', marginLeft: '8px' }}>
-                                    {taskToArchive.priority?.charAt(0).toUpperCase() + taskToArchive.priority?.slice(1)}
-                                </span>
+                            <div className="archive-task-row">
+                                <strong>Priority:</strong>
+                                <span>{taskToArchive.priority?.charAt(0).toUpperCase() + taskToArchive.priority?.slice(1)}</span>
                             </div>
                         </div>
                     )}
 
-                    <p style={{
-                        marginTop: '16px',
-                        fontSize: '14px',
-                        color: 'var(--secondary-text)',
-                        fontStyle: 'italic'
-                    }}>
+                    <p className="archive-footer-text">
                         This action will move the task to archived status. You can restore it later if needed.
                     </p>
                 </div>

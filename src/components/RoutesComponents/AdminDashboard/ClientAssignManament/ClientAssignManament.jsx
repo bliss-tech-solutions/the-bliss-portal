@@ -1,23 +1,12 @@
 import React, { useState } from "react";
 import "./ClientAssignManament.css";
-import {
-    Box,
-    Heading,
-    Button,
-    Dialog,
-    Input,
-    Field,
-    Stack,
-    Checkbox,
-    RadioGroup,
-    RadioGroupRoot,
-    RadioGroupItem
-} from "@chakra-ui/react";
-import { Select, Table, Button as AntButton, Tag, Modal, AutoComplete } from 'antd';
+import { Select, Table, Button, Tag, Modal, AutoComplete, Input, Typography, Space, } from 'antd';
 import { EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { useCreateTeamMutation, useUpdateTeamMutation, useGetAllTeamsQuery, useGetAllClientsQuery } from "../../../../store/api";
 import { useGetAllUsersQuery } from "../../../../store/api";
 import { useNotification } from "../../../../contexts/NotificationContext";
+
+const { Title, Text } = Typography;
 
 const ClientAssignManament = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -354,297 +343,245 @@ const ClientAssignManament = () => {
     return (
         <div id="ClientAssignManament">
             <div className="ClientAssignManamentContainer">
-                <Box
+                <div
                     className="clients-segregation-header"
-                    display="flex"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    flexWrap={{ base: 'wrap', md: 'nowrap' }}
-                    gap={4}
-                    mb={6}
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '24px',
+                        flexWrap: 'wrap',
+                        gap: '16px'
+                    }}
                 >
-                    <Heading size="lg" className="clients-segregation-title">
+                    <h2 className="clients-segregation-title">
                         Team Management Panel
-                    </Heading>
+                    </h2>
+
+
                     <Button
                         onClick={() => setIsOpen(true)}
-                        className="add-client-button"
-                        size="lg"
+                        className="global-action-btn"
+                        size="large"
                     >
                         Create Team
                     </Button>
-                </Box>
+                </div>
 
-                <Dialog.Root open={isOpen} onOpenChange={(details) => {
-                    if (!details.open) {
-                        handleClose();
-                    }
-                }}>
-                    <Dialog.Backdrop />
-                    <Dialog.Positioner>
-                        <Dialog.Content maxW={{ base: '90vw', md: '600px' }} className="add-team-modal">
-                            <Dialog.Header>
-                                <Dialog.Title>{editingTeam ? 'Edit Team' : 'Create New Team'}</Dialog.Title>
-                                <Dialog.Description>
-                                    {editingTeam ? 'Update the team information below' : 'Fill in the team information below'}
-                                </Dialog.Description>
-                            </Dialog.Header>
+                <Modal
+                    title={editingTeam ? 'Edit Team' : 'Create New Team'}
+                    open={isOpen}
+                    onCancel={handleClose}
+                    width={600}
+                    className="add-team-modal"
+                    okText={editingTeam ? 'Update Team' : 'Create Team'}
+                    cancelText="Cancel"
+                    onOk={handleSubmit}
+                    confirmLoading={isCreating || isUpdating}
+                    okButtonProps={{ className: 'global-action-btn', disabled: isCreating || isUpdating }}
+                    cancelButtonProps={{ className: 'global-secondary-btn', disabled: isCreating }}
+                >
+                    <div style={{ marginBottom: '16px' }}>
+                        <div style={{ marginBottom: '8px', fontWeight: 500, color: 'var(--primary-text)' }}>Team Name</div>
+                        <Input
+                            placeholder="Enter team name"
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            className="theme-input"
+                        />
+                        <div style={{ fontSize: '12px', color: 'var(--secondary-text)', marginTop: '4px' }}>Enter a unique name for the team</div>
+                    </div>
 
-                            <Dialog.Body>
-                                <Stack gap={4}>
-                                    <Field.Root>
-                                        <Field.Label>Team Name</Field.Label>
-                                        <Input
-                                            placeholder="Enter team name"
-                                            value={teamName}
-                                            onChange={(e) => setTeamName(e.target.value)}
-                                            className="theme-input"
-                                        />
-                                        <Field.HelperText>Enter a unique name for the team</Field.HelperText>
-                                    </Field.Root>
+                    <div style={{ marginBottom: '16px' }}>
+                        <div style={{ marginBottom: '8px', fontWeight: 500, color: 'var(--primary-text)' }}>Team Members</div>
+                        <Select
+                            mode="multiple"
+                            placeholder="Select team members"
+                            value={selectedMembers}
+                            onChange={(values) => {
+                                console.log('Selected members:', values);
+                                handleMemberSelection(values);
+                            }}
+                            style={{ width: '100%' }}
+                            loading={isLoadingUsers}
+                            showSearch
+                            filterOption={(input, option) => {
+                                const label = option?.label || option?.children || '';
+                                return label.toLowerCase().includes(input.toLowerCase());
+                            }}
+                            className="team-members-select"
+                            getPopupContainer={(trigger) => trigger.parentElement}
+                        >
+                            {userOptions.map((user) => (
+                                <Select.Option
+                                    key={user.value}
+                                    value={user.value}
+                                    label={user.label}
+                                >
+                                    {user.label}
+                                    {user.email && (
+                                        <span style={{ color: 'var(--secondary-text)', fontSize: '12px', marginLeft: '8px' }}>
+                                            ({user.email})
+                                        </span>
+                                    )}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                        <div style={{ fontSize: '12px', color: 'var(--secondary-text)', marginTop: '4px' }}>Select one or more team members (minimum 1 required)</div>
+                    </div>
 
-                                    <Field.Root>
-                                        <Field.Label>Team Members</Field.Label>
-                                        <Select
-                                            mode="multiple"
-                                            placeholder="Select team members"
-                                            value={selectedMembers}
-                                            onChange={(values) => {
-                                                console.log('Selected members:', values);
-                                                handleMemberSelection(values);
-                                            }}
-                                            style={{ width: '100%' }}
-                                            loading={isLoadingUsers}
-                                            showSearch
-                                            filterOption={(input, option) => {
-                                                const label = option?.label || option?.children || '';
-                                                return label.toLowerCase().includes(input.toLowerCase());
-                                            }}
-                                            className="team-members-select"
-                                            getPopupContainer={(trigger) => trigger.parentElement}
-                                        >
-                                            {userOptions.map((user) => (
-                                                <Select.Option
-                                                    key={user.value}
-                                                    value={user.value}
-                                                    label={user.label}
-                                                >
-                                                    {user.label}
-                                                    {user.email && (
-                                                        <span style={{ color: 'var(--secondary-text)', fontSize: '12px', marginLeft: '8px' }}>
-                                                            ({user.email})
-                                                        </span>
-                                                    )}
-                                                </Select.Option>
-                                            ))}
-                                        </Select>
-                                        <Field.HelperText>Select one or more team members (minimum 1 required)</Field.HelperText>
-                                    </Field.Root>
-
-                                    {selectedMembers && selectedMembers.length > 0 ? (
-                                        <Field.Root>
-                                            <Field.Label>Selected Team Members *</Field.Label>
-                                            <Box
-                                                border="1px solid"
-                                                borderColor="var(--border-color)"
-                                                borderRadius="6px"
-                                                p={4}
-                                                bg="var(--secondary-bg)"
-                                                maxH="300px"
-                                                overflowY="auto"
-                                                className="team-leader-container"
+                    {selectedMembers && selectedMembers.length > 0 ? (
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ marginBottom: '8px', fontWeight: 500, color: 'var(--primary-text)' }}>Selected Team Members *</div>
+                            <div
+                                style={{
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '6px',
+                                    padding: '16px',
+                                    backgroundColor: 'var(--secondary-bg)',
+                                    maxHeight: '300px',
+                                    overflowY: 'auto'
+                                }}
+                                className="team-leader-container"
+                            >
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {selectedMembers.map((userId) => {
+                                        const user = allUsers.find(u => u.userId === userId);
+                                        const userName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || userId;
+                                        const isSelected = teamLeader === userId;
+                                        return (
+                                            <div
+                                                key={userId}
+                                                onClick={() => {
+                                                    console.log('Leader selection clicked:', userId);
+                                                    handleTeamLeaderChange(userId);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    padding: '12px',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: isSelected ? 'rgba(235, 178, 54, 0.15)' : 'transparent',
+                                                    border: isSelected ? '2px solid var(--brand-color)' : '1px solid var(--border-color)',
+                                                    transition: 'all 0.2s',
+                                                    cursor: 'pointer',
+                                                    width: '100%'
+                                                }}
+                                                className="leader-option-card"
                                             >
-                                                <RadioGroupRoot
-                                                    value={teamLeader || ''}
-                                                    onValueChange={(details) => {
-                                                        console.log('Team leader change event:', details);
-                                                        let selectedValue = '';
-
-                                                        // Handle different possible structures from Chakra UI
-                                                        if (details && typeof details === 'object') {
-                                                            if (Array.isArray(details.value) && details.value.length > 0) {
-                                                                selectedValue = details.value[0];
-                                                            } else if (details.value && typeof details.value === 'string') {
-                                                                selectedValue = details.value;
-                                                            } else if (details.valueAsString) {
-                                                                selectedValue = details.valueAsString;
-                                                            }
-                                                        } else if (typeof details === 'string') {
-                                                            selectedValue = details;
-                                                        }
-
-                                                        console.log('Extracted team leader value:', selectedValue);
-                                                        if (selectedValue) {
-                                                            handleTeamLeaderChange(selectedValue);
-                                                        }
+                                                <div
+                                                    style={{
+                                                        width: '20px',
+                                                        height: '20px',
+                                                        borderRadius: '50%',
+                                                        border: '2px solid',
+                                                        borderColor: isSelected ? 'var(--brand-color)' : 'var(--border-color)',
+                                                        backgroundColor: isSelected ? 'var(--brand-color)' : 'transparent',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0
                                                     }}
                                                 >
-                                                    <Stack gap={3}>
-                                                        {selectedMembers.map((userId) => {
-                                                            const user = allUsers.find(u => u.userId === userId);
-                                                            const userName = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || user?.email || userId;
-                                                            const isSelected = teamLeader === userId;
-                                                            return (
-                                                                <RadioGroupItem
-                                                                    key={userId}
-                                                                    value={userId}
-                                                                    onClick={() => {
-                                                                        console.log('Radio item clicked:', userId);
-                                                                        handleTeamLeaderChange(userId);
-                                                                    }}
-                                                                >
-                                                                    <Box
-                                                                        display="flex"
-                                                                        alignItems="center"
-                                                                        gap={3}
-                                                                        p={3}
-                                                                        borderRadius="6px"
-                                                                        bg={isSelected ? 'rgba(235, 178, 54, 0.15)' : 'transparent'}
-                                                                        border={isSelected ? '2px solid var(--brand-color)' : '1px solid var(--border-color)'}
-                                                                        transition="all 0.2s"
-                                                                        cursor="pointer"
-                                                                        _hover={{
-                                                                            bg: isSelected ? 'rgba(235, 178, 54, 0.2)' : 'var(--hover-bg)',
-                                                                            borderColor: 'var(--brand-color)'
-                                                                        }}
-                                                                        width="100%"
-                                                                    >
-                                                                        <Box
-                                                                            width="20px"
-                                                                            height="20px"
-                                                                            borderRadius="50%"
-                                                                            border="2px solid"
-                                                                            borderColor={isSelected ? 'var(--brand-color)' : 'var(--border-color)'}
-                                                                            bg={isSelected ? 'var(--brand-color)' : 'transparent'}
-                                                                            display="flex"
-                                                                            alignItems="center"
-                                                                            justifyContent="center"
-                                                                            flexShrink={0}
-                                                                        >
-                                                                            {isSelected && (
-                                                                                <Box
-                                                                                    width="8px"
-                                                                                    height="8px"
-                                                                                    borderRadius="50%"
-                                                                                    bg="#000"
-                                                                                />
-                                                                            )}
-                                                                        </Box>
-                                                                        <Box flex="1">
-                                                                            <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                                                                                <span style={{ color: 'var(--primary-text)', fontWeight: isSelected ? 600 : 500, fontSize: '15px' }}>
-                                                                                    {userName}
-                                                                                </span>
-                                                                                {user?.email && (
-                                                                                    <span style={{ color: 'var(--secondary-text)', fontSize: '13px' }}>
-                                                                                        ({user.email})
-                                                                                    </span>
-                                                                                )}
-                                                                            </Box>
-                                                                        </Box>
-                                                                        {isSelected && (
-                                                                            <Box
-                                                                                color="var(--brand-color)"
-                                                                                fontSize="13px"
-                                                                                fontWeight={600}
-                                                                                display="flex"
-                                                                                alignItems="center"
-                                                                                gap={1}
-                                                                            >
-                                                                                <span>✓</span>
-                                                                                <span>Leader</span>
-                                                                            </Box>
-                                                                        )}
-                                                                    </Box>
-                                                                </RadioGroupItem>
-                                                            );
-                                                        })}
-                                                    </Stack>
-                                                </RadioGroupRoot>
-                                            </Box>
-                                            <Field.HelperText>
-                                                {teamLeader
-                                                    ? 'Team leader selected. You can change it by selecting another member.'
-                                                    : 'Select one team member as the team leader (required)'}
-                                            </Field.HelperText>
-                                        </Field.Root>
-                                    ) : (
-                                        <Box
-                                            p={4}
-                                            bg="var(--secondary-bg)"
-                                            borderRadius="6px"
-                                            border="1px dashed var(--border-color)"
-                                            textAlign="center"
-                                        >
-                                            <span style={{ color: 'var(--secondary-text)', fontSize: '14px' }}>
-                                                Select team members above to choose a team leader
-                                            </span>
-                                        </Box>
-                                    )}
-                                </Stack>
-                            </Dialog.Body>
-
-                            <Dialog.Footer>
-                                <Button
-                                    variant="outline"
-                                    onClick={handleClose}
-                                    className="theme-button"
-                                    disabled={isCreating}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleSubmit}
-                                    className="theme-button-primary"
-                                    disabled={isCreating || isUpdating}
-                                >
-                                    {(isCreating || isUpdating) ? (editingTeam ? 'Updating...' : 'Creating...') : (editingTeam ? 'Update Team' : 'Create Team')}
-                                </Button>
-                            </Dialog.Footer>
-                            <Dialog.CloseTrigger />
-                        </Dialog.Content>
-                    </Dialog.Positioner>
-                </Dialog.Root>
+                                                    {isSelected && (
+                                                        <div
+                                                            style={{
+                                                                width: '8px',
+                                                                height: '8px',
+                                                                borderRadius: '50%',
+                                                                backgroundColor: '#000'
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                                        <span style={{ color: 'var(--primary-text)', fontWeight: isSelected ? 600 : 500, fontSize: '15px' }}>
+                                                            {userName}
+                                                        </span>
+                                                        {user?.email && (
+                                                            <span style={{ color: 'var(--secondary-text)', fontSize: '13px' }}>
+                                                                ({user.email})
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {isSelected && (
+                                                    <div
+                                                        style={{
+                                                            color: 'var(--brand-color)',
+                                                            fontSize: '13px',
+                                                            fontWeight: 600,
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px'
+                                                        }}
+                                                    >
+                                                        <span>✓</span>
+                                                        <span>Leader</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--secondary-text)', marginTop: '4px' }}>
+                                {teamLeader
+                                    ? 'Team leader selected. You can change it by selecting another member.'
+                                    : 'Select one team member as the team leader (required)'}
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                padding: '16px',
+                                backgroundColor: 'var(--secondary-bg)',
+                                borderRadius: '6px',
+                                border: '1px dashed var(--border-color)',
+                                textAlign: 'center'
+                            }}
+                        >
+                            <span style={{ color: 'var(--secondary-text)', fontSize: '14px' }}>
+                                Select team members above to choose a team leader
+                            </span>
+                        </div>
+                    )}
+                </Modal>
 
                 {/* View More Modal */}
-                <Dialog.Root open={viewMoreModal.open} onOpenChange={(details) => {
-                    if (!details.open) {
-                        setViewMoreModal({ open: false, type: '', items: [], title: '' });
-                    }
-                }}>
-                    <Dialog.Backdrop />
-                    <Dialog.Positioner>
-                        <Dialog.Content maxW={{ base: '90vw', md: '500px' }} className="view-more-modal">
-                            <Dialog.Header>
-                                <Dialog.Title>{viewMoreModal.title}</Dialog.Title>
-                            </Dialog.Header>
-                            <Dialog.Body>
-                                <Stack gap={2}>
-                                    {viewMoreModal.items.map((item, index) => (
-                                        <Box
-                                            key={index}
-                                            p={3}
-                                            borderRadius="6px"
-                                            bg="var(--secondary-bg)"
-                                            border="1px solid var(--border-color)"
-                                        >
-                                            <span style={{ color: 'var(--primary-text)' }}>{item}</span>
-                                        </Box>
-                                    ))}
-                                </Stack>
-                            </Dialog.Body>
-                            <Dialog.Footer>
-                                <Button
-                                    onClick={() => setViewMoreModal({ open: false, type: '', items: [], title: '' })}
-                                    className="theme-button-primary"
-                                >
-                                    Close
-                                </Button>
-                            </Dialog.Footer>
-                            <Dialog.CloseTrigger />
-                        </Dialog.Content>
-                    </Dialog.Positioner>
-                </Dialog.Root>
+                <Modal
+                    title={viewMoreModal.title}
+                    open={viewMoreModal.open}
+                    onCancel={() => setViewMoreModal({ open: false, type: '', items: [], title: '' })}
+                    footer={[
+                        <Button
+                            key="close"
+                            onClick={() => setViewMoreModal({ open: false, type: '', items: [], title: '' })}
+                            className="global-action-btn"
+                        >
+                            Close
+                        </Button>
+                    ]}
+                    className="view-more-modal"
+                >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {viewMoreModal.items.map((item, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    padding: '12px',
+                                    borderRadius: '6px',
+                                    backgroundColor: 'var(--secondary-bg)',
+                                    border: '1px solid var(--border-color)'
+                                }}
+                            >
+                                <span style={{ color: 'var(--primary-text)' }}>{item}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Modal>
 
                 {/* User with Client Deviation Modal */}
                 <Modal
@@ -656,9 +593,9 @@ const ClientAssignManament = () => {
                         setSearchSuggestions([]);
                     }}
                     footer={[
-                        <AntButton
+                        <Button
                             key="close"
-                            type="primary"
+                            className="global-action-btn"
                             onClick={() => {
                                 setUserClientModal({ open: false, userClients: [], teamName: '' });
                                 setSearchTerm('');
@@ -666,7 +603,7 @@ const ClientAssignManament = () => {
                             }}
                         >
                             Close
-                        </AntButton>
+                        </Button>
                     ]}
                     width={700}
                     className="user-client-modal"
@@ -769,7 +706,7 @@ const ClientAssignManament = () => {
                 </Modal>
 
                 {/* Teams Table */}
-                <Box className="teams-table-container" mt={6}>
+                <div className="clients-table-container">
                     <Table
                         columns={[
                             {
@@ -777,7 +714,7 @@ const ClientAssignManament = () => {
                                 dataIndex: 'teamName',
                                 key: 'teamName',
                                 width: '18%',
-                                render: (text) => <strong style={{ color: 'var(--primary-text)' }}>{text}</strong>
+                                render: (text) => <strong className="client-name-text">{text}</strong>
                             },
                             {
                                 title: 'Team Leader',
@@ -787,7 +724,7 @@ const ClientAssignManament = () => {
                                 render: (leaderId, record) => {
                                     const leader = record.members?.find(m => m.userId === leaderId);
                                     const leaderName = leader?.name || leaderId || '-';
-                                    return <span style={{ color: 'var(--primary-text)' }}>{leaderName}</span>;
+                                    return <span className="client-name-text">{leaderName}</span>;
                                 }
                             },
                             {
@@ -798,6 +735,7 @@ const ClientAssignManament = () => {
                                 render: (members) => {
                                     if (!members || members.length === 0) return '-';
                                     const memberNames = members.map(m => m.name || m.userId || '-');
+
                                     const displayNames = memberNames.slice(0, 4);
                                     const remainingCount = memberNames.length - 4;
 
@@ -809,7 +747,7 @@ const ClientAssignManament = () => {
                                                 </Tag>
                                             ))}
                                             {remainingCount > 0 && (
-                                                <AntButton
+                                                <Button
                                                     type="link"
                                                     size="small"
                                                     onClick={() => setViewMoreModal({
@@ -821,7 +759,7 @@ const ClientAssignManament = () => {
                                                     style={{ padding: 0, height: 'auto', fontSize: '12px' }}
                                                 >
                                                     View More ({remainingCount})
-                                                </AntButton>
+                                                </Button>
                                             )}
                                         </div>
                                     );
@@ -846,7 +784,7 @@ const ClientAssignManament = () => {
                                                 </Tag>
                                             ))}
                                             {remainingCount > 0 && (
-                                                <AntButton
+                                                <Button
                                                     type="link"
                                                     size="small"
                                                     onClick={() => setViewMoreModal({
@@ -858,7 +796,7 @@ const ClientAssignManament = () => {
                                                     style={{ padding: 0, height: 'auto', fontSize: '12px' }}
                                                 >
                                                     View More ({remainingCount})
-                                                </AntButton>
+                                                </Button>
                                             )}
                                         </div>
                                     );
@@ -869,14 +807,14 @@ const ClientAssignManament = () => {
                                 key: 'userClientDeviation',
                                 width: '18%',
                                 render: (_, record) => (
-                                    <AntButton
+                                    <Button
                                         type="primary"
                                         size="small"
                                         onClick={() => handleOpenUserClientModal(record)}
                                         style={{ fontSize: '12px' }}
                                     >
                                         View Users & Clients
-                                    </AntButton>
+                                    </Button>
                                 )
                             },
                             {
@@ -884,14 +822,15 @@ const ClientAssignManament = () => {
                                 key: 'actions',
                                 width: '10%',
                                 render: (_, record) => (
-                                    <AntButton
+                                    <Button
                                         type="default"
                                         icon={<EditOutlined />}
                                         onClick={() => handleEdit(record)}
                                         size="small"
+                                        className="global-secondary-btn"
                                     >
                                         Edit
-                                    </AntButton>
+                                    </Button>
                                 )
                             }
                         ]}
@@ -903,9 +842,9 @@ const ClientAssignManament = () => {
                             showSizeChanger: true,
                             showTotal: (total) => `Total ${total} teams`
                         }}
-                        className="teams-table"
+                        className="clients-table"
                     />
-                </Box>
+                </div>
             </div>
         </div>
     );

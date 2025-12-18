@@ -301,7 +301,7 @@ const TaskChat = ({
             // Get filename from URL or generate one based on type
             const urlParts = url.split('/');
             let filename = urlParts[urlParts.length - 1].split('?')[0];
-            
+
             // Extract extension from URL or use default based on type
             if (!filename || !filename.includes('.')) {
                 const extension = type === 'image' ? 'jpg' : type === 'video' ? 'mp4' : type === 'file' ? 'pdf' : 'jpg';
@@ -310,23 +310,23 @@ const TaskChat = ({
 
             // Use the original message URL directly (no modifications)
             const downloadUrl = url;
-            
+
             // Fetch the file as blob to force download (not open in browser)
             const response = await fetch(downloadUrl, {
                 method: 'GET',
                 mode: 'cors',
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
+
             const blob = await response.blob();
-            
+
             if (!blob || blob.size === 0) {
                 throw new Error('Empty file received');
             }
-            
+
             // Create blob URL and trigger download
             const blobUrl = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -335,13 +335,13 @@ const TaskChat = ({
             link.style.display = 'none'; // Hide the link
             document.body.appendChild(link);
             link.click();
-            
+
             // Cleanup
             setTimeout(() => {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(blobUrl);
             }, 100);
-            
+
             showSuccess('File downloaded successfully!');
         } catch (error) {
             console.error('Download error:', error);

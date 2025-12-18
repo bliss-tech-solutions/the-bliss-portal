@@ -24,7 +24,7 @@ const AllUserTaskEntries = ({
             // Changing this key forces TaskEntries to remount
             key={refreshKey}
             // Changing this key forces TaskEntries (and its RTK Query hook) to re-mount and refetch fresh data
-            key={refreshKey}
+            // key={refreshKey}
         />
     );
 };

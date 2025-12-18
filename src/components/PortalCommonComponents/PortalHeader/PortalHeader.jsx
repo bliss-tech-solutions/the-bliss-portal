@@ -451,9 +451,16 @@ const PortalHeader = () => {
                                         </div>
                                         {user?.role?.toLowerCase() !== 'admin' && user?.position?.toLowerCase() !== 'admin' && (
                                             <div>
-                                                <Button size="small" icon={<ExportOutlined />} onClick={() => setCheckoutModalOpen(true)}>
-                                                    Check Out
-                                                </Button>
+                                                <div>
+                                                    <Button
+                                                        size="small"
+                                                        icon={<ExportOutlined />}
+                                                        onClick={() => setCheckoutModalOpen(true)}
+                                                        className="portal-checkout-button"
+                                                    >
+                                                        Check Out
+                                                    </Button>
+                                                </div>
                                             </div>
                                         )}
                                     </div>

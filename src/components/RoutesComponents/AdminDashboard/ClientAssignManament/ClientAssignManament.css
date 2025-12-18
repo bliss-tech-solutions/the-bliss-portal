@@ -1,3 +1,71 @@
+/* ClientAssignManament Container Styles */
+#ClientAssignManament {
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    min-height: 100vh;
+    /* padding: 24px; */
+}
+
+.clients-segregation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+}
+
+.clients-segregation-title {
+    color: var(--primary-text);
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* Form Labels */
+.ant-form-item-label>label {
+    color: var(--primary-text) !important;
+}
+
+.ant-form-item-label>label.ant-form-item-required::before {
+    color: var(--error-color) !important;
+}
+
+/* Input Styles */
+.theme-input {
+    background-color: var(--input-bg) !important;
+    color: var(--primary-text) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.theme-input:focus,
+.theme-input:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.theme-input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+/* Select Styles */
+.team-members-select .ant-select-selector {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: 6px !important;
+}
+
+.team-members-select.ant-select-focused .ant-select-selector {
+    border-color: var(--brand-color) !important;
+}
+
 /* ============================================
    USER CLIENT MODAL - PROFESSIONAL STYLING
    ============================================ */
@@ -14,331 +82,223 @@
 .user-client-modal .user-client-search .ant-select-selector {
     height: 40px !important;
     padding: 0 !important;
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
 }
 
 .user-client-modal .user-client-search .ant-input-affix-wrapper {
     width: 100% !important;
     padding: 0 !important;
-    border: 1px solid #d9d9d9 !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 6px !important;
-    background-color: #ffffff !important;
+    background-color: var(--input-bg) !important;
     transition: all 0.3s !important;
     height: 40px !important;
 }
 
 .user-client-modal .user-client-search .ant-input-affix-wrapper:hover {
-    border-color: #40a9ff !important;
+    border-color: var(--brand-color) !important;
 }
 
-.user-client-modal .user-client-search .ant-input-affix-wrapper-focused,
-.user-client-modal .user-client-search .ant-input-affix-wrapper:focus,
-.user-client-modal .user-client-search .ant-input-affix-wrapper-focused:not(.ant-input-affix-wrapper-disabled) {
-    border-color: #1890ff !important;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+.user-client-modal .user-client-search .ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.2) !important;
 }
 
 .user-client-modal .user-client-search .ant-input {
     background-color: transparent !important;
+    color: var(--primary-text) !important;
     border: none !important;
     font-size: 14px !important;
-    line-height: 1.5715 !important;
-    padding: 4px 11px !important;
-    width: 100% !important;
     height: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.user-client-modal .user-client-search .ant-input::placeholder {
-    color: #bfbfbf !important;
-    font-size: 14px !important;
-}
-
-.user-client-modal .user-client-search .ant-input-prefix {
-    margin-right: 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    padding-left: 11px !important;
 }
 
 .user-client-modal .user-client-search .search-icon {
-    color: #8c8c8c !important;
-    font-size: 14px !important;
-}
-
-.user-client-modal .user-client-search .ant-input-suffix {
-    margin-left: 8px !important;
-    padding-right: 11px !important;
+    color: var(--secondary-text) !important;
 }
 
 .user-client-modal .user-client-search-dropdown {
     z-index: 1050 !important;
+    background-color: var(--card-bg) !important;
 }
 
 .user-client-modal .user-client-search-dropdown .ant-select-item {
-    padding: 8px 12px !important;
-    line-height: 1.5715 !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    min-height: 32px !important;
-}
-
-.user-client-modal .user-client-search-dropdown .ant-select-item-option-content {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    flex-wrap: wrap !important;
+    color: var(--primary-text) !important;
 }
 
 .user-client-modal .user-client-search-dropdown .ant-select-item-option-selected {
-    background-color: #e6f7ff !important;
+    background-color: var(--secondary-bg) !important;
 }
 
 .user-client-modal .user-client-search-dropdown .ant-select-item-option-active {
-    background-color: #f5f5f5 !important;
+    background-color: var(--hover-bg) !important;
 }
 
-/* Main Modal Container */
-.user-client-modal .ant-modal-content {
-    padding: 0 !important;
-    border-radius: 8px;
-}
-
-.user-client-modal .ant-modal-header {
-    padding: 20px 24px !important;
-    border-bottom: 1px solid #f0f0f0;
-    background: linear-gradient(to right, #fafafa, #ffffff);
-}
-
-.user-client-modal .ant-modal-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #262626;
-}
-
-.user-client-modal .ant-modal-close {
-    top: 16px;
-    right: 16px;
-}
-
-/* Modal Body */
-.user-client-modal .ant-modal-body {
-    padding: 24px !important;
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-/* Modal Footer */
-.user-client-modal .ant-modal-footer {
-    padding: 16px 24px !important;
-    border-top: 1px solid #f0f0f0;
-    background-color: #fafafa;
-    text-align: right;
-}
-
-.user-client-modal .ant-modal-footer button {
-    min-width: 80px;
-}
-
-/* ============================================
-     USER CLIENT LIST STYLING
-     ============================================ */
-
+/* User Client List */
 .user-client-list {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-/* Empty State */
 .user-client-list .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #8c8c8c;
+    color: var(--secondary-text);
     font-size: 14px;
-    background-color: #fafafa;
+    background-color: var(--secondary-bg);
     border-radius: 6px;
-    border: 1px dashed #d9d9d9;
+    border: 1px dashed var(--border-color);
 }
 
-/* ============================================
-     USER CLIENT ITEM STYLING
-     ============================================ */
-
 .user-client-item {
-    background-color: #ffffff;
-    border: 1px solid #f0f0f0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     overflow: hidden;
     transition: all 0.3s ease;
 }
 
 .user-client-item:hover {
-    border-color: #d9d9d9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: var(--brand-color);
+    box-shadow: var(--shadow);
 }
 
-/* User Header Section */
 .user-client-item .user-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 14px 16px;
-    background-color: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.user-header .user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
+    background-color: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .user-header .user-name {
     font-size: 14px;
     font-weight: 600;
-    color: #262626;
+    color: var(--primary-text);
 }
 
 .user-header .user-email {
     font-size: 12px;
-    color: #8c8c8c;
+    color: var(--secondary-text);
 }
 
-.user-header .client-count-tag {
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    margin-left: 12px;
-}
-
-/* No Clients State */
 .user-client-item .no-clients {
     padding: 16px;
     text-align: center;
-    color: #bfbfbf;
+    color: var(--secondary-text);
     font-size: 13px;
-    background-color: #fafafa;
+    background-color: var(--secondary-bg);
 }
 
-/* ============================================
-     CLIENTS TABLE STYLING
-     ============================================ */
-
+/* Clients Table Styles */
 .clients-table-wrapper {
     padding: 0;
-    background-color: #ffffff;
-}
-
-.user-client-table {
-    font-size: 13px;
+    background-color: var(--card-bg);
 }
 
 .user-client-table .ant-table {
     background-color: transparent;
-    font-size: 13px;
+    color: var(--primary-text);
 }
 
 .user-client-table .ant-table-thead>tr>th {
-    background-color: #f5f5f5;
-    color: #262626;
+    background-color: var(--secondary-bg);
+    color: var(--secondary-text);
     font-weight: 600;
     font-size: 12px;
     padding: 10px 12px !important;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-color);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.user-client-table .ant-table-tbody>tr {
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
-}
-
-.user-client-table .ant-table-tbody>tr:hover {
-    background-color: #fafafa !important;
 }
 
 .user-client-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
     padding: 12px !important;
-    color: #262626;
     font-size: 13px;
 }
 
-/* Table Cell Styling */
+.user-client-table .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Modal Footer Alignment */
+.user-client-modal .ant-modal-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    /* Match modal bg */
+}
+
+/* Chakra Modal Footer Alignment */
+.chakra-dialog-footer-align {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+}
+
+/* Chakra Dialog / Teams Table Overrides to Match Theme */
+.teams-table-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.teams-table-container .ant-table-thead>tr>th {
+    background-color: var(--secondary-bg);
+    color: var(--secondary-text);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+.teams-table-container .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+.teams-table-container .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Text Utilities */
+.client-name-text,
 .client-name-cell {
-    font-weight: 500;
-    color: #262626;
+    font-weight: 600;
+    color: var(--primary-text);
 }
 
+.client-city-text,
 .client-city-cell {
-    color: #595959;
+    color: var(--secondary-text);
 }
 
-.status-tag {
-    font-size: 12px;
-    font-weight: 500;
+.status-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.status-tag.ant-tag-green {
-    background-color: #f6ffed;
-    border-color: #b7eb8f;
-    color: #52c41a;
-}
-
-.status-tag.ant-tag-red {
-    background-color: #fff1f0;
-    border-color: #ffccc7;
-    color: #f5222d;
-}
-
-/* ============================================
-     RESPONSIVE DESIGN
-     ============================================ */
-
+/* Responsive */
 @media (max-width: 768px) {
     .user-client-modal {
         width: 95% !important;
     }
 
-    .user-client-modal .ant-modal-body {
-        max-height: 500px;
-    }
-
     .user-header {
         flex-wrap: wrap;
-    }
-
-    .user-header .client-count-tag {
-        margin-left: 0;
-        margin-top: 8px;
-        width: 100%;
-    }
-
-    .user-client-table .ant-table-thead>tr>th,
-    .user-client-table .ant-table-tbody>tr>td {
-        padding: 8px !important;
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .user-client-modal .ant-modal-header {
-        padding: 16px !important;
-    }
-
-    .user-client-modal .ant-modal-body {
-        padding: 16px !important;
-        max-height: 400px;
-    }
-
-    .user-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .user-header .client-count-tag {
-        align-self: flex-start;
     }
 }

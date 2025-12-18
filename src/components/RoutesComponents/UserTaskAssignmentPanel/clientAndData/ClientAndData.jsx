@@ -326,6 +326,7 @@ const ClientAndData = () => {
                     icon={<BsFileEarmarkText />}
                     onClick={() => handleDocumentHistoryClick(record)}
                     size="small"
+                    className='global-secondary-btn'
                 >
                     History
                 </Button>
@@ -358,7 +359,7 @@ const ClientAndData = () => {
                         open={documentHistoryModalVisible}
                         onCancel={handleDocumentHistoryModalClose}
                         footer={[
-                            <Button key="close" onClick={handleDocumentHistoryModalClose}>
+                            <Button key="close" className='global-secondary-btn' onClick={handleDocumentHistoryModalClose}>
                                 Close
                             </Button>
                         ]}

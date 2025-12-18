@@ -297,7 +297,7 @@ const ClientsSegregation = () => {
                 <Button
                     type="primary"
                     onClick={() => setIsOpen(true)}
-                    className="add-client-button"
+                    className="global-action-btn"
                     size="large"
                 >
                     Add Client
@@ -314,6 +314,8 @@ const ClientsSegregation = () => {
                 cancelText="Cancel"
                 confirmLoading={isCreating || isUpdating}
                 className="add-client-modal"
+                okButtonProps={{ className: 'global-action-btn' }}
+                cancelButtonProps={{ className: 'global-secondary-btn' }}
             >
                 <Form layout="vertical">
                     <Row gutter={[16, 16]}>
@@ -482,7 +484,7 @@ const ClientsSegregation = () => {
                             dataIndex: 'clientName',
                             key: 'clientName',
                             width: '25%',
-                            render: (text) => <strong style={{ color: 'var(--primary-text)' }}>{text}</strong>
+                            render: (text) => <span className="client-name-text">{text}</span>
                         },
                         {
                             title: 'Client Onboard Date',
@@ -490,8 +492,8 @@ const ClientsSegregation = () => {
                             key: 'onboardDate',
                             width: '25%',
                             render: (date) => {
-                                if (!date) return '-';
-                                return dayjs(date).format('MMM DD, YYYY');
+                                if (!date) return <span className="text-secondary">-</span>;
+                                return <span className="text-primary">{dayjs(date).format('MMM DD, YYYY')}</span>;
                             }
                         },
                         {
@@ -499,7 +501,7 @@ const ClientsSegregation = () => {
                             dataIndex: 'city',
                             key: 'city',
                             width: '20%',
-                            render: (text) => <span style={{ color: 'var(--secondary-text)' }}>{text || '-'}</span>
+                            render: (text) => <span className="client-city-text">{text || '-'}</span>
                         },
                         {
                             title: 'Status',
@@ -507,18 +509,17 @@ const ClientsSegregation = () => {
                             key: 'status',
                             width: '20%',
                             render: (status, record) => (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div className="status-cell">
                                     <Switch
                                         checked={status === 'active'}
                                         onChange={(checked) => {
-                                            // For now, just log - will be dynamic later
                                             console.log('Status toggle:', record._id, checked ? 'active' : 'inactive');
                                         }}
                                         checkedChildren="Active"
                                         unCheckedChildren="Inactive"
                                     />
-                                    <Tag color={status === 'active' ? 'green' : 'red'}>
-                                        {status === 'active' ? 'Active' : 'Non-Active'}
+                                    <Tag color={status === 'active' ? 'success' : 'error'}>
+                                        {status === 'active' ? 'ACTIVE' : 'INACTIVE'}
                                     </Tag>
                                 </div>
                             )
@@ -529,7 +530,7 @@ const ClientsSegregation = () => {
                             width: '10%',
                             render: (_, record) => (
                                 <Button
-                                    type="primary"
+                                    className="global-secondary-btn"
                                     icon={<EditOutlined />}
                                     onClick={() => handleEdit(record)}
                                     size="small"

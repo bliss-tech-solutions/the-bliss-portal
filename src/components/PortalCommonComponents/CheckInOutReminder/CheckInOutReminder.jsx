@@ -77,41 +77,54 @@ const CheckInOutReminder = () => {
             footer={null}
             closable={false}
             centered
-            width={480}
+            width={440}
             className="checkin-reminder-modal"
             maskClosable={false}
             keyboard={false}
         >
             <div className="checkin-reminder-content">
-                <div className="checkin-icon-wrap">
-                    <FieldTimeOutlined className="checkin-main-icon" />
+                <div className="checkin-header">
+                    <div className="checkin-icon-wrap">
+                        <FieldTimeOutlined className="checkin-main-icon" />
+                    </div>
+                    <div className="checkin-title-group">
+                        <Title level={3} className="checkin-title">Good Morning!</Title>
+                        <Text className="checkin-subtext">
+                            It's time to start your productive day.
+                        </Text>
+                    </div>
                 </div>
 
-                <div className="checkin-text">
-                    <Title level={4} className="checkin-title">Daily Check-In</Title>
-                    <Paragraph className="checkin-subtext">
-                        Welcome back! Please check in to start your work day.
+                <div className="checkin-body">
+                    <Paragraph className="checkin-instruction">
+                        Please provide a brief update or reason for checking in today.
                     </Paragraph>
+                    <div className="checkin-reason-wrap">
+                        <Input.TextArea
+                            rows={3}
+                            placeholder="Working on... (optional)"
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            className="checkin-textarea"
+                        />
+                    </div>
                 </div>
 
-                <div className="checkin-reason" style={{ marginBottom: 16 }}>
-                    <Input.TextArea
-                        rows={3}
-                        placeholder="Reason (optional)"
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                    />
-                </div>
-                <div className="checkin-actions">
-                    <Space size="middle">
-                        <Button type="primary" size="large" icon={<LoginOutlined />} onClick={handleCheckIn} loading={isLoading} disabled={isLoading}>
-                            Check In
-                        </Button>
-                    </Space>
-                </div>
-
-                <div className="checkin-hint">
-                    <Text type="secondary">Check-Out will be available in the Attendance panel.</Text>
+                <div className="checkin-footer">
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<LoginOutlined />}
+                        onClick={handleCheckIn}
+                        loading={isLoading}
+                        disabled={isLoading}
+                        className="global-button"
+                    >
+                        Check In Now
+                    </Button>
+                    <div className="checkin-hint">
+                        <Text type="secondary">Attendance tracking will begin immediately.</Text>
+                    </div>
                 </div>
             </div>
         </Modal>

@@ -128,7 +128,7 @@ const CreateAccountLogin = () => {
     };
 
     return (
-        <div id="CreateAccountLogin" className={`theme-${theme}`}>
+        <div id="CreateAccountLogin" className={`theme-${theme}`} data-theme={theme}>
             <div>
                 <div className="CreateAccountLoginBackgroundOverlay">
                     <img src="/Images/BackgroundOverlay.jpg" alt="" />

@@ -9,15 +9,15 @@ const GlobalChatPage = () => {
 
     return (
         <div className={`global-chat-page theme-${theme}`}>
-            <div className="global-chat-page-header">
+            {/* <div className="global-chat-page-header">
                 <h2>Global Chat</h2>
                 <p className="global-chat-page-subtitle">
                     Communicate with all team members in real-time
                 </p>
-            </div>
+            </div> */}
             <div className="global-chat-page-content">
                 <GlobalChat
-                    title="Global Chat"
+                    title=<><h2>Global Chat</h2></>
                     placeholder="Type a message to everyone..."
                     showTitle={true}
                     height="calc(100vh - 250px)"

@@ -26,10 +26,9 @@
 }
 
 .global-chat-page-content {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* Removed extra card styles to let GlobalChat handle its own internal card layout */
+    padding: 0;
+    margin-top: 8px;
 }
 
 /* Responsive */

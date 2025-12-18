@@ -629,7 +629,7 @@ const ContentProviderPanel = () => {
                     open={documentHistoryModalVisible}
                     onCancel={handleDocumentHistoryModalClose}
                     footer={[
-                        <Button key="close" onClick={handleDocumentHistoryModalClose}>
+                        <Button key="close" className='global-secondary-btn' onClick={handleDocumentHistoryModalClose}>
                             Close
                         </Button>
                     ]}

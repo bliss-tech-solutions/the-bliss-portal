@@ -148,16 +148,17 @@ const UserTaskAssignmentPanel = () => {
                         </div>
                     </Col>
                     <Col lg={6} md={6} sm={24} xs={24}>
-                        <div className="AddFilterButton" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <div className="AddNewTaskButton" style={{ display: 'flex', gap: '8px' }}>
                             <Button
                                 onClick={() => setRefreshKey(prev => prev + 1)}
+                                className="global-secondary-btn"
                             >
                                 Refresh
                             </Button>
                             <Button
                                 icon={<BsFilter />}
                                 onClick={toggleFilters}
-                                className={showFilters ? 'filter-active' : ''}
+                                className={`global-secondary-btn ${showFilters ? 'filter-active' : ''}`}
                             >
                                 Filters
                             </Button>

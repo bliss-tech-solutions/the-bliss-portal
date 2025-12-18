@@ -1,6 +1,6 @@
 import React from 'react';
-import { Calendar, Modal, Form, Input, Button, Space, Popover } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined } from '@ant-design/icons';
+import { Calendar, Modal, Form, Input, Button, Space, Popover, Select } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, CalendarOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './CalenderModule.css';
 
@@ -33,8 +33,6 @@ const CalenderModule = ({
             onDateSelect(date, info);
             return;
         }
-        // Default behavior: open modal (if handlers provided)
-        // This is for cases where no onDateSelect is provided but we still want modal
         if (typeof onSaveTask === 'function' && setIsModalVisible) {
             setIsModalVisible(true);
             if (setSelectedColor && taskColors.length > 0) {
@@ -56,12 +54,11 @@ const CalenderModule = ({
             const dateTasks = getTasksForDate ? getTasksForDate(selectedDate) : [];
 
             if (!editingNoteId && dateTasks.length >= maxTasksPerDate) {
-                return; // Let parent handle validation message
+                return;
             }
 
             await onSaveTask(selectedDate, { ...values, color: values.color || selectedColor }, editingNoteId);
         } catch (error) {
-            // Let parent handle validation errors
             console.error('Validation failed:', error);
         }
     };
@@ -89,14 +86,14 @@ const CalenderModule = ({
                 content={
                     <div className="fc-tasks-popover">
                         {holiday && (
-                            <div className="fc-holiday-row" style={{ marginBottom: 8 }}>
+                            <div className="fc-holiday-row" style={{ marginBottom: 4 }}>
                                 <span style={{ marginRight: 6 }}>{holiday.emoji}</span>
-                                <span>{holiday.name}</span>
+                                <span style={{ fontSize: '13px', fontWeight: 500 }}>{holiday.name}</span>
                             </div>
                         )}
                         {dateTasks.map(task => (
                             <div key={task.id} className="fc-task-item">
-                                <Space>
+                                <Space size={8}>
                                     <span
                                         className="fc-task-color-dot"
                                         style={{ backgroundColor: task.color }}
@@ -110,11 +107,12 @@ const CalenderModule = ({
                             <Button
                                 type="link"
                                 icon={<PlusOutlined />}
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onDateSelect(date, { source: 'date' });
                                 }}
                                 size="small"
-                                style={{ marginTop: 8, padding: 0 }}
+                                style={{ marginTop: 8, padding: 0, fontSize: '12px' }}
                             >
                                 Add Task
                             </Button>
@@ -125,7 +123,7 @@ const CalenderModule = ({
             >
                 <div className="fc-dots-row">
                     {holiday && (
-                        <span title={holiday.name} style={{ marginRight: 6 }}>
+                        <span title={holiday.name} style={{ marginRight: 2, fontSize: '10px' }}>
                             {holiday.emoji}
                         </span>
                     )}
@@ -158,62 +156,69 @@ const CalenderModule = ({
                         const monthOptions = [];
                         const localeData = value.localeData();
                         for (let i = 0; i < 12; i++) {
-                            const monthDate = dayjs().month(i);
-                            const monthName = localeData.monthsShort(monthDate);
-                            monthOptions.push(
-                                <option key={i} value={i}>
-                                    {monthName}
-                                </option>
-                            );
+                            monthOptions.push({
+                                label: localeData.monthsShort(dayjs().month(i)),
+                                value: i,
+                            });
                         }
                         const year = value.year();
-                        const month = value.month();
-                        const options = [];
+                        const yearOptions = [];
                         for (let i = year - 10; i < year + 10; i += 1) {
-                            options.push(
-                                <option key={i} value={i}>
-                                    {i}
-                                </option>
-                            );
+                            yearOptions.push({
+                                label: i,
+                                value: i,
+                            });
                         }
+
                         return (
                             <div className="fc-calendar-header">
                                 <div className="fc-header-controls">
                                     <Button
+                                        size="small"
                                         onClick={() => onChange(value.clone().subtract(1, type))}
-                                        icon={<span>‹</span>}
+                                        icon={<LeftOutlined style={{ fontSize: '12px' }} />}
                                         type="text"
+                                        style={{ color: '#fff' }}
                                     />
-                                    <select
-                                        value={month}
-                                        onChange={(e) => {
-                                            const newValue = value.clone().month(e.target.value);
-                                            onChange(newValue);
-                                        }}
+                                    <Select
+                                        size="small"
+                                        variant="borderless"
                                         className="fc-month-select"
-                                    >
-                                        {monthOptions}
-                                    </select>
-                                    <select
-                                        value={year}
-                                        onChange={(e) => {
-                                            const newValue = value.clone().year(e.target.value);
-                                            onChange(newValue);
-                                        }}
+                                        popupClassName="fc-header-select-dropdown"
+                                        dropdownMatchSelectWidth={false}
+                                        value={value.month()}
+                                        options={monthOptions}
+                                        onChange={(newMonth) => onChange(value.clone().month(newMonth))}
+                                    />
+                                    <Select
+                                        size="small"
+                                        variant="borderless"
                                         className="fc-year-select"
-                                    >
-                                        {options}
-                                    </select>
+                                        popupClassName="fc-header-select-dropdown"
+                                        dropdownMatchSelectWidth={false}
+                                        value={year}
+                                        options={yearOptions}
+                                        onChange={(newYear) => onChange(value.clone().year(newYear))}
+                                    />
                                     <Button
+                                        size="small"
                                         onClick={() => onChange(value.clone().add(1, type))}
-                                        icon={<span>›</span>}
+                                        icon={<RightOutlined style={{ fontSize: '12px' }} />}
                                         type="text"
+                                        style={{ color: '#fff' }}
                                     />
                                 </div>
                                 <Button
                                     onClick={() => onChange(dayjs())}
-                                    type="primary"
+                                    type="default"
                                     size="small"
+                                    style={{
+                                        fontSize: '12px',
+                                        borderRadius: '8px',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                                        color: '#fff'
+                                    }}
                                 >
                                     Today
                                 </Button>
@@ -226,11 +231,10 @@ const CalenderModule = ({
             {showActions && onSaveTask && (
                 <Modal
                     title={
-                        <div>
-                            <CalendarOutlined />
-                            {selectedDate && `Tasks for ${dayjs(selectedDate).format('MMMM DD, YYYY')}`}
-                            <br /><br />
-                        </div>
+                        <Space>
+                            <CalendarOutlined style={{ color: 'var(--accent-color)' }} />
+                            <span>{selectedDate && `Tasks for ${dayjs(selectedDate).format('MMM DD, YYYY')}`}</span>
+                        </Space>
                     }
                     open={isModalVisible}
                     onOk={handleSaveTask}
@@ -245,16 +249,17 @@ const CalenderModule = ({
                             if (form) form.resetFields();
                         }
                     }}
-                    okText={editingNoteId ? 'Update Task' : 'Add Task'}
-                    cancelText="Close"
-                    width={600}
+                    okText={editingNoteId ? 'Update' : 'Add Task'}
+                    cancelText="Cancel"
+                    width={500}
+                    centered
                     className="fc-task-modal"
                 >
                     <div className="fc-current-tasks">
                         {currentTasks.map(task => (
                             <div key={task.id} className="fc-task-card">
                                 <div className="fc-task-card-header">
-                                    <Space>
+                                    <Space size={8}>
                                         <span
                                             className="fc-task-color-dot"
                                             style={{ backgroundColor: task.color }}
@@ -262,21 +267,19 @@ const CalenderModule = ({
                                         <span className="fc-task-title">{task.title}</span>
                                     </Space>
                                     {showActions && (
-                                        <Space>
+                                        <Space size={0}>
                                             <Button
                                                 type="text"
-                                                icon={<EditOutlined />}
+                                                icon={<EditOutlined style={{ fontSize: '14px' }} />}
                                                 size="small"
                                                 onClick={() => handleEditTask(task)}
-                                                title="Edit note"
                                             />
                                             <Button
                                                 type="text"
                                                 danger
-                                                icon={<DeleteOutlined />}
+                                                icon={<DeleteOutlined style={{ fontSize: '14px' }} />}
                                                 size="small"
                                                 onClick={() => handleArchiveTask(task)}
-                                                title="Archive this date"
                                             />
                                         </Space>
                                     )}
@@ -287,7 +290,7 @@ const CalenderModule = ({
                             </div>
                         ))}
                         {currentTasks.length >= maxTasksPerDate && !editingNoteId && (
-                            <p className="fc-limit-warning">Maximum {maxTasksPerDate} tasks reached for this date!</p>
+                            <div className="fc-limit-warning">Maximum {maxTasksPerDate} tasks reached for this date.</div>
                         )}
                     </div>
 
@@ -296,13 +299,14 @@ const CalenderModule = ({
                             form={form}
                             layout="vertical"
                             className="fc-task-form"
+                            requiredMark={false}
                         >
                             <Form.Item
                                 label="Task Title"
                                 name="title"
-                                rules={[{ required: true, message: 'Please enter task title' }]}
+                                rules={[{ required: true, message: 'Required' }]}
                             >
-                                <Input placeholder="Enter task title" />
+                                <Input placeholder="What needs to be done?" />
                             </Form.Item>
 
                             <Form.Item
@@ -310,14 +314,14 @@ const CalenderModule = ({
                                 name="description"
                             >
                                 <TextArea
-                                    rows={3}
-                                    placeholder="Enter task description (optional)"
+                                    rows={2}
+                                    placeholder="Add more details..."
                                 />
                             </Form.Item>
 
                             {taskColors.length > 0 && (
                                 <Form.Item
-                                    label="Colors"
+                                    label="Task Color"
                                     name="color"
                                     initialValue={taskColors[0]?.color}
                                 >

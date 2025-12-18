@@ -1,6 +1,5 @@
 /* User Task Assignment Panel Styles */
 #UserTaskAssignmentPanel {
-    /* padding: 20px; */
     background-color: var(--bg-color);
     min-height: 100vh;
 }
@@ -12,90 +11,52 @@
     font-weight: 600;
 }
 
-.MarginTopMedium {
-    margin-top: 24px;
-}
-
-.AntdTabsNames {
-    margin-bottom: 16px;
-}
-
-.AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    color: var(--secondary-text);
-    border-radius: 8px 8px 0 0;
-    /* margin-right: 8px; */
-    transition: all 0.3s ease;
-}
-
-.AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab:hover {
-    background-color: var(--hover-bg);
-    color: var(--primary-text);
-}
-
-.AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab-active {
-    background-color: var(--brand-color);
-    color: white;
-    border-color: var(--brand-color);
-}
-
-.AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: white;
-}
-
-.AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-ink-bar {
-    display: none;
-}
-
-/* Match ExecutionTaskAssignPanel tab styling */
 #UserTaskAssignmentPanel .ant-tabs-nav::before {
     display: none;
 }
 
 #UserTaskAssignmentPanel .ant-tabs-nav-list {
     display: flex;
-    gap: 10px;
+    gap: 4px;
     background-color: var(--secondary-bg);
-    padding: 5px 10px;
-    border-radius: 10px !important;
+    padding: 4px;
+    border-radius: var(--button-border-radius) !important;
 }
 
 #UserTaskAssignmentPanel .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: #EBB236 !important;
+    color: var(--brand-color) !important;
+    font-weight: 600;
 }
 
 #UserTaskAssignmentPanel .ant-tabs-tab {
-    background-color: var(--primary-bg);
-    color: var(--primary-text);
-    border-radius: 10px !important;
-}
-
-.AntdTabsContent {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 0 8px 8px 8px;
-    padding: 24px;
-    min-height: 400px;
-}
-
-.AntdTabsContent p {
+    background-color: transparent;
     color: var(--secondary-text);
-    font-size: 16px;
-    line-height: 1.6;
-    /* margin-bottom: 12px; */
+    border-radius: var(--button-border-radius) !important;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    padding: 8px 16px !important;
+    margin: 0 !important;
 }
 
-/* Filter Section Styles - Same as Execution Panel */
-.AddFilterButton {
+#UserTaskAssignmentPanel .ant-tabs-tab:hover {
+    color: var(--primary-text);
+}
+
+#UserTaskAssignmentPanel .ant-tabs-tab-active {
+    background-color: var(--card-bg) !important;
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--button-shadow);
+}
+
+#UserTaskAssignmentPanel .AddNewTaskButton {
     display: flex;
-    justify-content: flex-end;
+    justify-content: end;
 }
 
-.filters-section {
+/* Filter Section Styles */
+#UserTaskAssignmentPanel .filters-section {
     transition: all 0.3s ease;
     animation: slideDown 0.3s ease;
-    margin-bottom: 16px;
 }
 
 @keyframes slideDown {
@@ -110,17 +71,94 @@
     }
 }
 
-.filter-active {
+#UserTaskAssignmentPanel .filter-active {
     background-color: var(--brand-color) !important;
     border-color: var(--brand-color) !important;
     color: white !important;
 }
 
-.filter-active:hover {
+#UserTaskAssignmentPanel .filter-active:hover {
     background-color: var(--brand-color) !important;
     border-color: var(--brand-color) !important;
     color: white !important;
     opacity: 0.9;
+}
+
+/* Filter Fields Styling */
+#UserTaskAssignmentPanel .filters-section .ant-input,
+#UserTaskAssignmentPanel .filters-section .ant-input-affix-wrapper,
+#UserTaskAssignmentPanel .filters-section .ant-select-selector,
+#UserTaskAssignmentPanel .filters-section .ant-picker {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: var(--button-border-radius) !important;
+    box-shadow: none !important;
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-input-affix-wrapper .ant-input {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-input::placeholder {
+    color: var(--secondary-text);
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-select-selection-item,
+#UserTaskAssignmentPanel .filters-section .ant-select-selection-placeholder {
+    color: var(--primary-text) !important;
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-select-arrow {
+    color: var(--secondary-text);
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-picker-input>input {
+    color: var(--primary-text) !important;
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-picker-input>input::placeholder {
+    color: var(--secondary-text);
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-picker-suffix {
+    color: var(--secondary-text);
+}
+
+/* Clear Filters Button */
+#UserTaskAssignmentPanel .filters-section .ant-btn {
+    background-color: transparent !important;
+    border: 1px solid var(--danger-color) !important;
+    color: var(--danger-color) !important;
+    border-radius: var(--button-border-radius) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#UserTaskAssignmentPanel .filters-section .ant-btn:hover,
+#UserTaskAssignmentPanel .filters-section .ant-btn:focus,
+#UserTaskAssignmentPanel .filters-section .ant-btn:active {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    border-color: var(--danger-color) !important;
+}
+
+/* Tab Content Styling */
+.AntdTabsContent {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 400px;
+    margin-top: 16px;
+}
+
+.MarginTopMedium {
+    margin-top: 24px;
 }
 
 .MarginBottomSmall {
@@ -129,11 +167,11 @@
 
 /* Responsive Filter Layout */
 @media (max-width: 768px) {
-    .filters-section .ant-col {
+    #UserTaskAssignmentPanel .filters-section .ant-col {
         margin-bottom: 8px;
     }
 
-    .AddFilterButton {
+    #UserTaskAssignmentPanel .AddNewTaskButton {
         justify-content: flex-start;
         margin-top: 8px;
     }
@@ -148,23 +186,11 @@
     .AntdTabsContent {
         padding: 16px;
     }
-
-    .AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab {
-        margin-right: 4px;
-        font-size: 14px;
-        padding: 8px 12px;
-    }
 }
 
 @media (max-width: 480px) {
     #UserTaskAssignmentPanel h2 {
         font-size: 20px;
-    }
-
-    .AntdTabsNames .ant-tabs-card>.ant-tabs-nav .ant-tabs-tab {
-        font-size: 12px;
-        padding: 6px 8px;
-        margin-right: 2px;
     }
 
     .AntdTabsContent {

@@ -41,6 +41,20 @@
     --transition-slow: 0.5s;
 }
 
+/* Global autofill override to prevent white/grey background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+    -webkit-text-fill-color: var(--primary-text) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 [data-theme="dark"] {
     /* Dark Theme */
     --sidebar-bg: #161616;
@@ -81,6 +95,13 @@
     --transition-fast: 0.2s;
     --transition-medium: 0.3s;
     --transition-slow: 0.5s;
+}
+
+/* Re-apply input variables in case they are needed for specific autofill contexts */
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] textarea:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+    -webkit-text-fill-color: var(--primary-text) !important;
 }
 
 /* Global Theme Styles */
@@ -259,8 +280,8 @@ body {
     border-bottom-color: var(--border-color) !important;
 }
 
-.ant-input {
-    /* background-color: var(--input-bg) !important; */
+.ant-input{
+    background-color: var(--input-bg) !important;
     color: var(--primary-text) !important;
     border-color: var(--border-color) !important;
 }
@@ -291,4 +312,223 @@ body {
 
 .ant-notification-notice-description {
     color: var(--secondary-text) !important;
+}
+
+/* Global Action Button - Minimal Slick Style */
+.global-action-btn {
+    height: 40px !important;
+    background: var(--button-primary) !important;
+    border: none !important;
+    border-radius: var(--button-border-radius) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: var(--button-shadow) !important;
+    transition: all var(--transition-fast) ease !important;
+    color: var(--button-primary-text) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 20px !important;
+}
+
+.global-action-btn:hover {
+    background: var(--button-primary-hover) !important;
+    color: var(--button-text) !important;
+    box-shadow: var(--button-shadow-hover) !important;
+    transform: translateY(-1px) !important;
+}
+
+.global-action-btn:active {
+    box-shadow: var(--button-shadow-active) !important;
+    transform: translateY(0) !important;
+}
+
+/* Global Secondary Button - Minimal Outline Style */
+.global-secondary-btn {
+    height: 40px !important;
+    background: transparent !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--button-border-radius) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: none !important;
+    transition: all var(--transition-fast) ease !important;
+    color: var(--primary-text) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 20px !important;
+}
+
+.global-secondary-btn:hover {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    background: rgba(235, 178, 54, 0.05) !important;
+    box-shadow: var(--button-shadow) !important;
+    transform: translateY(-1px) !important;
+}
+
+.global-secondary-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+/* Override strict filter-active if needed, but the secondary class serves as base */
+.filter-active.global-secondary-btn {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: var(--button-text) !important;
+
+    /* Ensure text creates contrast */
+    /* Ensure text creates contrast */
+}
+
+/* Global Time/Date Picker Dropdown Overrides - Moved to root level */
+.ant-picker-dropdown {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-picker-panel-container {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+}
+
+.ant-picker-panel {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.ant-picker-panel:last-child {
+    border-bottom: none;
+}
+
+.ant-picker-header {
+    color: var(--primary-text) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+.ant-picker-header-view button {
+    color: var(--primary-text) !important;
+}
+
+.ant-picker-header button {
+    color: var(--secondary-text) !important;
+}
+
+.ant-picker-header button:hover {
+    color: var(--brand-color) !important;
+}
+
+.ant-picker-content th {
+    color: var(--primary-text) !important;
+}
+
+.ant-picker-cell {
+    color: var(--secondary-text) !important;
+}
+
+.ant-picker-cell-in-view {
+    color: var(--primary-text) !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+    border-color: var(--brand-color) !important;
+}
+
+.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
+    background-color: var(--brand-color) !important;
+    color: #000 !important;
+}
+
+.ant-picker-time-panel-column>li.ant-picker-time-panel-cell .ant-picker-time-panel-cell-inner {
+    color: var(--primary-text) !important;
+    padding-left: 12px;
+}
+
+.ant-picker-time-panel-column>li.ant-picker-time-panel-cell-selected .ant-picker-time-panel-cell-inner {
+    background-color: rgba(235, 178, 54, 0.1) !important;
+    color: var(--brand-color) !important;
+}
+
+.ant-picker-time-panel-column>li.ant-picker-time-panel-cell:hover .ant-picker-time-panel-cell-inner {
+    background-color: var(--hover-bg) !important;
+}
+
+.ant-picker-footer {
+    border-top-color: var(--border-color) !important;
+}
+
+.ant-picker-now-btn {
+    color: var(--brand-color) !important;
+}
+
+.ant-picker-ok>button {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: #000 !important;
+}
+
+.ant-picker-ok>button:hover {
+    background-color: var(--button-primary-hover) !important;
+}
+
+.filter-active.global-secondary-btn:hover {
+    color: var(--button-text) !important;
+    background-color: var(--brand-color) !important;
+}
+
+/* Global Modal Overrides - Ensure Theme Consistency */
+.ant-modal-content {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    box-shadow: 0 8px 24px -6px var(--shadow) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.ant-modal-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-modal-title {
+    color: var(--primary-text) !important;
+}
+
+.ant-modal-close {
+    color: var(--secondary-text) !important;
+}
+
+.ant-modal-close:hover {
+    color: var(--primary-text) !important;
+    background-color: var(--hover-bg) !important;
+}
+
+/* Ensure modal mask is appropriate */
+.ant-modal-mask {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(4px);
+}
+
+.anticon svg {
+    color: var(--primary-text);
+}
+
+/* Global Placeholder Overrides */
+.ant-input::placeholder {
+    color: var(--secondary-text) !important;
+    opacity: 1;
+    /* Firefox override */
+}
+
+.ant-select-selection-placeholder {
+    color: var(--secondary-text) !important;
+    opacity: 1;
 }

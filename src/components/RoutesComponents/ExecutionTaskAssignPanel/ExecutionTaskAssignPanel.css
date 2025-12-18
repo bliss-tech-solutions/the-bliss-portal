@@ -4,20 +4,35 @@
 
 #ExecutionTaskAssignPanel .ant-tabs-nav-list {
     display: flex;
-    gap: 10px;
+    gap: 4px;
     background-color: var(--secondary-bg);
-    padding: 5px 10px;
-    border-radius: 10px !important;
+    padding: 4px;
+    border-radius: var(--button-border-radius) !important;
 }
 
 #ExecutionTaskAssignPanel .ant-tabs-tab-active .ant-tabs-tab-btn {
-    color: #EBB236 !important;
+    color: var(--brand-color) !important;
+    font-weight: 600;
 }
 
 #ExecutionTaskAssignPanel .ant-tabs-tab {
-    background-color: var(--primary-bg);
+    background-color: transparent;
+    color: var(--secondary-text);
+    border-radius: var(--button-border-radius) !important;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    padding: 8px 16px !important;
+    margin: 0 !important;
+}
+
+#ExecutionTaskAssignPanel .ant-tabs-tab:hover {
     color: var(--primary-text);
-    border-radius: 10px !important;
+}
+
+#ExecutionTaskAssignPanel .ant-tabs-tab-active {
+    background-color: var(--card-bg) !important;
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--button-shadow);
 }
 
 #ExecutionTaskAssignPanel .AddNewTaskButton {
@@ -63,22 +78,91 @@
     }
 }
 
+/* Filter Fields Styling */
+.filters-section .ant-input,
+.filters-section .ant-input-affix-wrapper,
+.filters-section .ant-select-selector,
+.filters-section .ant-picker {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: var(--button-border-radius) !important;
+    box-shadow: none !important;
+}
+
+/* Ensure input inside affix wrapper is transparent */
+.filters-section .ant-input-affix-wrapper .ant-input {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.filters-section .ant-input::placeholder {
+    color: var(--secondary-text);
+}
+
+.filters-section .ant-select-selection-item,
+.filters-section .ant-select-selection-placeholder {
+    color: var(--primary-text) !important;
+}
+
+.filters-section .ant-select-arrow {
+    color: var(--secondary-text);
+}
+
+.filters-section .ant-picker-input>input {
+    color: var(--primary-text) !important;
+}
+
+.filters-section .ant-picker-input>input::placeholder {
+    color: var(--secondary-text);
+}
+
+.filters-section .ant-picker-suffix {
+    color: var(--secondary-text);
+}
+
+/* Clear Filters Button */
+.filters-section .ant-btn {
+    background-color: transparent !important;
+    border: 1px solid var(--danger-color) !important;
+    color: var(--danger-color) !important;
+    border-radius: var(--button-border-radius) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filters-section .ant-btn:hover,
+.filters-section .ant-btn:focus,
+.filters-section .ant-btn:active {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    border-color: var(--danger-color) !important;
+}
+
 /* Custom Drawer Header */
 .custom-drawer-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 70px;
+    height: 60px;
+    /* Reduced height */
     padding: 0 24px;
     background-color: var(--card-bg);
-    /* border-bottom: 1px solid var(--border-color); */
+    border-bottom: 1px solid var(--border-color);
+    /* Subtle divider */
 }
 
 .drawer-title h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 16px;
+    /* Slightly smaller, more professional */
     font-weight: 600;
     color: var(--primary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .drawer-close-btn {
@@ -92,9 +176,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: var(--button-border-radius);
     transition: all 0.3s ease;
-    color: var(--primary-text);
+    color: var(--secondary-text);
+    /* Softer close icon */
     background-color: transparent;
 }
 
@@ -110,12 +195,15 @@
 .custom-drawer .ant-drawer-header {
     padding: 0px !important;
     background-color: var(--card-bg) !important;
-    border-bottom: 1px solid var(--border-color) !important;
+    border-bottom: none !important;
+    /* Handled by custom header */
 }
 
 .custom-drawer .ant-drawer-body {
     background-color: var(--primary-bg) !important;
     color: var(--primary-text) !important;
+    padding: 24px !important;
+    /* Consistent padding */
 }
 
 .custom-drawer .ant-drawer-content {
@@ -124,12 +212,6 @@
 
 .drawer-content {
     color: var(--primary-text);
-    /* padding: 16px 0; */
-}
-
-.drawer-content p {
-    color: var(--primary-text);
-    margin: 0;
 }
 
 /* Task Form Styling */
@@ -138,37 +220,98 @@
 }
 
 .task-form .ant-form-item {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    /* Compact spacing */
+}
+
+.task-form .ant-form-item-label {
+    padding-bottom: 6px !important;
 }
 
 .task-form .ant-form-item-label>label {
-    color: var(--primary-text);
+    color: var(--secondary-text);
+    /* Subtle labels */
     font-weight: 500;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .task-form .ant-input,
 .task-form .ant-input-affix-wrapper,
 .task-form .ant-select-selector,
+.task-form .ant-picker,
 .task-form .ant-input-textarea textarea {
-    background-color: var(--input-bg);
-    border-color: var(--border-color);
-    color: var(--primary-text);
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: var(--button-border-radius) !important;
     transition: all 0.3s ease;
+    padding: 6px 11px !important;
+    /* Comfortable input padding */
 }
 
 .task-form .ant-input::placeholder,
-.task-form .ant-input-textarea textarea::placeholder {
-    color: var(--secondary-text);
+.task-form .ant-input-textarea textarea::placeholder,
+.task-form .ant-select-selection-placeholder {
+    color: var(--secondary-text) !important;
+    font-size: 13px;
 }
 
 .task-form .ant-input:hover,
 .task-form .ant-input-affix-wrapper:hover,
 .task-form .ant-select-selector:hover,
-.task-form .ant-input-textarea textarea:hover {
-    border-color: var(--brand-color);
+.task-form .ant-input-textarea textarea:hover,
+.task-form .ant-picker:hover {
+    border-color: var(--brand-color) !important;
 }
 
 .task-form .ant-input:focus,
+.task-form .ant-input-affix-wrapper-focused,
+.task-form .ant-select-focused .ant-select-selector,
+.task-form .ant-picker-focused,
+.task-form .ant-input-textarea textarea:focus {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
+    /* Subtle focus ring */
+}
+
+/* Section Headers inside Form */
+.task-section-header {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.task-section-icon {
+    font-size: 18px;
+    color: var(--brand-color);
+    background: rgba(235, 178, 54, 0.1);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    /* Circle icon bg */
+}
+
+.task-section-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--primary-text);
+}
+
+.task-section-header p {
+    font-size: 12px;
+    color: var(--secondary-text);
+    margin: 0;
+}
+
 .task-form .ant-input-affix-wrapper:focus,
 .task-form .ant-input-affix-wrapper-focused,
 .task-form .ant-select-focused .ant-select-selector,
@@ -355,7 +498,7 @@
 
 .custom-drawer .task-form-section {
     background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgb(77 77 77 / 8%);
     border-radius: 12px;
     padding: 16px 18px;
     box-shadow: none;
@@ -367,11 +510,11 @@
     background: rgba(235, 178, 54, 0.05);
 }
 
-.task-form .task-form-section + .task-form-section {
+.task-form .task-form-section+.task-form-section {
     margin-top: 16px;
 }
 
-.task-section-grid .task-form-section + .task-form-section {
+.task-section-grid .task-form-section+.task-form-section {
     margin-top: 0;
 }
 
@@ -407,17 +550,19 @@
     color: var(--secondary-text);
 }
 
+/* Slot Selector Styling */
 .custom-drawer .slot-selector {
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 16px;
-    transition: border-color 0.2s ease, background 0.2s ease;
-    background: rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    background: var(--secondary-bg);
 }
 
 .custom-drawer .slot-selector.slot-selector-active {
-    background: rgb(255, 255, 255);
-    border-color: rgba(235, 178, 54, 0.35);
+    background: var(--primary-bg);
+    /* Or card-bg depending on depth */
+    border-color: var(--brand-color);
 }
 
 .custom-drawer .slot-selector.slot-selector-disabled {
@@ -425,7 +570,168 @@
     align-items: center;
     justify-content: center;
     min-height: 120px;
-    background: var(--primary-bg);
+    background: var(--secondary-bg);
+    opacity: 0.7;
+}
+
+.custom-drawer .slot-selector-empty {
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+.slot-date-picker {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.slot-date-picker-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary-text);
+}
+
+.slot-date-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 4px;
+}
+
+.slot-date-grid::-webkit-scrollbar {
+    height: 6px;
+}
+
+.slot-date-grid::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 999px;
+}
+
+.slot-date-card {
+    width: 62px;
+    min-width: 62px;
+    border-radius: 14px;
+    padding: 10px 0;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    color: var(--primary-text);
+}
+
+.slot-date-card:hover {
+    border-color: var(--brand-color);
+    background: var(--hover-bg);
+}
+
+.slot-date-card.selected {
+    background: var(--brand-color);
+    color: #1a1a1a;
+    /* Keep dark text for contrast on yellow brand color */
+    border-color: var(--brand-color);
+    box-shadow: none;
+}
+
+.slot-date-day {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.slot-date-number {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.custom-drawer .slot-input-card {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    /* Added padding to contain inputs nicely */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.custom-drawer .slot-input-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.custom-drawer .slot-helper-text {
+    margin: 0;
+    font-size: 11px;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.slot-suggestions.conflict {
+    margin-top: 16px;
+}
+
+.slot-suggestions-loading {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--secondary-text);
+}
+
+.slot-suggestions-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.slot-suggestion-chip {
+    border-radius: 14px !important;
+    padding: 0 12px !important;
+    height: 28px !important;
+    background: var(--secondary-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.slot-suggestion-chip:hover:not([disabled]) {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+}
+
+.slot-conflict-alert {
+    margin-top: 12px;
+    border-radius: 10px;
+}
+
+.slot-bookings {
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    background: var(--secondary-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .custom-drawer .slot-selector-empty {
@@ -507,7 +813,7 @@
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    padding: 0px;
+    /* padding: 0px; */
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -577,7 +883,7 @@
 
 .slot-bookings {
     margin-top: 18px;
-    padding: 0px;
+    /* padding: 0px; */
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.02);
@@ -616,7 +922,7 @@
     border-radius: 12px;
     padding: 18px;
     text-align: center;
-    background: white;
+    /* background: white; */
 }
 
 .slot-bookings-loading {
@@ -840,3 +1146,4 @@
         margin-top: 16px;
     }
 }
+

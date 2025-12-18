@@ -226,7 +226,7 @@ const TaskAndLeaveCalender = () => {
         <div className="task-leave-calendar">
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={16}>
-                    <Card title={<Title level={4} style={{ margin: 0 }}>Task & Leave Calendar</Title>}>
+                    <Card title={<h2 >Task & Leave Calendar</h2>}>
                         <CalenderModule
                             title=""
                             showActions={false}
@@ -243,16 +243,16 @@ const TaskAndLeaveCalender = () => {
 
                 <Col xs={24} lg={8}>
                     <Card
-                        title={<Title level={5} style={{ margin: 0 }}>Selected Dates</Title>}
+                        title={<h2>Selected Dates</h2>}
                         style={{ marginBottom: 16 }}
                         extra={
-                            <Button size="small" onClick={() => { setSelectedDatesSet(new Set()); try { localStorage.removeItem(LS_DATES_KEY); } catch { } }} disabled={selectedDates.length === 0}>
+                            <Button className='global-secondary-btn' size="small" onClick={() => { setSelectedDatesSet(new Set()); try { localStorage.removeItem(LS_DATES_KEY); } catch { } }} disabled={selectedDates.length === 0}>
                                 Clear
                             </Button>
                         }
                     >
                         {selectedDates.length === 0 ? (
-                            <Text type="secondary">No dates selected. Click on the calendar dates to select.</Text>
+                            <p>No dates selected. Click on the calendar dates to select.</p>
                         ) : (
                             <Space wrap>
                                 {selectedDates.map(d => (
@@ -262,7 +262,7 @@ const TaskAndLeaveCalender = () => {
                         )}
                     </Card>
 
-                    <Card title={<Title level={5} style={{ margin: 0 }}>Leave Reason</Title>} style={{ marginBottom: 16 }}>
+                    <Card title={<h2>Leave Reason</h2>} style={{ marginBottom: 16 }}>
                         <TextArea
                             rows={4}
                             placeholder="Write your leave reason..."
@@ -270,14 +270,14 @@ const TaskAndLeaveCalender = () => {
                             onChange={(e) => setLeaveReason(e.target.value)}
                         />
                         <div style={{ marginTop: 12, textAlign: 'right' }}>
-                            <Button type="primary" onClick={handleSubmit} disabled={selectedDates.length === 0 || !leaveReason.trim()}>
+                            <Button type="primary" className='global-secondary-btn' onClick={handleSubmit} disabled={selectedDates.length === 0 || !leaveReason.trim()}>
                                 Submit Leave Request
                             </Button>
                         </div>
                     </Card>
 
                     <Card
-                        title={<Title level={5} style={{ margin: 0 }}>Leave History</Title>}
+                        title={<h2>Leave History</h2>}
                         extra={
                             <Space>
                                 <Tag color="green">Approved</Tag>
@@ -352,7 +352,7 @@ const TaskAndLeaveCalender = () => {
                 centered
             >
                 <Space direction="vertical" size={8}>
-                    <Text>Selected Dates:</Text>
+                    <h2>Selected Dates:</h2>
                     <Space wrap>
                         {selectedDates.map(d => (
                             <Tag key={`confirm-${d}`} color="purple">{dayjs(d).format('MMM DD, YYYY')}</Tag>

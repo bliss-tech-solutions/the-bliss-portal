@@ -962,11 +962,11 @@ const ExecutionTaskAssignPanel = () => {
                     </Col>
                     <Col lg={6} md={6} sm={24} xs={24}>
                         <div className="AddNewTaskButton" style={{ display: 'flex', gap: '8px' }}>
-                            <Button type="primary" icon={<BiTask />} onClick={showDrawer}>Add New Task</Button>
+                            <Button type="primary" icon={<BiTask />} onClick={showDrawer} className="global-action-btn">Add New Task</Button>
                             <Button
                                 icon={<BsFilter />}
                                 onClick={toggleFilters}
-                                className={showFilters ? 'filter-active' : ''}
+                                className={`global-secondary-btn ${showFilters ? 'filter-active' : ''}`}
                             >
                                 Filters
                             </Button>
@@ -984,16 +984,14 @@ const ExecutionTaskAssignPanel = () => {
                     }}>
                         <Row gutter={[16, 16]} align="middle">
                             <Col xs={24} sm={24} md={12} lg={12}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <BsSearch style={{ color: 'var(--secondary-text)' }} />
-                                    <Input
-                                        placeholder="Search by task name or client name..."
-                                        value={searchTerm}
-                                        onChange={handleSearchChange}
-                                        style={{ flex: 1 }}
-                                        allowClear
-                                    />
-                                </div>
+                                <Input
+                                    prefix={<BsSearch style={{ color: 'var(--secondary-text)' }} />}
+                                    placeholder="Search by task name or client name..."
+                                    value={searchTerm}
+                                    onChange={handleSearchChange}
+                                    style={{ width: '100%' }}
+                                    allowClear
+                                />
                             </Col>
                             <Col xs={24} sm={24} md={12} lg={12}>
                                 <DatePicker.RangePicker
@@ -1458,7 +1456,7 @@ const ExecutionTaskAssignPanel = () => {
                                         name="taskImages"
                                     >
                                         <Upload {...uploadProps}>
-                                            <Button icon={<BsUpload />} loading={uploadingImages}>
+                                            <Button icon={<BsUpload />} loading={uploadingImages} className="global-secondary-btn" style={{ width: '100%' }}>
                                                 {uploadingImages ? 'Uploading...' : 'Upload Files'}
                                             </Button>
                                         </Upload>
@@ -1491,29 +1489,23 @@ const ExecutionTaskAssignPanel = () => {
                             </Form.Item>
                         </div>
 
-                        <Row justify="space-between" gutter={16}>
-                            <Col xs={24} sm={12} style={{ marginBottom: 8 }}>
-                                <Button
-                                    style={{ width: '100%' }}
-                                    onClick={resetDrawerState}
-                                >
-                                    Reset Form
-                                </Button>
-                            </Col>
-                            <Col xs={24} sm={12} style={{ display: "flex", justifyContent: "flex-end" }}>
-                                <Form.Item style={{ width: '100%', marginBottom: 0 }}>
-                                    <Button
-                                        style={{ maxWidth: "200px", width: '100%' }}
-                                        type="primary"
-                                        htmlType="submit"
-                                        loading={isLoading}
-                                        size="large"
-                                    >
-                                        {isLoading ? 'Adding Task...' : 'Add Task'}
-                                    </Button>
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                        <div className="drawer-footer-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                            <Button
+                                className="global-secondary-btn"
+                                onClick={resetDrawerState}
+                                style={{ width: '120px' }}
+                            >
+                                Reset Form
+                            </Button>
+                            <Button
+                                className="global-action-btn"
+                                htmlType="submit"
+                                loading={isLoading}
+                                style={{ width: '140px' }}
+                            >
+                                {isLoading ? 'Adding...' : 'Add Task'}
+                            </Button>
+                        </div>
                     </Form>
                 </div>
             </Drawer>

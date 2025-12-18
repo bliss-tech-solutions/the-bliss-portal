@@ -113,7 +113,7 @@ const Dashboard = () => {
     return (
         <div id="Dashboard" className="portal-container">
             <div className="PortalContainer h-100">
-                <Row className="h-100">
+                <Row className="h-100" gutter={0}>
                     <Col lg={sidebarSize} className="portal-column-transition">
                         <div
                             className="h-100"
