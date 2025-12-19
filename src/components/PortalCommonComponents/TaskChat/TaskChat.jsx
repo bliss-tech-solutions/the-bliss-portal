@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './TaskChat.css';
 import { Card, Avatar, Input, Spin, Button, Popover, Modal } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useLazyGetTaskChatMessagesQuery, useAddTaskChatMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useTaskChatStore } from '../../../contexts/TaskChatContext';
 import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
+import { AiOutlineFilePdf } from 'react-icons/ai';
 import EmojiPicker from 'emoji-picker-react';
 import { uploadToCloudinary, isCloudinaryImageUrl, isCloudinaryVideoUrl, isCloudinaryFileUrl, toAttachmentUrl, toPdfThumbnail } from '../../../utils/cloudinary';
 
@@ -294,6 +295,19 @@ const TaskChat = ({
         });
     };
 
+    // Helper to get a clean filename from URL
+    const getFileName = (url) => {
+        if (!url) return 'Document';
+        try {
+            const urlParts = url.split('/');
+            let filename = urlParts[urlParts.length - 1].split('?')[0];
+            filename = filename.replace(/^[a-z0-9]+_/i, '');
+            return decodeURIComponent(filename) || 'Document.pdf';
+        } catch (e) {
+            return 'Document.pdf';
+        }
+    };
+
     // Handle download for high-quality files
     const handleDownload = async (url, type = 'image') => {
         try {
@@ -404,96 +418,106 @@ const TaskChat = ({
                     <div className="message-content">
                         <div className="message-bubble">
                             {asImage ? (
-                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                    <img
-                                        src={msg.message}
-                                        alt="chat-img"
-                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        style={{
-                                            position: 'absolute',
-                                            top: 8,
-                                            right: 8,
-                                            zIndex: 10,
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDownload(msg.message, 'image');
-                                        }}
-                                        title="Download high-quality image"
-                                    />
+                                <div className="message-media-container image-type">
+                                    <div className="media-wrapper">
+                                        <img
+                                            src={msg.message}
+                                            alt="chat-img"
+                                            className="chat-media-content"
+                                            onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
+                                        />
+                                        <div className="media-overlay">
+                                            <Button
+                                                type="text"
+                                                icon={<EyeOutlined />}
+                                                className="media-action-btn preview"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPreview({ open: true, url: msg.message, type: 'image' });
+                                                }}
+                                                title="Preview"
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<DownloadOutlined />}
+                                                className="media-action-btn download"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDownload(msg.message, 'image');
+                                                }}
+                                                title="Download"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : asVideo ? (
-                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                    <video
-                                        src={msg.message}
-                                        controls
-                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        style={{
-                                            position: 'absolute',
-                                            top: 8,
-                                            right: 8,
-                                            zIndex: 10,
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDownload(msg.message, 'video');
-                                        }}
-                                        title="Download high-quality video"
-                                    />
+                                <div className="message-media-container video-type">
+                                    <div className="media-wrapper">
+                                        <video
+                                            src={msg.message}
+                                            controls
+                                            className="chat-media-content"
+                                            onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
+                                        />
+                                        <div className="media-overlay">
+                                            <Button
+                                                type="text"
+                                                icon={<EyeOutlined />}
+                                                className="media-action-btn preview"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPreview({ open: true, url: msg.message, type: 'video' });
+                                                }}
+                                                title="Preview"
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<DownloadOutlined />}
+                                                className="media-action-btn download"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDownload(msg.message, 'video');
+                                                }}
+                                                title="Download"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : asFile ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {isPdf ? (
-                                        // Try inline preview via <object>. If browser can't render, it falls back to the link
-                                        <object data={msg.message} type="application/pdf" width={260} height={360} style={{ borderRadius: 8 }}>
-                                            {pdfThumb ? (
-                                                <a href={msg.message} target="_blank" rel="noreferrer">
-                                                    <img src={pdfThumb} alt="PDF preview" style={{ maxWidth: 260, borderRadius: 8 }} />
-                                                </a>
-                                            ) : (
-                                                <a
-                                                    href={toAttachmentUrl(msg.message)}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    style={{ color: 'inherit', textDecoration: 'underline' }}
-                                                >
-                                                    Open PDF
-                                                </a>
-                                            )}
-                                        </object>
-                                    ) : (
-                                        <a
-                                            href={toAttachmentUrl(msg.message)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            style={{ color: 'inherit', textDecoration: 'underline' }}
+                                <div className="message-file-card">
+                                    <div className="file-info">
+                                        <div className="file-icon">
+                                            {isPdf ? <AiOutlineFilePdf /> : <BsPaperclip />}
+                                        </div>
+                                        <div className="file-details">
+                                            <div className="file-name" title={getFileName(msg.message)}>
+                                                {getFileName(msg.message)}
+                                            </div>
+                                            <div className="file-meta">
+                                                {isPdf ? 'PDF Document' : 'Attachment'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="file-actions">
+                                        <Button
+                                            type="primary"
+                                            icon={<DownloadOutlined />}
+                                            size="small"
+                                            onClick={() => handleDownload(msg.message, 'file')}
+                                            className="file-download-btn"
                                         >
-                                            Open document
-                                        </a>
+                                            Download
+                                        </Button>
+                                    </div>
+                                    {isPdf && (
+                                        <div className="pdf-preview-snippet" onClick={() => setPreview({ open: true, url: msg.message, type: 'file' })}>
+                                            {pdfThumb ? (
+                                                <img src={pdfThumb} alt="PDF preview" />
+                                            ) : (
+                                                <div className="pdf-placeholder">PDF Preview</div>
+                                            )}
+                                        </div>
                                     )}
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        onClick={() => handleDownload(msg.message, 'file')}
-                                        style={{ alignSelf: 'flex-start' }}
-                                    >
-                                        Download
-                                    </Button>
                                 </div>
                             ) : (
                                 <p

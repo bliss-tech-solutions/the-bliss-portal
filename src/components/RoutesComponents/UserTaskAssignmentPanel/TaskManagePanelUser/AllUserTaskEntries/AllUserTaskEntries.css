@@ -30,97 +30,66 @@
 }
 
 .user-task-entry-card {
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
     border-radius: 12px !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
-    transition: all 0.3s ease !important;
-    backdrop-filter: blur(10px);
-    position: relative;
+    box-shadow: 0 2px 8px var(--shadow) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow: hidden;
-}
-
-.user-task-entry-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 193, 7, 0.3) 50%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    margin-bottom: 5px !important;
 }
 
 .user-task-entry-card:hover {
-    border-color: rgba(255, 193, 7, 0.2) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
     transform: translateY(-2px);
-    background: linear-gradient(135deg, #ffffff 0%, #fafbfc 50%, #ffffff 100%) !important;
-}
-
-.user-task-entry-card:hover::before {
-    opacity: 1;
-}
-
-/* Dark theme support */
-[data-theme="dark"] .user-task-entry-card,
-.theme-dark .user-task-entry-card {
-    background: linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 50%, #1a1a1a 100%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
-}
-
-[data-theme="dark"] .user-task-entry-card:hover,
-.theme-dark .user-task-entry-card:hover {
-    border-color: rgba(255, 193, 7, 0.3) !important;
-    background: linear-gradient(135deg, #1f1f1f 0%, #242424 50%, #1f1f1f 100%) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .user-task-entry-card .ant-card-body {
-    padding: 20px !important;
-    background: linear-gradient(180deg, #FFF8E9 0%, #f6edd81f 100%);
+    padding: 12px 16px !important;
+    background: transparent !important;
 }
 
-/* New Card Layout - Futuristic Clean Design */
+/* Layout */
 .user-task-card-layout {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    gap: 16px;
     width: 100%;
 }
 
-/* Left Section: Icon, Task Name, Priority */
+/* Left Section: Icon & Task Info */
 .user-task-left-section {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex: 1;
     min-width: 0;
 }
 
 .user-task-icon-wrapper {
     position: relative;
-    flex-shrink: 0;
-    /* width: 48px;
-    height: 48px; */
+    width: 40px;
+    height: 40px;
+    background: var(--tertiary-bg);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .user-task-icon {
-    font-size: 24px;
-    color: var(--secondary-text);
+    font-size: 20px;
+    color: var(--brand-color);
 }
 
 .user-task-status-indicator {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
+    bottom: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     border: 2px solid var(--card-bg);
     z-index: 1;
@@ -132,143 +101,136 @@
 }
 
 .user-task-title {
-    margin: 0 0 8px 0;
+    margin: 0;
     color: var(--primary-text);
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .user-task-priority-tag {
-    margin: 0;
-    font-size: 8px;
-    /* padding: 4px 12px; */
-    border-radius: 12px;
-    margin-top: 10px;
-    font-weight: 500;
+    margin-top: 4px !important;
+    font-size: 10px !important;
+    padding: 0 8px !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
 }
 
-/* Middle Section: Assigned Time and Delivery/Slot Info */
+/* Middle Section: Time Info */
 .user-task-middle-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
+    gap: 2px;
     flex-shrink: 0;
-    min-width: 200px;
+    min-width: 160px;
 }
 
-.user-task-assigned-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.user-assigned-label {
-    font-size: 11px;
-    color: var(--secondary-text);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.user-assigned-value {
-    font-size: 13px;
-    color: var(--primary-text);
-    font-weight: 600;
-}
-
+.user-task-assigned-info,
 .user-task-delivery-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
 }
 
+.user-assigned-label,
 .user-delivery-label {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.user-assigned-value,
+.user-delivery-value {
+    font-size: 12px;
+    color: var(--primary-text);
     font-weight: 500;
 }
 
 .user-delivery-value {
-    font-size: 14px;
-    color: var(--primary-text);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 4px;
-    text-decoration-color: var(--border-color);
+    text-decoration: none !important;
 }
 
-/* Right Section: Assigned To, Status, Chat, Menu */
+/* Right Section: Assigner & Actions */
 .user-task-right-section {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex-shrink: 0;
-    position: relative;
 }
 
 .user-task-assigner-section {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    padding-right: 12px;
+    border-right: 1px solid var(--border-color);
 }
 
 .user-assigner-icon {
-    font-size: 20px;
+    font-size: 16px;
     color: var(--secondary-text);
-    flex-shrink: 0;
 }
 
 .user-assigner-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
 }
 
 .user-assigner-name-text {
-    font-size: 14px;
+    font-size: 12px;
     color: var(--primary-text);
     font-weight: 600;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .user-assigner-label-text {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--secondary-text);
 }
 
 .user-task-status-tag {
-    margin: 0;
-    font-size: 12px;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-weight: 500;
-    border: 1px solid currentColor;
+    margin: 0 !important;
+    font-size: 11px !important;
+    padding: 0 10px !important;
+    height: 22px !important;
+    line-height: 20px !important;
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    text-transform: capitalize;
 }
 
 .user-task-chat-btn,
 .user-task-menu-btn {
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--secondary-text);
-    transition: all 0.2s ease;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--secondary-text) !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
 }
 
 .user-task-chat-btn:hover,
 .user-task-menu-btn:hover {
-    color: var(--brand-color);
-    background-color: var(--hover-bg);
+    color: var(--brand-color) !important;
+    background-color: var(--hover-bg) !important;
 }
 
 .user-task-chat-btn .anticon,
-.user-task-menu-btn .anticon {
-    font-size: 18px;
+.user-task-menu-btn .anticon,
+.user-task-chat-btn svg,
+.user-task-menu-btn svg {
+    font-size: 16px !important;
 }
 
 /* Responsive Design */

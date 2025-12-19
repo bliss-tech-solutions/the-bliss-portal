@@ -25,6 +25,7 @@ const ContentProviderTaskEntriesPage = () => {
     const [selectedDateRange, setSelectedDateRange] = useState(null);
     const [priorityFilter, setPriorityFilter] = useState('all');
     const [assignerFilter, setAssignerFilter] = useState('all');
+    const [refreshKey, setRefreshKey] = useState(0);
 
     // Fetch all users to populate assigner filter
     const { data: allUsersData } = useGetAllUsersQuery();
@@ -60,32 +61,29 @@ const ContentProviderTaskEntriesPage = () => {
         }));
     }, [tasksData, searchTerm]);
 
-    // Date range presets
-    const rangePresets = [
-        { label: 'Today', value: [dayjs(), dayjs()] },
-        { label: 'This Week', value: [dayjs().startOf('week'), dayjs().endOf('week')] },
-        { label: 'This Month', value: [dayjs().startOf('month'), dayjs().endOf('month')] },
-        { label: 'Last 7 Days', value: [dayjs().subtract(7, 'day'), dayjs()] },
-        { label: 'Last 30 Days', value: [dayjs().subtract(30, 'day'), dayjs()] },
-    ];
-
-    // Get assigner options for filter
-    const assignerOptions = React.useMemo(() => {
-        if (!allUsersData?.data) return [];
-
-        const assigners = new Set();
-        tasksData?.data?.forEach(task => {
-            if (task.userId) assigners.add(task.userId);
-        });
-
-        return Array.from(assigners).map(assignerId => {
-            const assigner = allUsersData.data.find(u => u.userId === assignerId);
-            const name = assigner
-                ? `${assigner.firstName || ''} ${assigner.lastName || ''}`.trim() || assigner.email || assignerId
-                : assignerId;
-            return { value: assignerId, label: name };
-        });
-    }, [allUsersData, tasksData]);
+    // Quick date range options for suggestions
+    const dateRangeOptions = React.useMemo(() => [
+        {
+            label: 'Today',
+            value: [dayjs(), dayjs()],
+        },
+        {
+            label: 'This Week',
+            value: [dayjs().startOf('week'), dayjs().endOf('week')],
+        },
+        {
+            label: 'This Month',
+            value: [dayjs().startOf('month'), dayjs().endOf('month')],
+        },
+        {
+            label: 'Last 7 Days',
+            value: [dayjs().subtract(7, 'day'), dayjs()],
+        },
+        {
+            label: 'Last 30 Days',
+            value: [dayjs().subtract(30, 'day'), dayjs()],
+        },
+    ], []);
 
     const toggleFilters = () => {
         setShowFilters(!showFilters);
@@ -106,7 +104,7 @@ const ContentProviderTaskEntriesPage = () => {
         <div id="ContentProviderTaskEntriesPage" className={`theme-${theme}`}>
             <div className='ContentProviderPanel-container'>
                 <div className="tasks-section">
-                    <h2 className="panel-title" style={{ marginBottom: '24px' }}>{userFullName} Tasks</h2>
+                    <h2 className="panel-title" style={{ marginBottom: '24px' }}>{userFullName} Tasks Management</h2>
                     <br />
                     <Row>
                         <Col lg={18} md={18} sm={24} xs={24}>
@@ -120,10 +118,10 @@ const ContentProviderTaskEntriesPage = () => {
                                             key: '1',
                                             label: 'All Tasks'
                                         },
-                                        {
-                                            key: '2',
-                                            label: 'Upcoming Tasks'
-                                        },
+                                        // {
+                                        //     key: '2',
+                                        //     label: 'Upcoming Tasks'
+                                        // },
                                         {
                                             key: '3',
                                             label: 'In Progress'
@@ -137,12 +135,17 @@ const ContentProviderTaskEntriesPage = () => {
                             </div>
                         </Col>
                         <Col lg={6} md={6} sm={24} xs={24}>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                            <div className="AddNewTaskButton" style={{ display: 'flex', gap: '8px', justifyContent: "end" }}>
                                 <Button
-                                    type={showFilters ? 'primary' : 'default'}
+                                    onClick={() => setRefreshKey(prev => prev + 1)}
+                                    className="global-secondary-btn"
+                                >
+                                    Refresh
+                                </Button>
+                                <Button
                                     icon={<BsFilter />}
                                     onClick={toggleFilters}
-                                    className={`AddFilterButton ${showFilters ? 'filter-active' : ''}`}
+                                    className={`global-secondary-btn ${showFilters ? 'filter-active' : ''}`}
                                 >
                                     Filters
                                 </Button>
@@ -150,81 +153,117 @@ const ContentProviderTaskEntriesPage = () => {
                         </Col>
                     </Row>
 
-                    {/* Filters Section */}
+                    {/* Filter Section */}
                     {showFilters && (
-                        <div className="filters-section">
-                            <Row gutter={[16, 16]}>
-                                <Col xs={24} sm={12} md={8}>
-                                    <AutoComplete
-                                        value={searchTerm}
-                                        options={searchSuggestions}
-                                        onSelect={(value) => setSearchTerm(value)}
-                                        onSearch={(value) => setSearchTerm(value)}
-                                        style={{ width: '100%' }}
-                                        placeholder="Search tasks..."
-                                    >
-                                        <Input
-                                            prefix={<BsSearch />}
-                                            placeholder="Search by task name, client, or category..."
+                        <div className="filters-section MarginBottomSmall" style={{
+                            padding: '16px',
+                            backgroundColor: 'var(--secondary-bg)',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)'
+                        }}>
+                            <Row gutter={[16, 16]} align="middle">
+                                <Col xs={24} sm={24} md={12} lg={12}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <BsSearch style={{ color: 'var(--secondary-text)' }} />
+                                        <AutoComplete
+                                            value={searchTerm}
+                                            onChange={setSearchTerm}
+                                            options={searchSuggestions}
+                                            placeholder="Search by task name, client name, or category..."
+                                            style={{ flex: 1 }}
                                             allowClear
+                                            filterOption={(inputValue, option) =>
+                                                option?.value?.toLowerCase().includes(inputValue.toLowerCase()) || false
+                                            }
+                                            onSelect={(value) => setSearchTerm(value)}
+                                            notFoundContent={searchTerm && searchSuggestions.length === 0 ? "No suggestions found" : null}
                                         />
-                                    </AutoComplete>
+                                    </div>
                                 </Col>
-                                <Col xs={24} sm={12} md={8}>
+                                <Col xs={24} sm={24} md={12} lg={12}>
                                     <DatePicker.RangePicker
+                                        placeholder={['Start Date', 'End Date']}
                                         value={selectedDateRange}
                                         onChange={setSelectedDateRange}
-                                        presets={rangePresets}
                                         style={{ width: '100%' }}
-                                        placeholder={['Start Date', 'End Date']}
+                                        presets={dateRangeOptions}
                                     />
                                 </Col>
-                                <Col xs={24} sm={12} md={4}>
+                                <Col xs={24} sm={24} md={12} lg={6}>
                                     <Select
                                         value={priorityFilter}
                                         onChange={setPriorityFilter}
+                                        placeholder="Filter by priority"
                                         style={{ width: '100%' }}
-                                        placeholder="Priority"
+                                        showSearch
+                                        filterOption={(input, option) =>
+                                            (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                                        }
                                     >
-                                        <Select.Option value="all">All Priorities</Select.Option>
-                                        <Select.Option value="high">High</Select.Option>
-                                        <Select.Option value="medium">Medium</Select.Option>
-                                        <Select.Option value="low">Low</Select.Option>
+                                        <Select.Option value="all">All priorities</Select.Option>
+                                        <Select.Option value="high">
+                                            <span style={{ color: '#ff4d4f' }}>🔴</span> High Priority
+                                        </Select.Option>
+                                        <Select.Option value="medium">
+                                            <span style={{ color: '#faad14' }}>🟡</span> Medium Priority
+                                        </Select.Option>
+                                        <Select.Option value="low">
+                                            <span style={{ color: '#52c41a' }}>🟢</span> Low Priority
+                                        </Select.Option>
                                     </Select>
                                 </Col>
-                                <Col xs={24} sm={12} md={4}>
+                                <Col xs={24} sm={24} md={12} lg={6}>
                                     <Select
                                         value={assignerFilter}
                                         onChange={setAssignerFilter}
+                                        placeholder="Filter by assigner"
                                         style={{ width: '100%' }}
-                                        placeholder="Assigner"
+                                        showSearch
+                                        filterOption={(input, option) =>
+                                            (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                        }
+                                        optionLabelProp="label"
                                     >
-                                        <Select.Option value="all">All Assigners</Select.Option>
-                                        {assignerOptions.map(option => (
-                                            <Select.Option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </Select.Option>
-                                        ))}
+                                        <Select.Option value="all" label="All assigners">All assigners</Select.Option>
+                                        {(allUsersData?.data || []).map((usr) => {
+                                            const userName = `${usr.firstName || ''} ${usr.lastName || ''}`.trim() || usr.email || usr.userId;
+                                            return (
+                                                <Select.Option key={usr.userId} value={usr.userId} label={userName}>
+                                                    {userName}
+                                                    {usr.email && usr.email !== userName && (
+                                                        <span style={{ color: 'var(--secondary-text)', fontSize: '12px', marginLeft: '8px' }}>
+                                                            ({usr.email})
+                                                        </span>
+                                                    )}
+                                                </Select.Option>
+                                            );
+                                        })}
                                     </Select>
                                 </Col>
+                                <Col xs={24} sm={24} md={12} lg={6}>
+                                    <Button
+                                        onClick={clearFilters}
+                                        style={{ width: '100%' }}
+                                    >
+                                        Clear Filters
+                                    </Button>
+                                </Col>
                             </Row>
-                            <div style={{ marginTop: '12px', textAlign: 'right' }}>
-                                <Button type="link" onClick={clearFilters} size="small">
-                                    Clear Filters
-                                </Button>
-                            </div>
                         </div>
                     )}
 
                     {/* Task Entries */}
-                    <ContentProviderTaskEntries
-                        userId={userId}
-                        activeTab={activeTab}
-                        searchTerm={searchTerm}
-                        selectedDateRange={selectedDateRange}
-                        priorityFilter={priorityFilter}
-                        assignerFilter={assignerFilter}
-                    />
+                    <div className="AntdTabsContent user-AntdTabsContent">
+                        <ContentProviderTaskEntries
+                            userId={userId}
+                            activeTab={activeTab}
+                            searchTerm={searchTerm}
+                            selectedDateRange={selectedDateRange}
+                            priorityFilter={priorityFilter}
+                            assignerFilter={assignerFilter}
+                            refreshKey={refreshKey}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

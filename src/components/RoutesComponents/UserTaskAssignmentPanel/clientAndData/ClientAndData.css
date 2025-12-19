@@ -82,7 +82,7 @@
     align-items: center;
 }
 
-#ClientAndData .clients-table .ant-pagination-total-text {
+.ant-pagination-total-text {
     margin-right: auto;
     color: var(--primary-text);
 }

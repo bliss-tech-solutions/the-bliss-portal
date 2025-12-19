@@ -110,20 +110,10 @@
 }
 
 /* Filter Section Styles - Matching UserTaskAssignmentPanel */
-#ContentProviderPanel .AddFilterButton {
-    background-color: var(--button-primary);
-    color: var(--button-text);
-    border: none;
-    transition: all 0.3s ease;
-}
-
-#ContentProviderPanel .AddFilterButton:hover {
-    background-color: var(--button-primary-hover);
-}
-
-#ContentProviderPanel .AddFilterButton.filter-active {
-    background-color: var(--brand-color);
-    color: #000;
+#ContentProviderPanel .global-secondary-btn.filter-active {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: white !important;
 }
 
 #ContentProviderPanel .filters-section {
@@ -135,295 +125,460 @@
     margin-bottom: 20px;
 }
 
-/* Upload Doc Modal Styles */
-#ContentProviderPanel .upload-doc-modal .ant-modal-header {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+/* Tasks Tab Styling - Matching UserTaskAssignmentPanel */
+#ContentProviderTaskEntriesPage .ant-tabs-nav::before {
+    display: none;
 }
 
-#ContentProviderPanel .upload-doc-modal .ant-modal-title {
-    color: var(--primary-text);
-}
-
-#ContentProviderPanel .upload-doc-modal .ant-modal-body {
-    background-color: var(--card-bg);
-    color: var(--primary-text);
-}
-
-#ContentProviderPanel .upload-doc-modal .ant-modal-footer {
-    background-color: var(--card-bg);
-    border-top: 1px solid var(--border-color);
-}
-
-#ContentProviderPanel .upload-doc-modal .ant-form-item-label>label {
-    color: var(--primary-text);
-}
-
-#ContentProviderPanel .upload-doc-modal .ant-input,
-#ContentProviderPanel .upload-doc-modal .ant-input:focus,
-#ContentProviderPanel .upload-doc-modal .ant-input-focused {
+#ContentProviderTaskEntriesPage .ant-tabs-nav-list {
+    display: flex;
+    gap: 4px;
     background-color: var(--secondary-bg);
-    border-color: var(--border-color);
-    color: var(--primary-text);
+    padding: 4px;
+    border-radius: var(--button-border-radius) !important;
 }
 
-#ContentProviderPanel .upload-doc-modal .ant-input::placeholder {
+#ContentProviderTaskEntriesPage .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--brand-color) !important;
+    font-weight: 600;
+}
+
+#ContentProviderTaskEntriesPage .ant-tabs-tab {
+    background-color: transparent;
     color: var(--secondary-text);
+    border-radius: var(--button-border-radius) !important;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    padding: 8px 16px !important;
+    margin: 0 !important;
 }
 
-#ContentProviderPanel .upload-doc-modal .ant-input-textarea,
-#ContentProviderPanel .upload-doc-modal .ant-input-textarea:focus,
-#ContentProviderPanel .upload-doc-modal .ant-input-textarea-focused {
-    background-color: var(--secondary-bg);
-    border-color: var(--border-color);
+#ContentProviderTaskEntriesPage .ant-tabs-tab:hover {
     color: var(--primary-text);
 }
 
-/* Month Checkbox Group - Compact Layout */
-#ContentProviderPanel .month-checkbox-group {
-    width: 100%;
+#ContentProviderTaskEntriesPage .ant-tabs-tab-active {
+    background-color: var(--card-bg) !important;
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--button-shadow);
 }
 
-#ContentProviderPanel .month-checkbox-group .ant-checkbox-wrapper {
-    color: var(--primary-text);
-    margin-bottom: 8px;
-}
-
-#ContentProviderPanel .month-checkbox-group .ant-checkbox {
-    margin-right: 8px;
-}
-
-#ContentProviderPanel .month-checkbox-group .ant-checkbox-inner {
-    background-color: var(--secondary-bg);
-    border-color: var(--border-color);
-}
-
-#ContentProviderPanel .month-checkbox-group .ant-checkbox-checked .ant-checkbox-inner {
-    background-color: var(--brand-color);
-    border-color: var(--brand-color);
-}
-
-#ContentProviderPanel .month-checkbox-group .ant-checkbox:hover .ant-checkbox-inner {
-    border-color: var(--brand-color);
-}
-
-/* Document History Modal Styles */
-#ContentProviderPanel .document-history-modal .ant-modal-header {
+/* Tab Content Styling */
+.user-AntdTabsContent {
     background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 400px;
+    margin-top: 16px;
 }
 
-#ContentProviderPanel .document-history-modal .ant-modal-title {
-    color: var(--primary-text);
+/* Upload Doc Modal Styles - Removing #ContentProviderPanel prefix for portaled elements */
+.upload-doc-modal .ant-modal-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-modal-body {
-    background-color: var(--card-bg);
-    color: var(--primary-text);
+.upload-doc-modal .ant-modal-header {
+    background-color: var(--secondary-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px 24px !important;
+    margin: 0 !important;
+}
+
+.upload-doc-modal .modal-custom-title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: var(--primary-text) !important;
+}
+
+.upload-doc-modal .ant-modal-body {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    padding: 24px !important;
+}
+
+.upload-doc-modal .ant-modal-footer {
+    background-color: var(--secondary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    flex-direction: row !important;
+    /* Ensure side-by-side */
+    gap: 12px !important;
+}
+
+.upload-doc-modal .ant-modal-close-x {
+    color: var(--secondary-text) !important;
+}
+
+.custom-upload-form .form-label-text {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--primary-text) !important;
+}
+
+.custom-upload-form .ant-form-item-label {
+    padding-bottom: 8px !important;
+}
+
+/* Fix Input and Affix Backgrounds */
+.upload-doc-modal .ant-input,
+.upload-doc-modal .ant-input-affix-wrapper,
+.upload-doc-modal .ant-input-affix-wrapper>input.ant-input {
+    background-color: var(--secondary-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: 8px !important;
+}
+
+/* Specific Fix for TextArea with showCount */
+.upload-doc-modal .ant-input-textarea {
+    background-color: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.upload-doc-modal .ant-input-textarea textarea.ant-input {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 12px !important;
+    min-height: 100px !important;
+}
+
+.upload-doc-modal .ant-input-affix-wrapper {
+    padding: 0 12px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.upload-doc-modal .ant-input-affix-wrapper>input.ant-input {
+    padding: 10px 0 !important;
+    border: none !important;
+    height: 100% !important;
+    box-shadow: none !important;
+}
+
+.upload-doc-modal .ant-input:hover,
+.upload-doc-modal .ant-input-affix-wrapper:hover,
+.upload-doc-modal .ant-input-affix-wrapper-focused,
+.upload-doc-modal .ant-input-textarea:hover,
+.upload-doc-modal .ant-input-textarea-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--input-focus-shadow) !important;
+}
+
+.upload-doc-modal .ant-input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.upload-doc-modal .input-prefix-icon {
+    color: var(--brand-color) !important;
+    margin-right: 8px !important;
+    font-size: 18px !important;
+}
+
+.upload-doc-modal .ant-input-textarea-show-count::after {
+    color: var(--secondary-text) !important;
+    font-size: 11px !important;
+    margin-top: 4px !important;
+    padding-right: 8px !important;
+    padding-bottom: 4px !important;
+}
+
+/* Month Checkbox Group - Modern Layout */
+.month-checkbox-group {
+    width: 100% !important;
+    margin-top: 8px !important;
+}
+
+.custom-checkbox {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 38px !important;
+    background-color: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    transition: all var(--transition-fast) ease !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    color: var(--primary-text) !important;
+    margin: 0 !important;
+}
+
+.custom-checkbox:hover {
+    border-color: var(--brand-color) !important;
+    background-color: var(--hover-bg) !important;
+}
+
+.custom-checkbox .ant-checkbox {
+    display: none !important;
+    /* Hide default checkbox */
+}
+
+.custom-checkbox.ant-checkbox-wrapper-checked {
+    background-color: rgba(235, 178, 54, 0.15) !important;
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    font-weight: 600 !important;
+}
+
+.custom-checkbox span:last-child {
+    padding: 0 !important;
+}
+
+/* Document History Modal Styles - Redesign */
+.document-history-modal .ant-modal-content {
+    background-color: #121212 !important;
+    border: 1px solid #333 !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.document-history-modal .ant-modal-header {
+    padding: 16px 24px !important;
+    margin: 0 !important;
+}
+
+.document-history-modal .ant-modal-title {
+    font-size: 18px !important;
+    font-weight: 500 !important;
+}
+
+.document-history-modal .ant-modal-close {
+    color: #fff !important;
+}
+
+.document-history-modal .ant-modal-body {
+    padding: 24px !important;
     max-height: 70vh;
     overflow-y: auto;
+    background-color: var(--primary-bg) !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-modal-footer {
-    background-color: var(--card-bg);
-    border-top: 1px solid var(--border-color);
+/* Custom Collapse Styling */
+.document-history-modal .ant-collapse {
+    background-color: transparent !important;
+    border: none !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-collapse {
-    background-color: transparent;
-    border: none;
+.document-history-modal .ant-collapse-item {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    margin-bottom: 16px !important;
+    /* background-color: #1a1a1a !important; */
+    overflow: hidden;
 }
 
-#ContentProviderPanel .document-history-modal .ant-collapse-item {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 12px;
-    background-color: var(--secondary-bg);
+.document-history-modal .ant-collapse-header {
+    padding: 12px 16px !important;
+    color: #999 !important;
+    font-size: 14px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-collapse-header {
-    color: var(--primary-text);
-    background-color: var(--secondary-bg);
-    padding: 12px 16px;
+.document-history-modal .ant-collapse-header .ant-collapse-expand-icon {
+    color: #999 !important;
+    order: -1;
+    margin-inline-end: 8px !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-collapse-content {
-    background-color: var(--card-bg);
-    color: var(--primary-text);
-    border-top: 1px solid var(--border-color);
+.document-history-modal .ant-collapse-content {
+    background-color: #fff !important;
+    /* White background for the content area as per image */
+    border-top: 1px solid var(--border-color) !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-table {
-    background-color: transparent;
-    color: var(--primary-text);
+.document-history-modal .ant-collapse-content-box {
+    padding: 24px !important;
 }
 
-#ContentProviderPanel .document-history-modal .ant-table-thead > tr > th {
-    background-color: var(--secondary-bg);
-    color: var(--primary-text);
-    border-bottom: 1px solid var(--border-color);
-}
-
-#ContentProviderPanel .document-history-modal .ant-table-tbody > tr > td {
-    border-bottom: 1px solid var(--border-color);
-    color: var(--primary-text);
-}
-
-#ContentProviderPanel .document-history-modal .ant-table-tbody > tr:hover > td {
-    background-color: var(--hover-bg);
-}
-
-/* Document Cards Grid - Compact and Slick Design */.document-cards-grid {
+/* Document Card Styling */
+.document-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 8px 0;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
+
 .document-card {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s ease;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-.document-card:hover {
-    border-color: var(--brand-color);
-    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.1);
-    transform: translateY(-2px);
-}
+
 .document-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border-color);
 }
+
 .document-date {
-    font-size: 13px;
+    color: #fff;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--primary-text);
 }
+
 .document-time {
-    font-size: 11px;
-    color: var(--secondary-text);
-    font-weight: 400;
+    color: #666;
+    font-size: 12px;
 }
-.document-link-section {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+
+/* Link Section */
 .document-link-container {
     display: flex;
     align-items: center;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-    padding: 6px 10px;
-    background-color: var(--secondary-bg);
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
+    gap: 12px;
 }
+
+.link-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 0;
+}
+
 .link-icon {
-    color: var(--brand-color);
-    font-size: 14px;
+    color: #fbb03b;
+    font-size: 16px;
     flex-shrink: 0;
 }
+
 .document-link-text {
-    font-size: 12px;
-    color: var(--primary-text);
+    color: #999;
+    font-size: 13px;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
     flex: 1;
-    min-width: 0;
 }
+
 .copy-link-btn {
     background: none;
     border: none;
+    color: #999;
     cursor: pointer;
     padding: 4px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--secondary-text);
-    transition: all 0.2s ease;
-    border-radius: 4px;
-    flex-shrink: 0;
+    transition: color 0.2s;
 }
+
 .copy-link-btn:hover {
-    background-color: var(--hover-bg);
-    color: var(--brand-color);
-}
-.copy-icon {
-    font-size: 13px;
-}
-.copy-icon.copied {
-    color: #52c41a;
-}
-.open-link-btn {
-    padding: 6px 12px;
-    font-size: 12px;
-    background-color: var(--brand-color);
     color: #fff;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
 }
+
+.open-link-btn {
+    background-color: #fbb03b;
+    color: #000;
+    font-weight: 600;
+    padding: 0 20px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    text-decoration: none !important;
+    transition: background-color 0.2s;
+}
+
 .open-link-btn:hover {
-    background-color: #d4a02a;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(235, 178, 54, 0.3);
+    background-color: #e5a035;
+    color: #000;
 }
+
+/* Notes Section */
 .document-notes {
-    font-size: 12px;
-    color: var(--secondary-text);
+    background-color: var(--primary-bg);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid #fbb03b;
+    border-radius: 4px;
+    padding: 12px 16px;
+    color: #999;
+    font-size: 14px;
     line-height: 1.5;
-    padding: 8px;
-    background-color: var(--secondary-bg);
-    border-radius: 6px;
-    border-left: 3px solid var(--brand-color);
-    margin-top: 4px;
 }
+
+/* Footer Section */
 .document-footer {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
-    padding-top: 8px;
-    border-top: 1px solid var(--border-color);
-    margin-top: auto;
 }
+
 .document-uploaded-by {
-    font-size: 11px;
-    color: var(--secondary-text);
+    color: #666;
+    font-size: 12px;
     font-style: italic;
+}
+
+/* Modal Footer */
+.document-history-modal .ant-modal-footer {
+    background-color: var(--primary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 16px 24px !important;
+    margin: 0 !important;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.history-close-btn {
+    background-color: #121212 !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+    height: 48px !important;
+    padding: 0 40px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s !important;
+}
+
+.history-close-btn:hover {
+    background-color: #1a1a1a !important;
+    border-color: #444 !important;
+}
+
+.upload-doc-modal textarea {
+    height: 12px;
 }
 
 /* Responsive Document Cards */
 @media (max-width: 768px) {
-.document-cards-grid {
+    .document-cards-grid {
         grid-template-columns: 1fr;
         gap: 12px;
     }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {
-.document-cards-grid {
+    .document-cards-grid {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
 
 @media (min-width: 1025px) {
-.document-cards-grid {
+    .document-cards-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
 }

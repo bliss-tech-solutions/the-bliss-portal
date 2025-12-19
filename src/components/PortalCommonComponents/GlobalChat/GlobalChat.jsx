@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './GlobalChat.css';
 import { Card, Avatar, Input, Spin, Button, Popover, Modal, Popconfirm } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useLazyGetRecentGlobalChatMessagesQuery, useAddGlobalChatMutation, useArchiveGlobalChatMessageMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useGlobalChatStore } from '../../../contexts/GlobalChatContext';
 import { BsSend, BsEmojiSmile, BsX, BsPaperclip } from 'react-icons/bs';
-import { AiOutlineDelete } from 'react-icons/ai';
+import { AiOutlineDelete, AiOutlineFilePdf } from 'react-icons/ai';
 import EmojiPicker from 'emoji-picker-react';
 import { uploadToCloudinary, isCloudinaryImageUrl, isCloudinaryVideoUrl, isCloudinaryFileUrl, toAttachmentUrl, toPdfThumbnail } from '../../../utils/cloudinary';
 import EmptyState from '../../CommonComponents/EmptyState/EmptyState';
@@ -106,14 +106,14 @@ const GlobalChat = ({
         const normalizedMessages = payload.map(msg => {
             // Check if message is archived (boolean status)
             // Check multiple possible field names and values
-            const isArchived = msg.archived === true || 
-                             msg.archived === 'true' ||
-                             String(msg.archived) === 'true' ||
-                             msg.isArchived === true || 
-                             msg.isArchived === 'true' ||
-                             String(msg.isArchived) === 'true' ||
-                             msg.status === 'archived';
-            
+            const isArchived = msg.archived === true ||
+                msg.archived === 'true' ||
+                String(msg.archived) === 'true' ||
+                msg.isArchived === true ||
+                msg.isArchived === 'true' ||
+                String(msg.isArchived) === 'true' ||
+                msg.status === 'archived';
+
             // If archived, replace message content with deleted text
             if (isArchived) {
                 return {
@@ -321,8 +321,8 @@ const GlobalChat = ({
             const currentMessages = getMessages();
             const updatedMessages = currentMessages.map(msg => {
                 if (msg._id === messageId) {
-                    return { 
-                        ...msg, 
+                    return {
+                        ...msg,
                         archived: true,
                         isArchived: true,
                         message: 'This message was deleted',
@@ -332,11 +332,11 @@ const GlobalChat = ({
                 return msg;
             });
             setInitialMessages(updatedMessages);
-            
+
             // Clear deleting state
             setDeletingMessageId(null);
             showSuccess('Message deleted successfully');
-            
+
             // Note: Socket event 'globalchat:archived' will also update the message for real-time sync
             // No need to refetch, socket will handle real-time updates for all users
         } catch (error) {
@@ -353,6 +353,20 @@ const GlobalChat = ({
         return text.replace(emojiRegex, (emoji) => {
             return `<span class="emoji-large">${emoji}</span>`;
         });
+    };
+
+    // Helper to get a clean filename from URL
+    const getFileName = (url) => {
+        if (!url) return 'Document';
+        try {
+            const urlParts = url.split('/');
+            let filename = urlParts[urlParts.length - 1].split('?')[0];
+            // Remove some common Cloudinary prefixes if present
+            filename = filename.replace(/^[a-z0-9]+_/i, '');
+            return decodeURIComponent(filename) || 'Document.pdf';
+        } catch (e) {
+            return 'Document.pdf';
+        }
     };
 
     // Handle download for high-quality files
@@ -443,12 +457,12 @@ const GlobalChat = ({
             const isSent = msg.senderId === userId;
             // Check if message is archived (boolean status)
             // Check multiple possible field names and values
-            const isArchived = msg.archived === true || 
-                             msg.archived === 'true' ||
-                             msg.isArchived === true || 
-                             msg.isArchived === 'true' ||
-                             msg.status === 'archived' ||
-                             msg.message === 'This message was deleted';
+            const isArchived = msg.archived === true ||
+                msg.archived === 'true' ||
+                msg.isArchived === true ||
+                msg.isArchived === 'true' ||
+                msg.status === 'archived' ||
+                msg.message === 'This message was deleted';
             const isPdf = /\.pdf$/i.test(msg.message);
             // Don't treat archived messages as images/videos/files
             const asImage = !isArchived && !isPdf && isCloudinaryImageUrl(msg.message);
@@ -478,95 +492,106 @@ const GlobalChat = ({
                                     Deleting...
                                 </p>
                             ) : asImage ? (
-                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                    <img
-                                        src={msg.message}
-                                        alt="chat-img"
-                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        style={{
-                                            position: 'absolute',
-                                            top: 8,
-                                            right: 8,
-                                            zIndex: 10,
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDownload(msg.message, 'image');
-                                        }}
-                                        title="Download high-quality image"
-                                    />
+                                <div className="message-media-container image-type">
+                                    <div className="media-wrapper">
+                                        <img
+                                            src={msg.message}
+                                            alt="chat-img"
+                                            className="chat-media-content"
+                                            onClick={() => setPreview({ open: true, url: msg.message, type: 'image' })}
+                                        />
+                                        <div className="media-overlay">
+                                            <Button
+                                                type="text"
+                                                icon={<EyeOutlined />}
+                                                className="media-action-btn preview"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPreview({ open: true, url: msg.message, type: 'image' });
+                                                }}
+                                                title="Preview"
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<DownloadOutlined />}
+                                                className="media-action-btn download"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDownload(msg.message, 'image');
+                                                }}
+                                                title="Download"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : asVideo ? (
-                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                    <video
-                                        src={msg.message}
-                                        controls
-                                        style={{ maxWidth: 260, borderRadius: 8, cursor: 'zoom-in' }}
-                                        onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
-                                    />
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        style={{
-                                            position: 'absolute',
-                                            top: 8,
-                                            right: 8,
-                                            zIndex: 10,
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDownload(msg.message, 'video');
-                                        }}
-                                        title="Download high-quality video"
-                                    />
+                                <div className="message-media-container video-type">
+                                    <div className="media-wrapper">
+                                        <video
+                                            src={msg.message}
+                                            controls
+                                            className="chat-media-content"
+                                            onClick={() => setPreview({ open: true, url: msg.message, type: 'video' })}
+                                        />
+                                        <div className="media-overlay">
+                                            <Button
+                                                type="text"
+                                                icon={<EyeOutlined />}
+                                                className="media-action-btn preview"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPreview({ open: true, url: msg.message, type: 'video' });
+                                                }}
+                                                title="Preview"
+                                            />
+                                            <Button
+                                                type="text"
+                                                icon={<DownloadOutlined />}
+                                                className="media-action-btn download"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDownload(msg.message, 'video');
+                                                }}
+                                                title="Download"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             ) : asFile ? (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {isPdf ? (
-                                        <object data={msg.message} type="application/pdf" width={260} height={360} style={{ borderRadius: 8 }}>
-                                            {pdfThumb ? (
-                                                <a href={msg.message} target="_blank" rel="noreferrer">
-                                                    <img src={pdfThumb} alt="PDF preview" style={{ maxWidth: 260, borderRadius: 8 }} />
-                                                </a>
-                                            ) : (
-                                                <a
-                                                    href={toAttachmentUrl(msg.message)}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    style={{ color: 'inherit', textDecoration: 'underline' }}
-                                                >
-                                                    Open PDF
-                                                </a>
-                                            )}
-                                        </object>
-                                    ) : (
-                                        <a
-                                            href={toAttachmentUrl(msg.message)}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            style={{ color: 'inherit', textDecoration: 'underline' }}
+                                <div className="message-file-card">
+                                    <div className="file-info">
+                                        <div className="file-icon">
+                                            {isPdf ? <AiOutlineFilePdf /> : <BsPaperclip />}
+                                        </div>
+                                        <div className="file-details">
+                                            <div className="file-name" title={getFileName(msg.message)}>
+                                                {getFileName(msg.message)}
+                                            </div>
+                                            <div className="file-meta">
+                                                {isPdf ? 'PDF Document' : 'Attachment'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="file-actions">
+                                        <Button
+                                            type="primary"
+                                            icon={<DownloadOutlined />}
+                                            size="small"
+                                            onClick={() => handleDownload(msg.message, 'file')}
+                                            className="file-download-btn"
                                         >
-                                            Open document
-                                        </a>
+                                            Download
+                                        </Button>
+                                    </div>
+                                    {isPdf && (
+                                        <div className="pdf-preview-snippet" onClick={() => setPreview({ open: true, url: msg.message, type: 'file' })}>
+                                            {pdfThumb ? (
+                                                <img src={pdfThumb} alt="PDF preview" />
+                                            ) : (
+                                                <div className="pdf-placeholder">PDF Preview</div>
+                                            )}
+                                        </div>
                                     )}
-                                    <Button
-                                        type="primary"
-                                        icon={<DownloadOutlined />}
-                                        size="small"
-                                        onClick={() => handleDownload(msg.message, 'file')}
-                                        style={{ alignSelf: 'flex-start' }}
-                                    >
-                                        Download
-                                    </Button>
                                 </div>
                             ) : (
                                 <p

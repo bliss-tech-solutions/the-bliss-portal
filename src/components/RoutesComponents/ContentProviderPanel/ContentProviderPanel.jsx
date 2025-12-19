@@ -290,8 +290,8 @@ const ContentProviderPanel = () => {
                                 </div>
                             </div>
 
-                            <div className="document-link-section">
-                                <div className="document-link-container">
+                            <div className="document-link-container">
+                                <div className="link-info">
                                     <BsLink45Deg className="link-icon" />
                                     <span className="document-link-text">
                                         {doc.link.length > 20 ? `${doc.link.substring(0, 20)}...` : doc.link}
@@ -509,6 +509,7 @@ const ContentProviderPanel = () => {
             width: '13%',
             render: (_, record) => (
                 <Button
+                    className='global-secondary-btn'
                     type="default"
                     icon={<BsFileEarmarkText />}
                     onClick={() => handleDocumentHistoryClick(record)}
@@ -524,6 +525,7 @@ const ContentProviderPanel = () => {
             width: '13%',
             render: (_, record) => (
                 <Button
+                    className='global-secondary-btn'
                     type="primary"
                     icon={<BsUpload />}
                     onClick={() => handleUploadDocClick(record)}
@@ -563,35 +565,52 @@ const ContentProviderPanel = () => {
 
                 {/* Upload Doc Modal */}
                 <Modal
-                    title="Upload Document"
+                    title={<div className="modal-custom-title">Upload Document</div>}
                     open={uploadDocModalVisible}
                     onCancel={handleUploadDocModalClose}
-                    onOk={() => uploadForm.submit()}
-                    okText="Submit"
-                    cancelText="Cancel"
-                    confirmLoading={isSubmittingAttachment}
+                    footer={[
+                        <Button
+                            key="cancel"
+                            className="global-secondary-btn"
+                            onClick={handleUploadDocModalClose}
+                        >
+                            Cancel
+                        </Button>,
+                        <Button
+                            key="submit"
+                            className="global-action-btn"
+                            loading={isSubmittingAttachment}
+                            onClick={() => uploadForm.submit()}
+                        >
+                            Submit
+                        </Button>
+                    ]}
                     destroyOnClose
                     className="upload-doc-modal"
                     width={600}
+                    centered
+                    maskClosable={false}
                 >
                     <Form
                         form={uploadForm}
                         layout="vertical"
                         onFinish={handleUploadDocSubmit}
+                        className="custom-upload-form"
                     >
                         <Form.Item
-                            label="Enter Link"
+                            label={<span className="form-label-text">Enter Link</span>}
                             name="link"
                             rules={[{ required: true, message: 'Please enter a link' }]}
                         >
                             <Input
                                 placeholder="Enter document link"
                                 allowClear
+                                prefix={<BsLink45Deg className="input-prefix-icon" />}
                             />
                         </Form.Item>
 
                         <Form.Item
-                            label="Enter Message"
+                            label={<span className="form-label-text">Enter Message</span>}
                             name="message"
                             rules={[{ required: true, message: 'Please enter a message' }]}
                         >
@@ -604,15 +623,16 @@ const ContentProviderPanel = () => {
                         </Form.Item>
 
                         <Form.Item
-                            label="Select Month"
+                            label={<span className="form-label-text">Select Month</span>}
                             name="months"
                             rules={[{ required: true, message: 'Please select at least one month' }]}
+                            style={{ marginBottom: 0 }}
                         >
                             <Checkbox.Group className="month-checkbox-group">
-                                <Row gutter={[8, 8]}>
+                                <Row gutter={[8, 12]}>
                                     {monthOptions.map((month) => (
-                                        <Col xs={6} sm={6} md={4} key={month.value}>
-                                            <Checkbox value={month.value}>
+                                        <Col xs={8} sm={6} md={4} key={month.value}>
+                                            <Checkbox value={month.value} className="custom-checkbox">
                                                 {month.label}
                                             </Checkbox>
                                         </Col>
@@ -629,8 +649,8 @@ const ContentProviderPanel = () => {
                     open={documentHistoryModalVisible}
                     onCancel={handleDocumentHistoryModalClose}
                     footer={[
-                        <Button key="close" className='global-secondary-btn' onClick={handleDocumentHistoryModalClose}>
-                            Close
+                        <Button key="close" className='history-close-btn' onClick={handleDocumentHistoryModalClose}>
+                            CLOSE
                         </Button>
                     ]}
                     width={1000}

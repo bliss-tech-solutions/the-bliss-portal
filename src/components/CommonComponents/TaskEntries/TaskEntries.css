@@ -2,7 +2,7 @@
 .task-entries {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 10px;
 }
 
 .user-custom-drawer .ant-card {
@@ -1230,3 +1230,7 @@
 }
 
 /* Responsive */
+
+.ant-dropdown-menu {
+    background: var(--primary-bg) !important;
+}

@@ -7,7 +7,7 @@ import { selectUserId, selectUser } from '../../../store/slices/authSlice';
 import { useGetTaskAssignQuery, useGetAllUsersQuery, useUpdateTaskStatusMutation, useRequestTaskExtensionMutation } from '../../../store/api';
 import { useNotification } from '../../../contexts/NotificationContext';
 import { useTaskChatStore } from '../../../contexts/TaskChatContext';
-import { BsClock, BsClockHistory, BsChat, BsPerson, BsPlusCircle, BsCardChecklist, BsThreeDots } from 'react-icons/bs';
+import { BsClock, BsClockHistory, BsChat, BsPerson, BsPlusCircle, BsCardChecklist, BsThreeDots, BsCheckCircle } from 'react-icons/bs';
 import { AiOutlineEye } from 'react-icons/ai';
 import { IoClose } from 'react-icons/io5';
 import TaskChat from '../../PortalCommonComponents/TaskChat/TaskChat';
@@ -470,15 +470,20 @@ const TaskEntries = ({
                         {
                             key: 'view',
                             label: (
-                                <span>
-                                    <AiOutlineEye style={{ marginRight: 8 }} />
-                                    View Details
-                                </span>
+                                <Button className="global-secondary-btn">
+                                    <AiOutlineEye className="user-dropdown-icon" />
+                                    <span>View Details</span>
+                                </Button>
                             ),
                         },
                         {
                             key: 'complete',
-                            label: 'Mark as Completed',
+                            label: (
+                                <Button className="global-secondary-btn">
+                                    <BsCheckCircle className="user-dropdown-icon" />
+                                    <span>Mark as Completed</span>
+                                </Button>
+                            ),
                             disabled: isCompleted || updatingStatus,
                         },
                     ];
@@ -593,6 +598,7 @@ const TaskEntries = ({
                                         menu={{ items: menuItems, onClick: handleMenuClick }}
                                         trigger={['click']}
                                         placement="bottomRight"
+                                        id="user-task-menu"
                                     >
                                         <Button
                                             type="text"

@@ -11,7 +11,8 @@ const ContentProviderTaskEntries = ({
     selectedDateRange = null,
     priorityFilter = 'all',
     assignerFilter = 'all',
-    userId = null
+    userId = null,
+    refreshKey = 0
 }) => {
     return (
         <TaskEntries
@@ -21,6 +22,9 @@ const ContentProviderTaskEntries = ({
             selectedDateRange={selectedDateRange}
             priorityFilter={priorityFilter}
             assignerFilter={assignerFilter}
+            refreshKey={refreshKey}
+            // Changing this key forces TaskEntries to remount
+            key={refreshKey}
         />
     );
 };

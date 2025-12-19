@@ -532,3 +532,11 @@ body {
     color: var(--secondary-text) !important;
     opacity: 1;
 }
+
+.ant-collapse-content-box{
+    background: var(--primary-bg) !important;
+}
+
+.anticon{
+    color: var(--primary-text) !important;
+}
