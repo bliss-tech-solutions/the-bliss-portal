@@ -102,6 +102,10 @@ const TaskChat = ({
 
         if (!payload) return;
 
+        // Ensure we only process messages for the CURRENT taskId to avoid race conditions
+        const incomingTaskId = chatMessagesData?.taskId || taskId;
+        if (incomingTaskId !== taskId) return;
+
         const baseMessages = Array.isArray(payload)
             ? payload
             : payload.messages || [];

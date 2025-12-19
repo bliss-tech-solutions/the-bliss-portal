@@ -1048,6 +1048,7 @@ const AllTaskEntries = ({
                                             <h3>Task Chat</h3>
                                         </div>
                                         <TaskChat
+                                            key={selectedTask._id}
                                             taskId={selectedTask._id}
                                             receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
                                             className="task-chat-component"
@@ -1116,7 +1117,7 @@ const AllTaskEntries = ({
                     <div className="archive-modal-title">
                         <AiOutlineExclamationCircle />
                         <span>Delete Task</span>
-                        <br/>   <br/>
+                        <br />   <br />
                     </div>
                 }
                 open={archiveModalVisible}
@@ -1130,7 +1131,7 @@ const AllTaskEntries = ({
                     className: 'archive-confirm-btn'
                 }}
                 cancelButtonProps={{
-                    
+
                     className: 'global-secondary-btn'
                 }}
                 className="archive-confirmation-modal"

@@ -933,6 +933,7 @@ const TaskEntries = ({
                             {/* Task Chat - Full Width */}
                             <div className="user-task-chat-wrapper">
                                 <TaskChat
+                                    key={selectedTask._id}
                                     taskId={selectedTask._id}
                                     receiverId={selectedTask.userId === userId ? selectedTask.receiverUserId : selectedTask.userId}
                                     className="user-task-chat"
