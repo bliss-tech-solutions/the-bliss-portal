@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ProfileUpdate.css";
 import {
     Row,
@@ -12,7 +12,8 @@ import {
     Divider,
     Typography,
     Space,
-    Switch
+    Switch,
+    message
 } from "antd";
 import {
     UserOutlined,
@@ -25,18 +26,45 @@ import {
     SaveOutlined,
     UploadOutlined
 } from "@ant-design/icons";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectTheme } from "../../../store/slices/themeSlice";
-import { selectUser } from "../../../store/slices/authSlice";
+import { selectUser, selectUserId, updateUserProfile } from "../../../store/slices/authSlice";
+import { useUpdateUserDetailsMutation } from "../../../store/api";
+import { uploadToCloudinary } from "../../../utils/cloudinary";
 
 const { Title, Text } = Typography;
 
 const ProfileUpdate = () => {
     const [form] = Form.useForm();
+    const [passwordForm] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [profileImage, setProfileImage] = useState(null);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null); // Preview URL for selected image
+    const [selectedFile, setSelectedFile] = useState(null); // Selected file to upload
+    const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
     const authUser = useSelector((state) => state.auth?.user || {});
+    const userId = useSelector(selectUserId) || authUser?._id || authUser?.id;
+    const [updateUserDetails] = useUpdateUserDetailsMutation();
+
+    // Initialize profile image from getUserDetails API response - profilePhoto field
+    // Initialize state with profilePhoto from authUser if available
+    const [profileImage, setProfileImage] = useState(() => {
+        const photo = authUser?.profilePhoto || authUser?.profileImage;
+        return photo && photo.trim() !== '' ? photo : null;
+    });
+
+    // Update profile image when authUser changes (e.g., after API refresh)
+    useEffect(() => {
+        const photo = authUser?.profilePhoto || authUser?.profileImage;
+        if (photo && photo.trim() !== '') {
+            setProfileImage(photo);
+        } else {
+            // Reset to null if no photo available
+            setProfileImage(null);
+        }
+    }, [authUser?.profilePhoto, authUser?.profileImage]);
 
     const initialValues = {
         firstName: authUser?.firstName || "",
@@ -68,24 +96,167 @@ const ProfileUpdate = () => {
     };
 
     const handlePasswordChange = async (values) => {
-        setLoading(true);
+        if (!userId) {
+            message.error('User ID not found. Please log in again.');
+            return;
+        }
+
+        setPasswordLoading(true);
         try {
-            // API call to update password
-            console.log('Password change data:', values);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setLoading(false);
+            const { confirmPassword } = values;
+            const currentProfilePhoto = profileImage || authUser?.profilePhoto || '';
+
+            await updateUserDetails({
+                userId,
+                body: {
+                    profilePhoto: currentProfilePhoto,
+                    Password: confirmPassword
+                }
+            }).unwrap();
+
+            message.success('Password updated successfully!');
+            passwordForm.resetFields();
         } catch (error) {
             console.error('Password change error:', error);
-            setLoading(false);
+            message.error(error?.data?.message || error?.message || 'Failed to update password. Please try again.');
+        } finally {
+            setPasswordLoading(false);
         }
     };
 
-    const handleImageUpload = (info) => {
-        if (info.file.status === 'done') {
-            setProfileImage(info.file.response?.url || URL.createObjectURL(info.file.originFileObj));
+    // Handle file selection - just preview, don't upload yet
+    const handleImageSelect = (info) => {
+        const file = info.file.originFileObj || info.file;
+
+        if (!file) {
+            message.error('No file selected');
+            return;
+        }
+
+        // Validate file size (2MB max)
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        if (file.size > maxSize) {
+            message.error('Image size must be less than 2MB');
+            return;
+        }
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            message.error('Please upload a valid image file (JPG, PNG, or GIF)');
+            return;
+        }
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file);
+        setPreviewImage(previewUrl);
+        setSelectedFile(file);
+    };
+
+    // Handle actual upload when user clicks "Update" button
+    const handleUpdateProfilePicture = async () => {
+        if (!userId) {
+            message.error('User ID not found. Please log in again.');
+            return;
+        }
+
+        if (!selectedFile) {
+            message.error('No file selected');
+            return;
+        }
+
+        setUploadingImage(true);
+
+        try {
+            // Upload to Cloudinary
+            const uploadResult = await uploadToCloudinary(selectedFile, 'image');
+            const imageUrl = uploadResult.secure_url;
+
+            // Update user profile with the new image URL
+            await updateUserDetails({
+                userId,
+                body: {
+                    profilePhoto: imageUrl
+                }
+            }).unwrap();
+
+            // Update Redux auth state with new profilePhoto so it persists after reload
+            dispatch(updateUserProfile({ profilePhoto: imageUrl }));
+
+            // Update profile image state
+            setProfileImage(imageUrl);
+
+            // Clear preview and selected file
+            if (previewImage) {
+                URL.revokeObjectURL(previewImage);
+            }
+            setPreviewImage(null);
+            setSelectedFile(null);
+
+            message.success('Profile picture updated successfully!');
+        } catch (error) {
+            console.error('Image upload error:', error);
+            message.error(error?.data?.message || error?.message || 'Failed to upload profile picture. Please try again.');
+        } finally {
+            setUploadingImage(false);
         }
     };
+
+    // Handle cancel - remove preview
+    const handleCancelPreview = () => {
+        if (previewImage) {
+            URL.revokeObjectURL(previewImage);
+        }
+        setPreviewImage(null);
+        setSelectedFile(null);
+    };
+
+    // Get the current profile photo URL to display
+    // Priority: 1. previewImage (selected but not uploaded), 2. profileImage state (uploaded), 3. authUser.profilePhoto (from GET API), 4. authUser.profileImage (fallback)
+    const currentProfilePhotoUrl = React.useMemo(() => {
+        // First priority: preview image (selected but not yet uploaded)
+        if (previewImage) {
+            return previewImage;
+        }
+        // Second priority: newly uploaded image in state
+        if (profileImage && profileImage.trim() !== '') {
+            return profileImage;
+        }
+        // Third priority: profilePhoto from authUser (same API response as firstName, lastName)
+        if (authUser?.profilePhoto && typeof authUser.profilePhoto === 'string' && authUser.profilePhoto.trim() !== '') {
+            return authUser.profilePhoto;
+        }
+        // Fallback: profileImage for backward compatibility
+        if (authUser?.profileImage && typeof authUser.profileImage === 'string' && authUser.profileImage.trim() !== '') {
+            return authUser.profileImage;
+        }
+        return null;
+    }, [previewImage, profileImage, authUser?.profilePhoto, authUser?.profileImage]);
+
+    // Cleanup preview URL on unmount
+    useEffect(() => {
+        return () => {
+            if (previewImage) {
+                URL.revokeObjectURL(previewImage);
+            }
+        };
+    }, [previewImage]);
+
+    // Debug: Log to verify profilePhoto is in authUser (same as firstName, lastName which work)
+    useEffect(() => {
+        if (authUser && Object.keys(authUser).length > 0) {
+            console.log('ProfileUpdate - Checking authUser data:', {
+                'firstName (works)': authUser.firstName,
+                'lastName (works)': authUser.lastName,
+                'email (works)': authUser.email,
+                'profilePhoto exists': !!authUser.profilePhoto,
+                'profilePhoto value': authUser.profilePhoto,
+                'profileImage state': profileImage,
+                'currentProfilePhotoUrl': currentProfilePhotoUrl,
+                'All authUser keys': Object.keys(authUser)
+            });
+        }
+    }, [authUser, profileImage, currentProfilePhotoUrl]);
 
     return (
         <div id="ProfileUpdate" className={`profile-update-container theme-${theme}`}>
@@ -102,14 +273,15 @@ const ProfileUpdate = () => {
                 {/* Left Column - Profile Picture & Security Settings */}
                 <Col xs={24} lg={8}>
                     {/* Profile Picture Section */}
-                    <Card className="profile-card" title="Profile Picture">
+                    <Card className="profile-card" title="Profile Picture" bodyStyle={{ padding: '20px' }}>
                         <div className="profile-picture-section">
                             <div className="profile-avatar-container">
                                 <Avatar
-                                    size={120}
-                                    src={profileImage || null}
+                                    size={80}
+                                    src={currentProfilePhotoUrl}
                                     icon={<UserOutlined />}
                                     className="profile-avatar"
+                                    key={currentProfilePhotoUrl || 'default-avatar'}
                                 />
                                 <div className="avatar-overlay">
                                     <CameraOutlined />
@@ -120,7 +292,9 @@ const ProfileUpdate = () => {
                                 name="profileImage"
                                 listType="text"
                                 showUploadList={false}
-                                onChange={handleImageUpload}
+                                onChange={handleImageSelect}
+                                beforeUpload={() => false}
+                                accept="image/jpeg,image/jpg,image/png,image/gif"
                                 className="profile-upload"
                             >
                                 <Button
@@ -128,36 +302,52 @@ const ProfileUpdate = () => {
                                     className="upload-button"
                                     type="primary"
                                     ghost
+                                    size="small"
+                                    disabled={uploadingImage || !!previewImage}
                                 >
                                     Change Photo
                                 </Button>
                             </Upload>
 
                             <Text className="upload-hint">
-                                JPG, PNG or GIF. Max size 2MB
+                                JPG, PNG or GIF. Max 2MB
                             </Text>
+
+                            {/* Show Update and Cancel buttons when image is selected */}
+                            {previewImage && (
+                                <div style={{ marginTop: 12, display: 'flex', gap: 8, justifyContent: 'center' }}>
+                                    <Button
+                                        type="primary"
+                                        icon={<SaveOutlined />}
+                                        onClick={handleUpdateProfilePicture}
+                                        loading={uploadingImage}
+                                        disabled={uploadingImage}
+                                        // size="small"
+                                        className="global-secondary-btn"
+                                    >
+                                        {uploadingImage ? 'Updating...' : 'Update'}
+                                    </Button>
+                                    <Button
+                                        onClick={handleCancelPreview}
+                                        disabled={uploadingImage}
+                                        size="small"
+                                        className="global-secondary-btn"
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </Card>
 
                     {/* Security Settings Section */}
                     <Card className="profile-card" title="Security Settings" style={{ marginTop: 24 }}>
                         <Form
+                            form={passwordForm}
                             layout="vertical"
                             onFinish={handlePasswordChange}
                             className="password-form"
                         >
-                            <Form.Item
-                                label="Current Password"
-                                name="currentPassword"
-                                rules={[{ required: true, message: 'Please enter current password' }]}
-                            >
-                                <Input.Password
-                                    prefix={<LockOutlined />}
-                                    placeholder="Enter current password"
-                                    size="large"
-                                />
-                            </Form.Item>
-
                             <Form.Item
                                 label="New Password"
                                 name="newPassword"
@@ -196,19 +386,32 @@ const ProfileUpdate = () => {
                                 />
                             </Form.Item>
 
-                            <div className="form-actions">
-                                <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    loading={loading}
-                                    icon={<LockOutlined />}
-                                    size="large"
-                                    className="password-button"
-                                    block
-                                >
-                                    Update Password
-                                </Button>
-                            </div>
+                            <Form.Item shouldUpdate>
+                                {({ getFieldsValue, getFieldsError }) => {
+                                    const values = getFieldsValue();
+                                    const errors = getFieldsError(['newPassword', 'confirmPassword']);
+                                    const hasErrors = errors.some(field => field.errors.length > 0);
+                                    const allFieldsFilled = values.newPassword && values.confirmPassword;
+                                    const isFormValid = allFieldsFilled && !hasErrors;
+
+                                    return (
+                                        <div className="form-actions">
+                                            <Button
+                                                type="primary"
+                                                htmlType="submit"
+                                                loading={passwordLoading}
+                                                icon={<LockOutlined />}
+                                                size="large"
+                                                className="global-secondary-btn"
+                                                block
+                                                disabled={!isFormValid || passwordLoading}
+                                            >
+                                                Update Password
+                                            </Button>
+                                        </div>
+                                    );
+                                }}
+                            </Form.Item>
                         </Form>
                     </Card>
                 </Col>
@@ -234,6 +437,7 @@ const ProfileUpdate = () => {
                                             prefix={<UserOutlined />}
                                             placeholder="Enter first name"
                                             size="large"
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -247,6 +451,7 @@ const ProfileUpdate = () => {
                                             prefix={<UserOutlined />}
                                             placeholder="Enter last name"
                                             size="large"
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -263,6 +468,7 @@ const ProfileUpdate = () => {
                                             prefix={<MailOutlined />}
                                             placeholder="Enter email address"
                                             size="large"
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -276,6 +482,7 @@ const ProfileUpdate = () => {
                                             prefix={<PhoneOutlined />}
                                             placeholder="Enter phone number"
                                             size="large"
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -289,6 +496,7 @@ const ProfileUpdate = () => {
                                             prefix={<HomeOutlined />}
                                             placeholder="Enter your address"
                                             rows={3}
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -301,6 +509,7 @@ const ProfileUpdate = () => {
                                         <Input
                                             placeholder="Enter pincode"
                                             size="large"
+                                            disabled
                                         />
                                     </Form.Item>
                                 </Col>
@@ -320,7 +529,7 @@ const ProfileUpdate = () => {
 
                             <Divider />
 
-                            <div className="form-actions">
+                            {/* <div className="form-actions">
                                 <Space>
                                     <Button
                                         type="primary"
@@ -339,7 +548,7 @@ const ProfileUpdate = () => {
                                         Reset
                                     </Button>
                                 </Space>
-                            </div>
+                            </div> */}
                         </Form>
                     </Card>
                 </Col>
@@ -348,7 +557,7 @@ const ProfileUpdate = () => {
             {/* Additional Settings - Full Width Bottom */}
             <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
                 <Col xs={24}>
-                    <Card className="profile-card" title="Additional Settings">
+                    <Card className="profile-card" title="Additional Settings (Coming Soon)">
                         <Row gutter={[24, 24]}>
                             <Col xs={24} sm={12}>
                                 <div className="setting-item">

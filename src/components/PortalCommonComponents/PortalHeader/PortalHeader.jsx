@@ -80,6 +80,9 @@ const PortalHeader = () => {
             lastName ? lastName :
                 'User';
 
+    // Get profile photo URL (same as ProfileUpdate component)
+    const profilePhotoUrl = user?.profilePhoto || user?.profileImage || null;
+
     // Function to get assigner/receiver name by userId
     const getUserName = (targetUserId) => {
         if (!allUsersData?.data || !targetUserId) return 'Unknown';
@@ -310,7 +313,12 @@ const PortalHeader = () => {
             label: (
                 <div className="profile-dropdown-header">
                     <div className="profile-avatar-section">
-                        <Avatar size={64} icon={<UserOutlined />} className="profile-main-avatar" />
+                        <Avatar 
+                            size={64} 
+                            src={profilePhotoUrl}
+                            icon={<UserOutlined />} 
+                            className="profile-main-avatar" 
+                        />
                         <div className="profile-info">
                             <div className="profile-name">{fullName}</div>
                             <div className="profile-role">{user?.role || 'User'} • ({user?.position || 'Position'})</div>
@@ -510,7 +518,11 @@ const PortalHeader = () => {
                                             overlayClassName="portal-profile-dropdown"
                                         >
                                             <Button type="text" className="portal-profile-button">
-                                                <Avatar size="small" icon={<UserOutlined />} />
+                                                <Avatar 
+                                                    size="small" 
+                                                    src={profilePhotoUrl}
+                                                    icon={<UserOutlined />} 
+                                                />
                                                 <span className="portal-profile-name">{firstName}</span>
                                             </Button>
                                         </Dropdown>

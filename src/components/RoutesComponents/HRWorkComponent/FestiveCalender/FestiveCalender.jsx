@@ -530,7 +530,7 @@ const FestiveCalender = () => {
         <div className="festive-calendar-page">
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={16}>
-                    <Card title={<Title level={4} style={{ margin: 0 }}>Festive Calendar</Title>}>
+                    <Card title={<h2  level={4} style={{ margin: 0 }}>Festive Calendar</h2>}>
                         <CalenderModule
                             title=""
                             maxTasksPerDate={4}
@@ -557,13 +557,13 @@ const FestiveCalender = () => {
 
                 <Col xs={24} lg={8}>
                     <Card
-                        title={<Title level={5} style={{ margin: 0 }}>Tasks</Title>}
+                        title={<h2 level={5} style={{ margin: 0 }}>Tasks</h2>}
                         style={{ marginBottom: 16 }}
                         className="festive-tasks-container"
                     >
                         <div className="festive-tasks-list">
                             {allTasksWithDates.length === 0 ? (
-                                <Empty description="No tasks added yet" />
+                                <Empty className='Colorset' description="No tasks added yet" />
                             ) : (
                                 <List
                                     dataSource={allTasksWithDates}
@@ -598,7 +598,7 @@ const FestiveCalender = () => {
                     </Card>
 
                     <Card
-                        title={<Title level={5} style={{ margin: 0 }}>Latest Leaves</Title>}
+                        title={<h2 level={5} style={{ margin: 0 }}>Latest Leaves</h2>}
                         className="festive-leaves-container"
                     >
                         <div className="festive-leaves-list">

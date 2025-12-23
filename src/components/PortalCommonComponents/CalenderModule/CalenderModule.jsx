@@ -212,13 +212,7 @@ const CalenderModule = ({
                                     onClick={() => onChange(dayjs())}
                                     type="default"
                                     size="small"
-                                    style={{
-                                        fontSize: '12px',
-                                        borderRadius: '8px',
-                                        background: 'rgba(255, 255, 255, 0.05)',
-                                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                                        color: '#fff'
-                                    }}
+                                    className='global-button-secondary'
                                 >
                                     Today
                                 </Button>

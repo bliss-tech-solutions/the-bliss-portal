@@ -540,3 +540,8 @@ body {
 .anticon{
     color: var(--primary-text) !important;
 }
+
+.ant-empty-description, .ant-typography, .ant-select-selection-item{
+    color: var(--primary-text) !important;
+}
+

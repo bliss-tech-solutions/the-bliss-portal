@@ -468,6 +468,15 @@ export const api = createApi({
             }),
             invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
         }),
+        updateUserDetails: builder.mutation({
+            query: ({ userId, body }) => ({
+                url: `/api/updateUserDetails/${userId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['User'],
+        }),
     }),
 })
 
@@ -528,7 +537,8 @@ export const {
     useGetAllTeamsQuery,
     useUpdateTeamMutation,
     useGetAnalyticsOverviewQuery,
-    useGetUserWiseAnalyticsQuery
+    useGetUserWiseAnalyticsQuery,
+    useUpdateUserDetailsMutation
 } = api
 
 

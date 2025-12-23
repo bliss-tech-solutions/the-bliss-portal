@@ -39,10 +39,17 @@ const authSlice = createSlice({
         clearAuthState()
       }
     },
+    updateUserProfile(state, action) {
+      // Update specific user fields (like profilePhoto) without replacing entire user object
+      if (state.user) {
+        state.user = { ...state.user, ...action.payload }
+        saveAuthState(state)
+      }
+    },
     },
 })
 
-export const { loginSuccess, logout, setAuthState } = authSlice.actions
+export const { loginSuccess, logout, setAuthState, updateUserProfile } = authSlice.actions
 
 // Selectors
 export const selectUserId = (state) => state.auth.userId
