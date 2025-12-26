@@ -313,11 +313,11 @@ const PortalHeader = () => {
             label: (
                 <div className="profile-dropdown-header">
                     <div className="profile-avatar-section">
-                        <Avatar 
-                            size={64} 
+                        <Avatar
+                            size={64}
                             src={profilePhotoUrl}
-                            icon={<UserOutlined />} 
-                            className="profile-main-avatar" 
+                            icon={<UserOutlined />}
+                            className="profile-main-avatar"
                         />
                         <div className="profile-info">
                             <div className="profile-name">{fullName}</div>
@@ -518,10 +518,10 @@ const PortalHeader = () => {
                                             overlayClassName="portal-profile-dropdown"
                                         >
                                             <Button type="text" className="portal-profile-button">
-                                                <Avatar 
-                                                    size="small" 
+                                                <Avatar
+                                                    size="small"
                                                     src={profilePhotoUrl}
-                                                    icon={<UserOutlined />} 
+                                                    icon={<UserOutlined />}
                                                 />
                                                 <span className="portal-profile-name">{firstName}</span>
                                             </Button>

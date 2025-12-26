@@ -1,0 +1,287 @@
+import React, { useRef } from "react";
+import "./PaymentLayout.css";
+import DownloadPdfButton from "./DownloadPdfButton";
+
+const PaymentLayout = () => {
+  const invoiceRef = useRef(null);
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        background: "#f5f7fb",
+        fontFamily:
+          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontSize: "16px",
+      }}
+    >
+      <div
+        style={{
+          width: "600px",
+          background: "#ffffff",
+          borderRadius: "16px",
+          boxShadow: "0 18px 45px rgba(0,0,0,0.08)",
+          padding: "32px 32px 24px",
+        }}
+        ref={invoiceRef}
+      >
+        {/* Header logo + title */}
+        <header style={{ marginBottom: "24px", position: "relative" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <div
+                style={{
+                  width: "26px",
+                  height: "26px",
+                  borderRadius: "8px",
+                  background: "#940fdb",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: 700,
+                  fontSize: "16px",
+                  flexShrink: 0,
+                  lineHeight: "1",
+                  paddingTop: "2px",
+                }}
+              >
+                b
+              </div>
+              <img
+                src="/Images/BucketlisttLogo.png"
+                alt="Bucketlistt Logo"
+                style={{
+                  height: "60px",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
+            {/* Download PDF Button */}
+            <DownloadPdfButton invoiceRef={invoiceRef} fileName="Booking_Invoice" />
+          </div>
+
+          <h1
+            style={{
+              fontSize: "20px",
+              lineHeight: 1.4,
+              fontWeight: 700,
+              color: "#111827",
+              margin: "15px 0 0",
+            }}
+          >
+            Booking Confirmed !!
+          </h1>
+        </header>
+
+        {/* Illustration block */}
+        <div
+          style={{
+            width: "100%",
+            borderRadius: "18px",
+            background:
+              "radial-gradient(circle at top left, rgba(148,15,219,0.12), transparent 55%), #f7f8fc",
+            padding: "18px 10px",
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "24px",
+          }}
+        >
+          <img
+            src="/Images/BucketlistGrahic.png"
+            alt="Trip illustration"
+            style={{
+              width: "54%",
+              // maxWidth: "320px",
+              display: "block",
+            }}
+          />
+        </div>
+
+        {/* Body text */}
+        <section
+          style={{
+            borderRadius: "16px",
+            border: "1px solid #e5e7eb",
+            padding: "18px 18px 16px",
+            marginBottom: "18px",
+            fontSize: "16px",
+            color: "#4b5563",
+          }}
+        >
+          <p style={{ margin: "0 0 8px", fontWeight: 600 }}>Hello divyam,</p>
+
+          <p style={{ margin: "0 0 16px", fontWeight: 600 }}>
+            Your booking with bucketlistt has been confirmed. Below are the
+            booking details:
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              rowGap: "8px",
+              fontSize: "16px",
+            }}
+          >
+            {[
+              { label: "Activity:", value: "9 Km" },
+              {
+                label: "Date & Time:",
+                value: "20/12/2025 - 10:00 AM - 12:00 PM",
+              },
+              { label: "Pick up location:", value: "-" },
+              {
+                label: "Spot Location:",
+                value: (
+                  <a
+                    href="https://maps.app.goo.gl/33AoUqB2Ne13ELeA6"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: "#940fdb", textDecoration: "none" }}
+                  >
+                    Open in Maps
+                  </a>
+                ),
+              },
+              { label: "Total Participants:", value: "2" },
+              { label: "Amount Paid:", value: "1.17" },
+              { label: "Amount to be Paid:", value: "10.53", strong: true },
+            ].map((item, index) => (
+              <div
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                {/* Bullet dot */}
+                <span
+                  style={{
+                    marginTop: "4px",
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "999px",
+                    background: "#940fdb",
+                    flexShrink: 0,
+                  }}
+                />
+
+                {/* Label + value */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    gap: "8px",
+                  }}
+                >
+                  <span style={{ color: "#6b7280", whiteSpace: "nowrap" }}>
+                    {item.label}
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: item.strong ? 600 : 400,
+                      // textAlign: "right",
+                      flex: 1,
+                    }}
+                  >
+                    {item.value}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Extra text + QR grid */}
+        <section
+          style={{
+            fontSize: "16px",
+            color: "#6b7280",
+            marginBottom: "0",
+          }}
+        >
+          <p style={{ margin: "0 0 8px" }}>
+            This message is sent to confirm your booking.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "5fr 1fr",
+              alignItems: "center",
+              columnGap: "12px",
+            }}
+          >
+            <div
+              style={{
+                padding: "10px 12px",
+                borderRadius: "10px",
+                border: "1px solid #940fdb",
+                background: "rgba(148,15,219,0.04)",
+                color: "#111827",
+              }}
+            >
+              <p style={{ margin: "0 0 6px", fontSize: "16px" }}>
+                <span >
+                  For support or assistance,
+                </span>&nbsp;
+                contact bucketlistt at <br />
+                <span style={{ fontWeight: 600 }}>+91 85118 38237</span>.
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  color: "#940fdb",
+                }}
+              >
+                – Team bucketlistt
+              </p>
+            </div>
+
+            <div
+              style={{
+                justifySelf: "end",
+                width: "100%",
+                padding: "10px",
+                aspectRatio: "1 / 1",
+                borderRadius: "12px",
+                background: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=Bucketlistt"
+                alt="Support QR"
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentLayout;

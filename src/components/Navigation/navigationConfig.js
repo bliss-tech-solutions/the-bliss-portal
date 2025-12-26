@@ -28,6 +28,7 @@ import ContentProviderTaskEntriesPage from '../RoutesComponents/ContentProviderP
 import ClientsSegregation from '../RoutesComponents/AdminDashboard/ClientsSegregation/ClientsSegregation';
 import ClientAssignManament from '../RoutesComponents/AdminDashboard/ClientAssignManament/ClientAssignManament';
 import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAndData/ClientAndData';
+import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/SalaryInfo/SalaryInfo"
 
 export const navigationConfig = [
     // Admin Only Route
@@ -144,6 +145,15 @@ export const navigationConfig = [
         component: ClientAssignManament,
         showInSidebar: true
     },
+    
+    {
+        componentLabelName: "Salary Information",
+        icon: FileTextOutlined,
+        routeName: "/salary-information",
+        roles: ["user"],
+        component: SalaryInformation,
+        showInSidebar: true
+    },
     {
         componentLabelName: "Global Chat",
         icon: MessageOutlined,
@@ -151,7 +161,7 @@ export const navigationConfig = [
         roles: ["Execution", "user", "admin", "HR", "ContentProvider"],
         component: GlobalChatPage,
         showInSidebar: true
-    }
+    },
 ];
 
 // Helper function to filter navigation items based on user role (for sidebar)

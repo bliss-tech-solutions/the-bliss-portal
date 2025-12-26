@@ -229,24 +229,23 @@ const ContentProviderPanel = () => {
             grouped[month].push(doc);
         });
 
-        // Sort months in reverse order (most recent first)
-        const monthOrder = ['Dec', 'Nov', 'Oct', 'Sep', 'Aug', 'Jul', 'Jun', 'May', 'Apr', 'Mar', 'Feb', 'Jan'];
-        const sortedGrouped = {};
-        monthOrder.forEach(month => {
-            if (grouped[month]) {
-                sortedGrouped[month] = grouped[month].sort((a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            }
+        // Sort documents within each month and determine the latest date for each month
+        const monthDetails = [];
+        Object.keys(grouped).forEach(month => {
+            const sortedDocs = grouped[month].sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            const latestDate = new Date(sortedDocs[0].createdAt);
+            monthDetails.push({ month, docs: sortedDocs, latestDate });
         });
 
-        // Add any months not in the standard list
-        Object.keys(grouped).forEach(month => {
-            if (!sortedGrouped[month]) {
-                sortedGrouped[month] = grouped[month].sort((a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            }
+        // Sort months based on their latest document date (descending)
+        monthDetails.sort((a, b) => b.latestDate - a.latestDate);
+
+        // Convert back to structured object
+        const sortedGrouped = {};
+        monthDetails.forEach(detail => {
+            sortedGrouped[detail.month] = detail.docs;
         });
 
         return sortedGrouped;
@@ -378,6 +377,9 @@ const ContentProviderPanel = () => {
                 body: requestBody
             }).unwrap();
 
+            // Close the modal first for better UX
+            handleUploadDocModalClose();
+
             showSuccess('Document uploaded successfully!');
             // Refetch clients to get updated data (socket event will also trigger refetch)
             refetchClients();
@@ -385,7 +387,7 @@ const ContentProviderPanel = () => {
             if (documentHistoryModalVisible && selectedClientForHistory?._id === selectedClient._id) {
                 refetchDocumentHistory();
             }
-            handleUploadDocModalClose();
+
         } catch (error) {
             console.error('Error uploading document:', error);
             showError(error?.data?.message || error?.message || 'Failed to upload document');

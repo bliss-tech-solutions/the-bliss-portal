@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../store/slices/themeSlice';
 import GlobalChat from '../../PortalCommonComponents/GlobalChat/GlobalChat';
 import './GlobalChatPage.css';
-
+import BookingInvoice from './BookingInvoice/BookingInvoice';
 const GlobalChatPage = () => {
     const theme = useSelector(selectTheme);
 
@@ -23,6 +23,7 @@ const GlobalChatPage = () => {
                     height="calc(100vh - 250px)"
                 />
             </div>
+            {/* <BookingInvoice /> */}
         </div>
     );
 };

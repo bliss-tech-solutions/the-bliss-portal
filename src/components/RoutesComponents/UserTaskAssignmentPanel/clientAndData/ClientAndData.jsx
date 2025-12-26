@@ -143,24 +143,23 @@ const ClientAndData = () => {
             grouped[month].push(doc);
         });
 
-        // Sort months in reverse order (most recent first)
-        const monthOrder = ['Dec', 'Nov', 'Oct', 'Sep', 'Aug', 'Jul', 'Jun', 'May', 'Apr', 'Mar', 'Feb', 'Jan'];
-        const sortedGrouped = {};
-        monthOrder.forEach(month => {
-            if (grouped[month]) {
-                sortedGrouped[month] = grouped[month].sort((a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            }
+        // Sort documents within each month and determine the latest date for each month
+        const monthDetails = [];
+        Object.keys(grouped).forEach(month => {
+            const sortedDocs = grouped[month].sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            const latestDate = new Date(sortedDocs[0].createdAt);
+            monthDetails.push({ month, docs: sortedDocs, latestDate });
         });
 
-        // Add any months not in the standard list
-        Object.keys(grouped).forEach(month => {
-            if (!sortedGrouped[month]) {
-                sortedGrouped[month] = grouped[month].sort((a, b) =>
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            }
+        // Sort months based on their latest document date (descending)
+        monthDetails.sort((a, b) => b.latestDate - a.latestDate);
+
+        // Convert back to structured object
+        const sortedGrouped = {};
+        monthDetails.forEach(detail => {
+            sortedGrouped[detail.month] = detail.docs;
         });
 
         return sortedGrouped;

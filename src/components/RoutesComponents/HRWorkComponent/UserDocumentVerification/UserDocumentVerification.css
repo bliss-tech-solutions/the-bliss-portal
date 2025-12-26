@@ -17,23 +17,42 @@
     margin: 0;
 }
 
-/* Tabs Styling */
+.udv-tabs .ant-tabs-nav::before {
+    display: none;
+}
+
+.udv-tabs .ant-tabs-nav-list {
+    display: flex;
+    gap: 4px;
+    background-color: var(--secondary-bg);
+    padding: 4px;
+    border-radius: var(--button-border-radius) !important;
+}
+
 .udv-tabs .ant-tabs-tab {
-    font-weight: 500;
+    background-color: transparent;
     color: var(--secondary-text);
+    border-radius: var(--button-border-radius) !important;
+    border: 1px solid transparent;
     transition: all 0.3s ease;
-}
-
-.udv-tabs .ant-tabs-tab-active {
-    color: var(--brand-color);
-}
-
-.udv-tabs .ant-tabs-ink-bar {
-    background: var(--brand-color);
+    padding: 8px 16px !important;
+    margin: 0 !important;
+    font-weight: 500;
 }
 
 .udv-tabs .ant-tabs-tab:hover {
-    color: var(--brand-color);
+    color: var(--primary-text);
+}
+
+.udv-tabs .ant-tabs-tab-active {
+    background-color: var(--card-bg) !important;
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--button-shadow);
+}
+
+.udv-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--brand-color) !important;
+    font-weight: 600;
 }
 
 /* Form Container */
@@ -55,6 +74,7 @@
 /* Form Styling */
 .udv-form {
     width: 100%;
+    padding: 0;
 }
 
 .udv-form-section {
@@ -82,11 +102,21 @@
     border-color: var(--border-color);
 }
 
-/* Form Item Labels */
+/* Form Item Labels (match Execution panel) */
+.udv-form .ant-form-item {
+    margin-bottom: 16px;
+}
+
+.udv-form .ant-form-item-label {
+    padding-bottom: 6px !important;
+}
+
 .udv-form .ant-form-item-label>label {
-    color: var(--primary-text) !important;
+    color: var(--secondary-text) !important;
     font-weight: 500 !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .udv-form .ant-form-item-label>label.ant-form-item-required::before {
@@ -97,34 +127,50 @@
     content: '' !important;
 }
 
-/* Input Styling */
-.udv-input,
-.udv-select,
-.udv-date-picker,
-.udv-textarea {
-    background-color: var(--input-bg);
-    border-color: var(--border-color);
-    color: var(--primary-text);
-    border-radius: 6px;
+/* Inputs, Selects, Pickers, Textareas (match Execution panel) */
+.udv-form .ant-input,
+.udv-form .ant-input-affix-wrapper,
+.udv-form .ant-select-selector,
+.udv-form .ant-picker,
+.udv-form .ant-input-textarea textarea {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: var(--button-border-radius) !important;
     transition: all 0.3s ease;
+    padding: 6px 11px !important;
 }
 
-.udv-input:hover,
-.udv-select:hover,
-.udv-date-picker:hover {
-    border-color: var(--brand-color);
+.udv-form .ant-input::placeholder,
+.udv-form .ant-input-textarea textarea::placeholder,
+.udv-form .ant-select-selection-placeholder {
+    color: var(--secondary-text) !important;
+    font-size: 13px;
 }
 
-.udv-input:focus,
-.udv-select:focus,
-.udv-date-picker:focus,
-.udv-textarea:focus {
-    border-color: var(--brand-color);
-    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+.udv-form .ant-input:hover,
+.udv-form .ant-input-affix-wrapper:hover,
+.udv-form .ant-select-selector:hover,
+.udv-form .ant-input-textarea textarea:hover,
+.udv-form .ant-picker:hover {
+    border-color: var(--brand-color) !important;
 }
 
-.udv-input::placeholder,
-.udv-textarea::placeholder {
+.udv-form .ant-input:focus,
+.udv-form .ant-input-affix-wrapper-focused,
+.udv-form .ant-select-focused .ant-select-selector,
+.udv-form .ant-picker-focused,
+.udv-form .ant-input-textarea textarea:focus {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
+}
+
+.udv-form .ant-select-selection-placeholder,
+.udv-form .ant-select-selection-item {
+    color: var(--primary-text);
+}
+
+.udv-form .ant-input-prefix {
     color: var(--secondary-text);
 }
 
@@ -134,28 +180,24 @@
     color: var(--secondary-text);
 }
 
-/* Select Styling */
-.udv-select .ant-select-selector {
-    background-color: var(--input-bg) !important;
-    border-color: var(--border-color) !important;
-    color: var(--primary-text) !important;
+/* Buttons (match Execution panel) */
+.udv-form .ant-btn {
+    border-color: var(--border-color);
+    background-color: var(--card-bg);
+    transition: all 0.3s ease;
 }
 
-.udv-select:hover .ant-select-selector {
-    border-color: var(--brand-color) !important;
+.udv-form .ant-btn:hover {
+    border-color: var(--brand-color);
+    color: var(--brand-color);
 }
 
-.udv-select.ant-select-focused .ant-select-selector {
-    border-color: var(--brand-color) !important;
-    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1) !important;
-}
-
-/* Date Picker Styling */
-.udv-date-picker .ant-picker-input>input {
+/* Date Picker suffix and input color */
+.udv-form .ant-picker-input>input {
     color: var(--primary-text);
 }
 
-.udv-date-picker .ant-picker-suffix {
+.udv-form .ant-picker-suffix {
     color: var(--secondary-text);
 }
 
@@ -183,6 +225,20 @@
 
 .udv-upload .ant-upload-select:hover {
     border-color: var(--brand-color);
+    background-color: var(--hover-bg);
+}
+
+/* Uploaded list styling (match Execution panel) */
+.udv-form .ant-upload-list {
+    color: var(--primary-text);
+}
+
+.udv-form .ant-upload-list-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.udv-form .ant-upload-list-item:hover {
     background-color: var(--hover-bg);
 }
 
@@ -297,132 +353,322 @@
 
 .udv-documents-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 20px;
     width: 100%;
 }
 
+/* Document Card */
 .udv-document-card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px var(--shadow);
+    border-radius: 8px;
+    box-shadow: var(--button-shadow);
     transition: all 0.3s ease;
     overflow: hidden;
 }
 
+.udv-document-card .ant-card-body {
+    padding: 0;
+}
+
 .udv-document-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 16px var(--shadow);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--shadow);
     border-color: var(--brand-color);
 }
 
+/* Card Header */
 .udv-document-card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
+    align-items: center;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.udv-document-card-title {
+.udv-document-header-left {
     display: flex;
     align-items: center;
     gap: 12px;
     flex: 1;
 }
 
-.udv-document-card-icon {
-    font-size: 32px;
-    color: var(--brand-color);
-    padding: 8px;
-    background-color: rgba(235, 178, 54, 0.1);
-    border-radius: 8px;
+.udv-document-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-color) 0%, #d4a030 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--button-text);
+    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.3);
 }
 
-.udv-document-card-title h3 {
+.udv-document-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.udv-document-name {
     margin: 0;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--primary-text);
+    line-height: 1.3;
 }
 
 .udv-document-user-id {
-    margin: 4px 0 0;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--secondary-text);
-    font-family: monospace;
-}
-
-.udv-document-badge {
-    margin: 0;
+    font-family: 'Courier New', monospace;
     font-weight: 500;
+    letter-spacing: 0.3px;
 }
 
-.udv-document-divider {
-    margin: 16px 0;
-    border-color: var(--border-color);
-}
-
-.udv-documents-container .ant-divider {
-    margin: 10px 0px !important;
-}
-
-
-.udv-document-card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0px;
-}
-
-.udv-document-info-row {
+.udv-document-header-right {
     display: flex;
     align-items: center;
-    padding: 5px 0;
 }
 
-.udv-document-info-icon {
-    font-size: 16px;
+.udv-department-tag {
+    margin: 0;
+    padding: 4px 12px;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--primary-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Info Grid Section */
+.udv-document-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--card-bg);
+}
+
+.udv-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.udv-info-item:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--brand-color);
+}
+
+.udv-info-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.udv-info-icon {
+    font-size: 12px;
     color: var(--brand-color);
 }
 
-.udv-document-info-label {
+.udv-info-value {
     font-size: 13px;
-    color: var(--secondary-text);
-    font-weight: 500;
-    min-width: 100px;
-}
-
-.udv-document-info-value {
-    font-size: 13px;
+    font-weight: 600;
     color: var(--primary-text);
-    font-weight: 500;
+    line-height: 1.4;
 }
 
-.udv-document-card-footer {
-    padding-top: 8px;
+.udv-job-type-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: var(--brand-color);
+    color: var(--button-text);
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
 }
 
-.udv-document-links {
+/* Salary Section */
+.udv-salary-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.udv-salary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.udv-salary-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.udv-salary-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-text);
+    font-family: 'Courier New', monospace;
+}
+
+.udv-salary-highlight {
+    color: var(--brand-color);
+    font-size: 15px;
+}
+
+.udv-salary-arrow {
+    font-size: 20px;
+    color: var(--brand-color);
+    font-weight: bold;
+    padding: 0 8px;
+}
+
+/* Bank Section */
+.udv-bank-section {
+    padding: 14px 16px;
+    background-color: var(--card-bg);
+}
+
+.udv-bank-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.udv-bank-icon {
+    font-size: 14px;
+    color: var(--brand-color);
+}
+
+.udv-bank-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.udv-bank-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.udv-bank-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background-color: var(--secondary-bg);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.udv-bank-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--secondary-text);
+}
+
+.udv-bank-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-text);
+    font-family: 'Courier New', monospace;
+}
+
+/* Document Footer */
+.udv-document-footer {
+    padding: 14px 16px;
+    background-color: var(--secondary-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.udv-footer-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--secondary-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.udv-document-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
 }
 
-.udv-document-link-button {
-    color: var(--brand-color);
-    padding: 4px 8px;
-    font-size: 13px;
-    height: auto;
-    display: inline-flex;
+.udv-doc-btn {
+    flex: 1;
+    min-width: 100px;
+    height: 32px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--primary-text);
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    transition: all 0.2s ease;
 }
 
-.udv-document-link-button:hover {
-    color: var(--button-primary-hover);
-    background-color: var(--hover-bg);
+.udv-doc-btn:hover {
+    background-color: var(--brand-color);
+    border-color: var(--brand-color);
+    color: var(--button-text);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.3);
 }
 
+.udv-doc-btn .anticon {
+    font-size: 14px;
+}
+
+/* Empty State */
 .udv-empty-state {
     display: flex;
     flex-direction: column;
@@ -478,6 +724,34 @@
     .udv-reset-button {
         width: 100%;
     }
+
+    .udv-documents-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .udv-document-info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .udv-salary-section {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .udv-salary-arrow {
+        transform: rotate(90deg);
+        padding: 8px 0;
+    }
+
+    .udv-document-actions {
+        flex-direction: column;
+    }
+
+    .udv-doc-btn {
+        width: 100%;
+    }
 }
 
 @media (max-width: 576px) {
@@ -493,8 +767,202 @@
         height: 120px;
     }
 
-    .udv-documents-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+    .udv-document-card-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .udv-document-header-right {
+        width: 100%;
+    }
+
+    .udv-department-tag {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Modal Styling */
+.udv-modal .ant-modal-content {
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+}
+
+.udv-modal .ant-modal-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.udv-modal .ant-modal-title {
+    color: var(--primary-text) !important;
+}
+
+.udv-modal .ant-modal-close {
+    color: var(--secondary-text);
+}
+
+.udv-modal .ant-modal-close:hover {
+    color: var(--primary-text);
+    background-color: var(--secondary-bg);
+}
+
+/* Salary Discussion */
+.udv-table .ant-table {
+    background: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.udv-table .ant-table-thead>tr>th {
+    background: var(--secondary-bg) !important;
+    color: var(--secondary-text) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.udv-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.udv-table .ant-table-tbody>tr:hover>td {
+    background: var(--hover-bg) !important;
+}
+
+.udv-table .ant-pagination-item-active {
+    background-color: var(--card-bg);
+    border-color: var(--brand-color);
+}
+
+.udv-table .ant-pagination-item-active a {
+    color: var(--brand-color);
+}
+
+.udv-salary-discussion-container {
+    padding: 0;
+}
+
+.udv-table-small .ant-table-thead>tr>th {
+    background: var(--secondary-bg) !important;
+    font-size: 11px;
+}
+
+.udv-table-small .ant-table-tbody>tr>td {
+    font-size: 13px;
+}
+
+.udv-table-small .ant-table-cell {
+    padding: 8px 12px !important;
+}
+
+/* Salary Summary Header */
+.udv-salary-summary-card {
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--card-bg) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.udv-summary-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.udv-summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--secondary-text);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.udv-summary-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.udv-summary-value.large {
+    font-size: 20px;
+    font-family: 'Courier New', monospace;
+}
+
+.udv-summary-value.highlight {
+    color: var(--brand-color);
+}
+
+/* Sections */
+.udv-section-title.small-margin {
+    margin-bottom: 12px !important;
+    font-size: 14px;
+}
+
+.udv-compact-table-wrapper {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.udv-increment-panel {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 16px;
+    height: 100%;
+}
+
+/* Salary Preview */
+.udv-salary-preview-card {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.preview-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--primary-text);
+    align-items: center;
+}
+
+.preview-row:last-child {
+    margin-bottom: 0;
+}
+
+.preview-value {
+    font-weight: 700;
+    color: var(--brand-color);
+    font-size: 15px;
+}
+
+.preview-row.increase {
+    font-size: 12px;
+}
+
+.preview-row.increase span:last-child {
+    color: #52c41a;
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

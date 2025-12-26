@@ -6,8 +6,25 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory'],
     endpoints: (builder) => ({
+        incrementSalary: builder.mutation({
+            query: ({ userId, body }) => ({
+                url: `/api/userverificationdocuments/incrementSalary/${userId}`,
+                method: 'PATCH',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['UserDocuments', 'SalaryHistory'],
+        }),
+        getSalaryHistory: builder.query({
+            query: (userId) => ({
+                url: `/api/userverificationdocuments/salaryHistory/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['SalaryHistory'],
+        }),
         createLeave: builder.mutation({
             query: (body) => ({
                 url: '/api/leave/request',
@@ -369,6 +386,15 @@ export const api = createApi({
             }),
             invalidatesTags: ['UserDocuments'],
         }),
+        updateUserVerificationDocument: builder.mutation({
+            query: ({ userId, body }) => ({
+                url: `/api/userverificationdocuments/updateByUserId/${userId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['UserDocuments'],
+        }),
         getAllUserVerificationDocuments: builder.query({
             query: () => ({
                 url: '/api/userverificationdocuments/getAll',
@@ -523,6 +549,7 @@ export const {
     useGetAllCheckinsQuery,
     useGetTodayCheckinQuery,
     useCreateUserVerificationDocumentMutation,
+    useUpdateUserVerificationDocumentMutation,
     useGetAllUserVerificationDocumentsQuery,
     useCheckCreateAccountSignInQuery,
     useLazyCheckCreateAccountSignInQuery,
@@ -538,7 +565,9 @@ export const {
     useUpdateTeamMutation,
     useGetAnalyticsOverviewQuery,
     useGetUserWiseAnalyticsQuery,
-    useUpdateUserDetailsMutation
+    useUpdateUserDetailsMutation,
+    useIncrementSalaryMutation,
+    useGetSalaryHistoryQuery
 } = api
 
 
