@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -443,6 +443,37 @@ export const api = createApi({
                 { type: 'Clients', id: userId },
                 { type: 'Clients', id: 'LIST' }
             ],
+            async onCacheEntryAdded(
+                arg,
+                { cacheDataLoaded, cacheEntryRemoved, dispatch }
+            ) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+
+                const handleUpdate = () => {
+                    dispatch(api.util.invalidateTags([{ type: 'Clients', id: arg }]));
+                    dispatch(api.util.invalidateTags([{ type: 'Clients', id: 'LIST' }]));
+                };
+
+                try {
+                    await cacheDataLoaded;
+                    socket.on('client:created', handleUpdate);
+                    socket.on('client:updated', handleUpdate);
+                    socket.on('client:deleted', handleUpdate);
+                    socket.on('client:change', handleUpdate);
+                    // Also refresh client list when an attachment is added, 
+                    // as it might affect some counts or last updated status
+                    socket.on('client:attachment:added', handleUpdate);
+                } catch { }
+
+                await cacheEntryRemoved;
+                socket.off('client:created', handleUpdate);
+                socket.off('client:updated', handleUpdate);
+                socket.off('client:deleted', handleUpdate);
+                socket.off('client:change', handleUpdate);
+                socket.off('client:attachment:added', handleUpdate);
+            },
         }),
         updateClient: builder.mutation({
             query: ({ clientId, body }) => ({
@@ -459,7 +490,11 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
-            invalidatesTags: ['Clients'],
+            invalidatesTags: (result, error, { clientId, body }) => [
+                { type: 'Clients', id: 'LIST' },
+                { type: 'Clients', id: 'ATTACHMENTS-LIST' },
+                { type: 'Clients', id: `ATTACHMENTS-${clientId}-${body?.uploadedBy?.userId}` }
+            ],
         }),
         getClientAttachmentsByUserId: builder.query({
             query: ({ clientId, userId }) => ({
@@ -467,107 +502,170 @@ export const api = createApi({
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
+            providesTags: (result, error, { clientId, userId }) => [
+                { type: 'Clients', id: `ATTACHMENTS-${clientId}-${userId}` },
+                { type: 'Clients', id: 'ATTACHMENTS-LIST' }
+            ],
+            async onCacheEntryAdded(
+                arg,
+                { updateCachedData, cacheDataLoaded, cacheEntryRemoved, updateCachedData: update, dispatch }
+            ) {
+                // We'll use the centralized socket utilities
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+
+                if (!socket) return;
+
+                const handleUpdate = () => {
+                    // Force a refetch when data changes
+                    // In a more complex app, we could merge the new data directly
+                    dispatch(api.util.invalidateTags([{ type: 'Clients', id: `ATTACHMENTS-${arg.clientId}-${arg.userId}` }]));
+                };
+
+                try {
+                    await cacheDataLoaded;
+
+                    socket.on('client:attachment:added', handleUpdate);
+                    socket.on('client:attachment:updated', handleUpdate);
+                    socket.on('client:attachment:deleted', handleUpdate);
+                    socket.on('client:change', handleUpdate);
+
+                } catch {
+                    // no-op if cacheEntryRemoved triggers before cacheDataLoaded
+                }
+
+                await cacheEntryRemoved;
+                socket.off('client:attachment:added', handleUpdate);
+                socket.off('client:attachment:updated', handleUpdate);
+                socket.off('client:attachment:deleted', handleUpdate);
+                socket.off('client:change', handleUpdate);
+            },
+        }),
+        archiveClientAttachment: builder.mutation({
+            query: ({ clientId, attachmentId }) => ({
+                url: `/api/clientmanagement/${clientId}/attachments/${attachmentId}`,
+                method: 'DELETE',
+                body: { archived: true },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { clientId }) => [
+                { type: 'Clients', id: 'LIST' },
+                { type: 'Clients', id: 'ATTACHMENTS-LIST' }
+            ],
+        }),
+        deleteClientAttachment: builder.mutation({
+            query: ({ clientId, attachmentId }) => ({
+                url: `/api/clientmanagement/${clientId}/attachments/${attachmentId}`,
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { clientId }) => [
+                { type: 'Clients', id: 'LIST' },
+                { type: 'Clients', id: 'ATTACHMENTS-LIST' }
+            ],
         }),
         createTeam: builder.mutation({
-            query: (body) => ({
-                url: '/api/teammanagement/createTeam',
-                method: 'POST',
-                body,
-                headers: { 'Content-Type': 'application/json' },
+                query: (body) => ({
+                    url: '/api/teammanagement/createTeam',
+                    method: 'POST',
+                    body,
+                    headers: { 'Content-Type': 'application/json' },
+                }),
+                invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
             }),
-            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
-        }),
-        getAllTeams: builder.query({
-            query: () => ({
-                url: '/api/teammanagement/getAllTeams',
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+            getAllTeams: builder.query({
+                query: () => ({
+                    url: '/api/teammanagement/getAllTeams',
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                }),
+                providesTags: ['Teams'], // Provide tag for cache invalidation
             }),
-            providesTags: ['Teams'], // Provide tag for cache invalidation
-        }),
-        updateTeam: builder.mutation({
-            query: ({ teamId, body }) => ({
-                url: `/api/teammanagement/updateTeam/${teamId}`,
-                method: 'PUT',
-                body,
-                headers: { 'Content-Type': 'application/json' },
+            updateTeam: builder.mutation({
+                query: ({ teamId, body }) => ({
+                    url: `/api/teammanagement/updateTeam/${teamId}`,
+                    method: 'PUT',
+                    body,
+                    headers: { 'Content-Type': 'application/json' },
+                }),
+                invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
             }),
-            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
-        }),
-        updateUserDetails: builder.mutation({
-            query: ({ userId, body }) => ({
-                url: `/api/updateUserDetails/${userId}`,
-                method: 'PUT',
-                body,
-                headers: { 'Content-Type': 'application/json' },
+            updateUserDetails: builder.mutation({
+                query: ({ userId, body }) => ({
+                    url: `/api/updateUserDetails/${userId}`,
+                    method: 'PUT',
+                    body,
+                    headers: { 'Content-Type': 'application/json' },
+                }),
+                invalidatesTags: ['User'],
             }),
-            invalidatesTags: ['User'],
         }),
-    }),
-})
+    })
 
 export const {
-    useCreateLeaveMutation,
-    useGetUserLeavesQuery,
-    useGetAllLeavesQuery,
-    useRejectLeaveMutation,
-    useAddFestiveNoteMutation,
-    useUpdateFestiveMutation,
-    useGetFestiveNotesByUserQuery,
-    useCheckInMutation,
-    useCheckoutMutation,
-    useCheckInStatusQuery,
-    useCheckoutStatusQuery,
-    useLazyCheckoutStatusQuery,
-    useAddUserDetailsMutation,
-    useGenerateUserCredentialMutation,
-    useSignInUserMutation,
-    useGetUserDataQuery,
-    useAddUserDataMutation,
-    useUpdateUserDataMutation,
-    useDeleteUserDataMutation,
-    useAddTaskAssignMutation,
-    useLazyGetSuggestedSlotsQuery,
-    useGetTaskAssignQuery,
-    useGetTaskAssignByDateQuery,
-    useLazyGetTaskAssignByDateQuery,
-    useArchiveTaskMutation,
-    useUpdateTaskStatusMutation,
-    useRequestTaskExtensionMutation,
-    useRespondTaskExtensionMutation,
-    useAddTaskChatMutation,
-    useGetTaskChatMessagesQuery,
-    useLazyGetTaskChatMessagesQuery,
-    useGetUserChatMessagesQuery,
-    useAddGlobalChatMutation,
-    useGetGlobalChatMessagesQuery,
-    useLazyGetGlobalChatMessagesQuery,
-    useGetRecentGlobalChatMessagesQuery,
-    useLazyGetRecentGlobalChatMessagesQuery,
-    useArchiveGlobalChatMessageMutation,
-    useGetAllUsersQuery,
-    useGetAllCheckinsQuery,
-    useGetTodayCheckinQuery,
-    useCreateUserVerificationDocumentMutation,
-    useUpdateUserVerificationDocumentMutation,
-    useGetAllUserVerificationDocumentsQuery,
-    useCheckCreateAccountSignInQuery,
-    useLazyCheckCreateAccountSignInQuery,
-    useSignInCreateAccountMutation,
-    useCreateClientMutation,
-    useGetAllClientsQuery,
-    useUpdateClientMutation,
-    useGetClientsByUserIdQuery,
-    useAddClientAttachmentMutation,
-    useGetClientAttachmentsByUserIdQuery,
-    useCreateTeamMutation,
-    useGetAllTeamsQuery,
-    useUpdateTeamMutation,
-    useGetAnalyticsOverviewQuery,
-    useGetUserWiseAnalyticsQuery,
-    useUpdateUserDetailsMutation,
-    useIncrementSalaryMutation,
-    useGetSalaryHistoryQuery
-} = api
+        useCreateLeaveMutation,
+        useGetUserLeavesQuery,
+        useGetAllLeavesQuery,
+        useRejectLeaveMutation,
+        useAddFestiveNoteMutation,
+        useUpdateFestiveMutation,
+        useGetFestiveNotesByUserQuery,
+        useCheckInMutation,
+        useCheckoutMutation,
+        useCheckInStatusQuery,
+        useCheckoutStatusQuery,
+        useLazyCheckoutStatusQuery,
+        useAddUserDetailsMutation,
+        useGenerateUserCredentialMutation,
+        useSignInUserMutation,
+        useGetUserDataQuery,
+        useAddUserDataMutation,
+        useUpdateUserDataMutation,
+        useDeleteUserDataMutation,
+        useAddTaskAssignMutation,
+        useLazyGetSuggestedSlotsQuery,
+        useGetTaskAssignQuery,
+        useGetTaskAssignByDateQuery,
+        useLazyGetTaskAssignByDateQuery,
+        useArchiveTaskMutation,
+        useUpdateTaskStatusMutation,
+        useRequestTaskExtensionMutation,
+        useRespondTaskExtensionMutation,
+        useAddTaskChatMutation,
+        useGetTaskChatMessagesQuery,
+        useLazyGetTaskChatMessagesQuery,
+        useGetUserChatMessagesQuery,
+        useAddGlobalChatMutation,
+        useGetGlobalChatMessagesQuery,
+        useLazyGetGlobalChatMessagesQuery,
+        useGetRecentGlobalChatMessagesQuery,
+        useLazyGetRecentGlobalChatMessagesQuery,
+        useArchiveGlobalChatMessageMutation,
+        useGetAllUsersQuery,
+        useGetAllCheckinsQuery,
+        useGetTodayCheckinQuery,
+        useCreateUserVerificationDocumentMutation,
+        useUpdateUserVerificationDocumentMutation,
+        useGetAllUserVerificationDocumentsQuery,
+        useCheckCreateAccountSignInQuery,
+        useLazyCheckCreateAccountSignInQuery,
+        useSignInCreateAccountMutation,
+        useCreateClientMutation,
+        useGetAllClientsQuery,
+        useUpdateClientMutation,
+        useGetClientsByUserIdQuery,
+        useAddClientAttachmentMutation,
+        useGetClientAttachmentsByUserIdQuery,
+        useCreateTeamMutation,
+        useGetAllTeamsQuery,
+        useUpdateTeamMutation,
+        useGetAnalyticsOverviewQuery,
+        useGetUserWiseAnalyticsQuery,
+        useUpdateUserDetailsMutation,
+        useIncrementSalaryMutation,
+        useGetSalaryHistoryQuery,
+        useDeleteClientAttachmentMutation,
+        useArchiveClientAttachmentMutation
+    } = api
 
 

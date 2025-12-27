@@ -559,6 +559,26 @@
     border-color: #444 !important;
 }
 
+.archive-doc-btn {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+.archive-doc-btn:hover {
+    background-color: rgba(255, 77, 79, 0.1);
+    color: #ff7875;
+}
+
 .upload-doc-modal textarea {
     height: 12px;
 }

@@ -68,13 +68,13 @@ export const onTaskAdded = (callback) => {
             const task = data.task || data;
             callback(task);
         };
-        
+
         socket.on('taskAdded', callback);
         // Also listen to backend socket events with wrapped callback
         socket.on('task:new', wrappedCallback);
         socket.on('task:created', wrappedCallback);
         socket.on('task:assigned', wrappedCallback);
-        
+
         // Store the wrapped callback so we can remove it later
         if (!socket._taskAddedCallbacks) {
             socket._taskAddedCallbacks = new Map();
@@ -120,10 +120,10 @@ export const onTaskUpdated = (callback) => {
             const task = data.task || data;
             callback(task);
         };
-        
+
         socket.on('task:updated', wrappedCallback);
         socket.on('task:statusUpdated', wrappedCallback);
-        
+
         // Store the wrapped callback so we can remove it later
         if (!socket._taskUpdatedCallbacks) {
             socket._taskUpdatedCallbacks = new Map();
@@ -188,6 +188,26 @@ export const offTaskExtensionUpdated = (callback) => {
 export const emitTaskExtensionResponded = (payload) => {
     if (socket && socket.connected) {
         socket.emit('task-extension-updated', payload);
+    }
+};
+
+// Client Attachment events
+export const onClientAttachmentUpdated = (callback) => {
+    if (socket) {
+        socket.on('client:attachment:added', callback);
+        socket.on('client:attachment:updated', callback);
+        socket.on('client:attachment:deleted', callback);
+        // Also listen to common client sync events
+        socket.on('client:change', callback);
+    }
+};
+
+export const offClientAttachmentUpdated = (callback) => {
+    if (socket) {
+        socket.off('client:attachment:added', callback);
+        socket.off('client:attachment:updated', callback);
+        socket.off('client:attachment:deleted', callback);
+        socket.off('client:change', callback);
     }
 };
 

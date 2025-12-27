@@ -4,13 +4,14 @@ import { Table, Tag, Tabs, Row, Col, Button, Input, Select, DatePicker, AutoComp
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../store/slices/authSlice';
-import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetTaskAssignQuery, useAddClientAttachmentMutation, useGetClientAttachmentsByUserIdQuery } from '../../../store/api';
+import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetTaskAssignQuery, useAddClientAttachmentMutation, useGetClientAttachmentsByUserIdQuery, useDeleteClientAttachmentMutation, useArchiveClientAttachmentMutation } from '../../../store/api';
 import ContentProviderTaskEntries from './TaskEntries/ContentProviderTaskEntries';
 import EmptyState from '../../CommonComponents/EmptyState/EmptyState';
-import { BsFilter, BsSearch, BsUpload, BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck } from 'react-icons/bs';
+import { BsFilter, BsSearch, BsUpload, BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsTrash } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import { useSocket } from '../../../contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
+import { onClientAttachmentUpdated, offClientAttachmentUpdated } from '../../../utils/socket';
 
 const ContentProviderPanel = () => {
     const theme = useSelector(selectTheme);
@@ -30,10 +31,12 @@ const ContentProviderPanel = () => {
     const [documentHistoryModalVisible, setDocumentHistoryModalVisible] = useState(false);
     const [selectedClientForHistory, setSelectedClientForHistory] = useState(null);
     const [copiedLinkId, setCopiedLinkId] = useState(null);
+    const [modal, contextHolder] = Modal.useModal();
 
     const { socket } = useSocket();
     const { showSuccess, showError } = useNotification();
     const [addClientAttachment, { isLoading: isSubmittingAttachment }] = useAddClientAttachmentMutation();
+    const [archiveClientAttachment] = useArchiveClientAttachmentMutation();
 
     // Fetch clients for the logged-in user - NO POLLING, using sockets for real-time updates
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsByUserIdQuery(userId, {
@@ -51,32 +54,28 @@ const ContentProviderPanel = () => {
 
     const clients = clientsData?.data || [];
 
-    // Real-time client updates via socket - only refetch when data actually changes
+    // Real-time client updates via socket
     useEffect(() => {
         if (!socket || !userId) return;
 
-        // Listen for client-related socket events
+        // Listen for client-related socket events using centralized helper
         const handleClientUpdate = () => {
             console.log('✅ Client data changed - refetching...');
             refetchClients();
         };
 
-        // Listen to common client socket events (adjust event names based on your backend)
+        onClientAttachmentUpdated(handleClientUpdate);
+
+        // Generic client update events not covered by handleClientUpdate
         socket.on('client:created', handleClientUpdate);
         socket.on('client:updated', handleClientUpdate);
         socket.on('client:deleted', handleClientUpdate);
-        socket.on('client:attachment:added', handleClientUpdate);
 
-        // Generic client update event
-        socket.on('client:change', handleClientUpdate);
-
-        // Cleanup listeners on unmount
         return () => {
+            offClientAttachmentUpdated(handleClientUpdate);
             socket.off('client:created', handleClientUpdate);
             socket.off('client:updated', handleClientUpdate);
             socket.off('client:deleted', handleClientUpdate);
-            socket.off('client:attachment:added', handleClientUpdate);
-            socket.off('client:change', handleClientUpdate);
         };
     }, [socket, userId, refetchClients]);
 
@@ -197,6 +196,8 @@ const ContentProviderPanel = () => {
     );
 
     // Real-time document history updates via socket
+    // NOTE: This is now also handled automatically by RTK Query's onCacheEntryAdded in api.js
+    // but we keep this as a local override to ensure immediate refresh of the history modal
     useEffect(() => {
         if (!socket || !selectedClientForHistory?._id || !documentHistoryModalVisible) return;
 
@@ -205,14 +206,10 @@ const ContentProviderPanel = () => {
             refetchDocumentHistory();
         };
 
-        socket.on('client:attachment:added', handleDocumentUpdate);
-        socket.on('client:attachment:updated', handleDocumentUpdate);
-        socket.on('client:attachment:deleted', handleDocumentUpdate);
+        onClientAttachmentUpdated(handleDocumentUpdate);
 
         return () => {
-            socket.off('client:attachment:added', handleDocumentUpdate);
-            socket.off('client:attachment:updated', handleDocumentUpdate);
-            socket.off('client:attachment:deleted', handleDocumentUpdate);
+            offClientAttachmentUpdated(handleDocumentUpdate);
         };
     }, [socket, selectedClientForHistory?._id, documentHistoryModalVisible, refetchDocumentHistory]);
 
@@ -253,7 +250,9 @@ const ContentProviderPanel = () => {
 
     const documentsByMonth = React.useMemo(() => {
         const attachments = documentHistoryData?.data?.attachments || [];
-        return groupDocumentsByMonth(attachments);
+        // Only show documents that are not archived
+        const filteredAttachments = attachments.filter(doc => doc.archived === false || doc.archived === undefined);
+        return groupDocumentsByMonth(filteredAttachments);
     }, [documentHistoryData]);
 
     // Handle copy to clipboard
@@ -267,6 +266,32 @@ const ContentProviderPanel = () => {
             console.error('Failed to copy:', error);
             showError('Failed to copy link');
         }
+    };
+
+    // Handle archive attachment
+    const handleDeleteAttachment = (attachmentId) => {
+        modal.confirm({
+            title: 'Archive Attachment',
+            content: 'Are you sure you want to archive this attachment?',
+            okText: 'Yes, Archive',
+            okType: 'danger',
+            cancelText: 'No',
+            centered: true,
+            onOk: () => {
+                return archiveClientAttachment({
+                    clientId: selectedClientForHistory?._id,
+                    attachmentId
+                }).unwrap()
+                    .then(() => {
+                        showSuccess('Attachment archived successfully');
+                        refetchDocumentHistory();
+                    })
+                    .catch((error) => {
+                        console.error('Failed to archive attachment:', error);
+                        showError(error?.data?.message || 'Failed to archive attachment');
+                    });
+            }
+        });
     };
 
     // Prepare collapse panels for month-wise display with compact card design
@@ -287,6 +312,18 @@ const ContentProviderPanel = () => {
                                 <div className="document-time">
                                     {dayjs(doc.createdAt).format('hh:mm A')}
                                 </div>
+                                <button
+                                    className="archive-doc-btn"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleDeleteAttachment(doc._id);
+                                    }}
+                                    title="Archive attachment"
+                                    type="button"
+                                >
+                                    <BsTrash />
+                                </button>
                             </div>
 
                             <div className="document-link-container">
@@ -545,6 +582,7 @@ const ContentProviderPanel = () => {
 
     return (
         <div id="ContentProviderPanel" className={`theme-${theme}`}>
+            {contextHolder}
             <div className='ContentProviderPanel-container'>
                 <div className="clients-segregation-header">
                     <h2 className="panel-title">{userFullName} Clients</h2>
