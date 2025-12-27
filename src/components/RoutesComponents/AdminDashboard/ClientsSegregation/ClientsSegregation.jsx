@@ -49,6 +49,11 @@ const ClientsSegregation = () => {
             } else if (role === 'ContentProvider' && position === 'Content Writer') {
                 positionsMap.set('All Content Writer', { label: 'All Content Writer', role: 'ContentProvider', position: 'Content Writer' });
             }
+
+            // Add "All schedulers and apis" for all Execution role users
+            if (role === 'Execution') {
+                positionsMap.set('All schedulers', { label: 'All schedulers', role: 'Execution', isAllExecution: true });
+            }
         });
 
         return Array.from(positionsMap.values());
@@ -58,10 +63,11 @@ const ClientsSegregation = () => {
 
     // Track selected users for each position separately
     const [selectedUsersByPosition, setSelectedUsersByPosition] = useState({
-        'Select SME': [],
-        'Select Graphics Designer': [],
-        'Select Video Editor': [],
-        'Select Content Writer': []
+        'All SME': [],
+        'All Graphics Designer': [],
+        'All Video Editor': [],
+        'All Content Writer': [],
+        'All schedulers and apis': []
     });
 
     // Get users for a specific position
@@ -69,9 +75,12 @@ const ClientsSegregation = () => {
         const posOption = positionOptions.find(p => p.label === positionLabel);
         if (!posOption) return [];
 
-        return allUsers.filter(user =>
-            user.role === posOption.role && user.position === posOption.position
-        );
+        return allUsers.filter(user => {
+            if (posOption.isAllExecution) {
+                return user.role === 'Execution';
+            }
+            return user.role === posOption.role && user.position === posOption.position;
+        });
     };
 
     // Handle user selection for a specific position
@@ -122,16 +131,20 @@ const ClientsSegregation = () => {
             'All SME': [],
             'All Graphics Designer': [],
             'All Video Editor': [],
-            'All Content Writer': []
+            'All Content Writer': [],
+            'All schedulers and apis': []
         };
 
         if (assignedUsers.length > 0) {
             assignedUsers.forEach(au => {
                 const user = allUsers.find(u => u.userId === au.userId);
                 if (user) {
-                    const posOption = positionOptions.find(p =>
-                        p.role === user.role && p.position === user.position
-                    );
+                    const posOption = positionOptions.find(p => {
+                        if (p.isAllExecution) {
+                            return user.role === 'Execution';
+                        }
+                        return p.role === user.role && p.position === user.position;
+                    });
                     if (posOption && usersByPos[posOption.label]) {
                         usersByPos[posOption.label].push(user.userId);
                     }
@@ -215,7 +228,8 @@ const ClientsSegregation = () => {
                     'All SME': [],
                     'All Graphics Designer': [],
                     'All Video Editor': [],
-                    'All Content Writer': []
+                    'All Content Writer': [],
+                    'All schedulers and apis': []
                 });
                 setEditingClient(null);
                 setIsOpen(false);
@@ -246,7 +260,8 @@ const ClientsSegregation = () => {
                     'All SME': [],
                     'All Graphics Designer': [],
                     'All Video Editor': [],
-                    'All Content Writer': []
+                    'All Content Writer': [],
+                    'All schedulers and apis': []
                 });
 
                 // Close modal immediately
@@ -276,6 +291,7 @@ const ClientsSegregation = () => {
             'All Graphics Designer': [],
             'All Video Editor': [],
             'All Content Writer': [],
+            'All schedulers and apis': [],
             'Social Media Manager': []
         });
         // Reset form on close
@@ -309,6 +325,7 @@ const ClientsSegregation = () => {
                 open={isOpen}
                 onCancel={handleClose}
                 onOk={handleSubmit}
+                maskClosable={false}
                 width={800}
                 okText={editingClient ? 'Update Client' : 'Add Client'}
                 cancelText="Cancel"
