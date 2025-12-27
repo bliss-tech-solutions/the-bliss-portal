@@ -425,6 +425,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['Clients'],
         }),
         getAllClients: builder.query({
             query: () => ({
@@ -432,6 +433,35 @@ export const api = createApi({
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
+            providesTags: ['Clients'],
+            async onCacheEntryAdded(
+                arg,
+                { cacheDataLoaded, cacheEntryRemoved, dispatch }
+            ) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+
+                const handleUpdate = () => {
+                    dispatch(api.util.invalidateTags(['Clients']));
+                };
+
+                try {
+                    await cacheDataLoaded;
+                    socket.on('client:created', handleUpdate);
+                    socket.on('client:updated', handleUpdate);
+                    socket.on('client:deleted', handleUpdate);
+                    socket.on('client:change', handleUpdate);
+                    socket.on('client:attachment:added', handleUpdate);
+                } catch { }
+
+                await cacheEntryRemoved;
+                socket.off('client:created', handleUpdate);
+                socket.off('client:updated', handleUpdate);
+                socket.off('client:deleted', handleUpdate);
+                socket.off('client:change', handleUpdate);
+                socket.off('client:attachment:added', handleUpdate);
+            },
         }),
         getClientsByUserId: builder.query({
             query: (userId) => ({
@@ -482,6 +512,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['Clients'],
         }),
         addClientAttachment: builder.mutation({
             query: ({ clientId, body }) => ({
@@ -565,107 +596,107 @@ export const api = createApi({
             ],
         }),
         createTeam: builder.mutation({
-                query: (body) => ({
-                    url: '/api/teammanagement/createTeam',
-                    method: 'POST',
-                    body,
-                    headers: { 'Content-Type': 'application/json' },
-                }),
-                invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
+            query: (body) => ({
+                url: '/api/teammanagement/createTeam',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
             }),
-            getAllTeams: builder.query({
-                query: () => ({
-                    url: '/api/teammanagement/getAllTeams',
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                }),
-                providesTags: ['Teams'], // Provide tag for cache invalidation
-            }),
-            updateTeam: builder.mutation({
-                query: ({ teamId, body }) => ({
-                    url: `/api/teammanagement/updateTeam/${teamId}`,
-                    method: 'PUT',
-                    body,
-                    headers: { 'Content-Type': 'application/json' },
-                }),
-                invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
-            }),
-            updateUserDetails: builder.mutation({
-                query: ({ userId, body }) => ({
-                    url: `/api/updateUserDetails/${userId}`,
-                    method: 'PUT',
-                    body,
-                    headers: { 'Content-Type': 'application/json' },
-                }),
-                invalidatesTags: ['User'],
-            }),
+            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
         }),
-    })
+        getAllTeams: builder.query({
+            query: () => ({
+                url: '/api/teammanagement/getAllTeams',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['Teams'], // Provide tag for cache invalidation
+        }),
+        updateTeam: builder.mutation({
+            query: ({ teamId, body }) => ({
+                url: `/api/teammanagement/updateTeam/${teamId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Teams'], // Invalidate teams cache to trigger refetch
+        }),
+        updateUserDetails: builder.mutation({
+            query: ({ userId, body }) => ({
+                url: `/api/updateUserDetails/${userId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['User'],
+        }),
+    }),
+})
 
 export const {
-        useCreateLeaveMutation,
-        useGetUserLeavesQuery,
-        useGetAllLeavesQuery,
-        useRejectLeaveMutation,
-        useAddFestiveNoteMutation,
-        useUpdateFestiveMutation,
-        useGetFestiveNotesByUserQuery,
-        useCheckInMutation,
-        useCheckoutMutation,
-        useCheckInStatusQuery,
-        useCheckoutStatusQuery,
-        useLazyCheckoutStatusQuery,
-        useAddUserDetailsMutation,
-        useGenerateUserCredentialMutation,
-        useSignInUserMutation,
-        useGetUserDataQuery,
-        useAddUserDataMutation,
-        useUpdateUserDataMutation,
-        useDeleteUserDataMutation,
-        useAddTaskAssignMutation,
-        useLazyGetSuggestedSlotsQuery,
-        useGetTaskAssignQuery,
-        useGetTaskAssignByDateQuery,
-        useLazyGetTaskAssignByDateQuery,
-        useArchiveTaskMutation,
-        useUpdateTaskStatusMutation,
-        useRequestTaskExtensionMutation,
-        useRespondTaskExtensionMutation,
-        useAddTaskChatMutation,
-        useGetTaskChatMessagesQuery,
-        useLazyGetTaskChatMessagesQuery,
-        useGetUserChatMessagesQuery,
-        useAddGlobalChatMutation,
-        useGetGlobalChatMessagesQuery,
-        useLazyGetGlobalChatMessagesQuery,
-        useGetRecentGlobalChatMessagesQuery,
-        useLazyGetRecentGlobalChatMessagesQuery,
-        useArchiveGlobalChatMessageMutation,
-        useGetAllUsersQuery,
-        useGetAllCheckinsQuery,
-        useGetTodayCheckinQuery,
-        useCreateUserVerificationDocumentMutation,
-        useUpdateUserVerificationDocumentMutation,
-        useGetAllUserVerificationDocumentsQuery,
-        useCheckCreateAccountSignInQuery,
-        useLazyCheckCreateAccountSignInQuery,
-        useSignInCreateAccountMutation,
-        useCreateClientMutation,
-        useGetAllClientsQuery,
-        useUpdateClientMutation,
-        useGetClientsByUserIdQuery,
-        useAddClientAttachmentMutation,
-        useGetClientAttachmentsByUserIdQuery,
-        useCreateTeamMutation,
-        useGetAllTeamsQuery,
-        useUpdateTeamMutation,
-        useGetAnalyticsOverviewQuery,
-        useGetUserWiseAnalyticsQuery,
-        useUpdateUserDetailsMutation,
-        useIncrementSalaryMutation,
-        useGetSalaryHistoryQuery,
-        useDeleteClientAttachmentMutation,
-        useArchiveClientAttachmentMutation
-    } = api
+    useCreateLeaveMutation,
+    useGetUserLeavesQuery,
+    useGetAllLeavesQuery,
+    useRejectLeaveMutation,
+    useAddFestiveNoteMutation,
+    useUpdateFestiveMutation,
+    useGetFestiveNotesByUserQuery,
+    useCheckInMutation,
+    useCheckoutMutation,
+    useCheckInStatusQuery,
+    useCheckoutStatusQuery,
+    useLazyCheckoutStatusQuery,
+    useAddUserDetailsMutation,
+    useGenerateUserCredentialMutation,
+    useSignInUserMutation,
+    useGetUserDataQuery,
+    useAddUserDataMutation,
+    useUpdateUserDataMutation,
+    useDeleteUserDataMutation,
+    useAddTaskAssignMutation,
+    useLazyGetSuggestedSlotsQuery,
+    useGetTaskAssignQuery,
+    useGetTaskAssignByDateQuery,
+    useLazyGetTaskAssignByDateQuery,
+    useArchiveTaskMutation,
+    useUpdateTaskStatusMutation,
+    useRequestTaskExtensionMutation,
+    useRespondTaskExtensionMutation,
+    useAddTaskChatMutation,
+    useGetTaskChatMessagesQuery,
+    useLazyGetTaskChatMessagesQuery,
+    useGetUserChatMessagesQuery,
+    useAddGlobalChatMutation,
+    useGetGlobalChatMessagesQuery,
+    useLazyGetGlobalChatMessagesQuery,
+    useGetRecentGlobalChatMessagesQuery,
+    useLazyGetRecentGlobalChatMessagesQuery,
+    useArchiveGlobalChatMessageMutation,
+    useGetAllUsersQuery,
+    useGetAllCheckinsQuery,
+    useGetTodayCheckinQuery,
+    useCreateUserVerificationDocumentMutation,
+    useUpdateUserVerificationDocumentMutation,
+    useGetAllUserVerificationDocumentsQuery,
+    useCheckCreateAccountSignInQuery,
+    useLazyCheckCreateAccountSignInQuery,
+    useSignInCreateAccountMutation,
+    useCreateClientMutation,
+    useGetAllClientsQuery,
+    useUpdateClientMutation,
+    useGetClientsByUserIdQuery,
+    useAddClientAttachmentMutation,
+    useGetClientAttachmentsByUserIdQuery,
+    useCreateTeamMutation,
+    useGetAllTeamsQuery,
+    useUpdateTeamMutation,
+    useGetAnalyticsOverviewQuery,
+    useGetUserWiseAnalyticsQuery,
+    useUpdateUserDetailsMutation,
+    useIncrementSalaryMutation,
+    useGetSalaryHistoryQuery,
+    useDeleteClientAttachmentMutation,
+    useArchiveClientAttachmentMutation
+} = api
 
 
