@@ -4,7 +4,7 @@
 
 .global-chat-page {
     /* padding: 24px; */
-    min-height: 100vh;
+    min-height: 60vh;
     background: var(--primary-bg);
 }
 

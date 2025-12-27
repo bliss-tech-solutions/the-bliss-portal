@@ -1,12 +1,16 @@
 /* Portal SideBar Styles - Professional & Minimal */
 
 #PortalSideBar {
-    height: 100%;
+    /* height: 100%; */
     background-color: var(--sidebar-bg);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-right: 1px solid var(--border-color);
-    position: relative;
+    /* position: relative; */
     z-index: 100;
+    position: sticky;
+    top: 0px;
+    min-height: 100vh;
+
 }
 
 .portal-sidebar {
@@ -149,4 +153,3 @@
     font-size: 14px;
     letter-spacing: 0.2px;
 }
-

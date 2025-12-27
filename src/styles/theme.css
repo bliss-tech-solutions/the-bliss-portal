@@ -280,7 +280,7 @@ body {
     border-bottom-color: var(--border-color) !important;
 }
 
-.ant-input{
+.ant-input {
     background-color: var(--input-bg) !important;
     color: var(--primary-text) !important;
     border-color: var(--border-color) !important;
@@ -533,15 +533,37 @@ body {
     opacity: 1;
 }
 
-.ant-collapse-content-box{
+.ant-collapse-content-box {
     background: var(--primary-bg) !important;
 }
 
-.anticon{
+.anticon {
     color: var(--primary-text) !important;
 }
 
-.ant-empty-description, .ant-typography, .ant-select-selection-item{
+.ant-empty-description,
+.ant-typography,
+.ant-select-selection-item {
     color: var(--primary-text) !important;
 }
 
+.ant-drawer-mask {
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+}
+
+/* Global Blur for all Dropdowns (Select, Menu, etc.) */
+/* This targets the body when it contains a visible dropdown portal */
+body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-select-dropdown-hidden)) #root {
+    filter: blur(4px);
+    transition: filter 0.3s ease;
+    pointer-events: none;
+}
+
+/* Ensure the dropdowns, modals, and drawers themselves are not blurred */
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-drawer,
+.ant-modal-wrap {
+    filter: none !important;
+}

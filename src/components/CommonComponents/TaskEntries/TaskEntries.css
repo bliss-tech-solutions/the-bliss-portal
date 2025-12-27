@@ -1137,6 +1137,7 @@
 .user-slot-request-btn {
     display: inline-flex;
     align-items: center;
+    color: var(--primary-text) !important;
     gap: 4px;
     border-radius: 12px !important;
     padding: 0 12px !important;
@@ -1233,4 +1234,8 @@
 
 .ant-dropdown-menu {
     background: var(--primary-bg) !important;
+}
+
+.user-detail-label, .user-detail-value{
+    color: var(--secondary-text) !important;
 }

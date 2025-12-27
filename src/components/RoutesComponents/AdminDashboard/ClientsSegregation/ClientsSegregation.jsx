@@ -310,14 +310,32 @@ const ClientsSegregation = () => {
         <div id="ClientsSegregationContainer" className="theme-light">
             <div className="clients-segregation-header">
                 <h2 className="clients-segregation-title">Client Management Panel</h2>
-                <Button
-                    type="primary"
-                    onClick={() => setIsOpen(true)}
-                    className="global-action-btn"
-                    size="large"
-                >
-                    Add Client
-                </Button>
+                <Space>
+                    <Button
+                        className="global-secondary-btn"
+                        size="large"
+                        disabled
+                        style={{
+                            cursor: 'default',
+                            opacity: 1,
+                            backgroundColor: 'var(--secondary-bg)',
+                            color: 'var(--primary-text)',
+                            borderColor: 'var(--border-color)',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                    >
+                        Total Clients: {clientsData?.data?.length || 0}
+                    </Button>
+                    <Button
+                        type="primary"
+                        onClick={() => setIsOpen(true)}
+                        className="global-action-btn"
+                        size="large"
+                    >
+                        Add Client
+                    </Button>
+                </Space>
             </div>
 
             <Modal

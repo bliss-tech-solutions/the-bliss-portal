@@ -404,6 +404,17 @@ const TaskEntries = ({
                 }
             }).unwrap();
 
+            // Emit socket event for real-time update
+            emitTaskExtensionRequested({
+                taskId: activeTask._id,
+                slotId: activeSlot._id,
+                receiverUserId: activeTask.receiverUserId,
+                userId: activeTask.userId,
+                requestedBy: user?.userId || loggedInUserId,
+                minutesRequested,
+                reason: values.reason || ''
+            });
+
             showSuccess('Extension request submitted successfully!');
             setExtensionModalVisible(false);
             extensionForm.resetFields();
@@ -668,9 +679,16 @@ const TaskEntries = ({
                                     </div>
                                 </div>
                                 <div className="user-priority-date-row">
-                                    <Tag color={getPriorityColor(selectedTask.priority)} className="user-priority-tag-pill">
-                                        {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)} Priority
-                                    </Tag>
+                                    <div>
+                                        <Tag
+                                            color={isSelectedTaskCompleted ? 'green' : selectedTask.taskStatus === 'in-progress' ? 'blue' : 'orange'}
+                                        >
+                                            {(selectedTask.taskStatus || 'pending').charAt(0).toUpperCase() + (selectedTask.taskStatus || 'pending').slice(1)}
+                                        </Tag>
+                                        <Tag color={getPriorityColor(selectedTask.priority)} className="user-priority-tag-pill">
+                                            {selectedTask.priority?.charAt(0).toUpperCase() + selectedTask.priority?.slice(1)} Priority
+                                        </Tag>
+                                    </div>
                                     <div className="user-date-badge">
                                         <BsClock />
                                         <span>
@@ -686,22 +704,22 @@ const TaskEntries = ({
                             </div>
 
                             {/* Task Details Grid */}
-                            <Row gutter={[16, 16]} className="user-drawer-details-grid">
+                            {/* <Row gutter={[16, 16]} className="user-drawer-details-grid">
                                 <Col xs={24} sm={12} md={8}>
                                     <div className="user-detail-item">
-                                        <span className="user-detail-label">Client Name</span>
+                                        <span className="user-detail-label">Client Name: </span>
                                         <span className="user-detail-value">{selectedTask.clientName || 'N/A'}</span>
                                     </div>
                                 </Col>
                                 <Col xs={24} sm={12} md={8}>
                                     <div className="user-detail-item">
-                                        <span className="user-detail-label">Category</span>
+                                        <span className="user-detail-label">Category: </span>
                                         <span className="user-detail-value">{selectedTask.category || 'N/A'}</span>
                                     </div>
                                 </Col>
                                 <Col xs={24} sm={12} md={8}>
                                     <div className="user-detail-item">
-                                        <span className="user-detail-label">Status</span>
+                                        <span className="user-detail-label">Status: </span>
                                         <Tag
                                             color={isSelectedTaskCompleted ? 'green' : selectedTask.taskStatus === 'in-progress' ? 'blue' : 'orange'}
                                         >
@@ -709,7 +727,7 @@ const TaskEntries = ({
                                         </Tag>
                                     </div>
                                 </Col>
-                            </Row>
+                            </Row> */}
 
                             {/* Main Content Grid - 2 Columns */}
                             <div className='user-drawer-main-grid'>

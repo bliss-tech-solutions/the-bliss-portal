@@ -220,9 +220,12 @@ const AllTaskEntries = ({
         // Handle extension updates
         const handleExtensionUpdate = (payload) => {
             if (!payload) return;
+            console.log('✅ Extension update received via socket:', payload);
             const { receiverUserId, userId: creatorUserId, requestedBy } = payload;
-            // Refetch if current user is the assigner (receiverUserId) or the requester (requestedBy or creatorUserId)
+            // Refetch if current user is the assigner (receiverUserId or creatorUserId) 
+            // or the one who requested it (requestedBy)
             if (receiverUserId === userId || creatorUserId === userId || requestedBy === userId) {
+                console.log('🔄 Refetching tasks due to relevant extension update');
                 refetch();
             }
         };
@@ -444,7 +447,8 @@ const AllTaskEntries = ({
                 extensionId: extension._id,
                 status: action,
                 receiverUserId: task.receiverUserId,
-                userId: user?.userId || userId
+                userId: task.userId, // Assigner
+                respondedBy: user?.userId || userId
             });
             closeExtensionResponseModal();
             await refetch();
