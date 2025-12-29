@@ -81,9 +81,9 @@
     display: flex;
     align-items: center;
 }
-.ant-select-selection-item{
+/* .ant-select-selection-item{
     background:black !important;
-}
+} */
 
 .ant-pagination-options .ant-select-selection-item{
     color: var(--primary-text) !important;
