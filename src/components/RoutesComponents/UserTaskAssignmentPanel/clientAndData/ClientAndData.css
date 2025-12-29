@@ -81,14 +81,12 @@
     display: flex;
     align-items: center;
 }
-
-.ant-pagination-total-text {
-    margin-right: auto;
-    color: var(--primary-text);
+.ant-select-selection-item{
+    background:black !important;
 }
 
-#ClientAndData .clients-table .ant-pagination-options {
-    margin-left: 16px;
+.ant-pagination-options .ant-select-selection-item{
+    color: var(--primary-text) !important;
 }
 
 /* Responsive Design */

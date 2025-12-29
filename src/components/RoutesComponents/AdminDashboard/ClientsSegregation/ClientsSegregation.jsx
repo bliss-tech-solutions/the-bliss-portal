@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import './ClientsSegregation.css';
-import { Modal, DatePicker, Table, Switch, Tag, Button, Select, Input, Form, Row, Col, Space } from 'antd';
+import { Modal, DatePicker, Table, Switch, Tag, Button, Select, Input, Form, Row, Col, Space, ConfigProvider } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useCreateClientMutation, useGetAllClientsQuery, useUpdateClientMutation, useGetAllUsersQuery } from "../../../../store/api";
@@ -27,6 +27,7 @@ const ClientsSegregation = () => {
     const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetAllClientsQuery();
     const { data: allUsersData } = useGetAllUsersQuery();
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Get all users
     const allUsers = allUsersData?.data || [];
@@ -311,6 +312,14 @@ const ClientsSegregation = () => {
             <div className="clients-segregation-header">
                 <h2 className="clients-segregation-title">Client Management Panel</h2>
                 <Space>
+                    <Input.Search
+                        placeholder="Search clients..."
+                        allowClear
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ width: 250 }}
+                        className="client-search-input"
+                    />
                     <Button
                         className="global-secondary-btn"
                         size="large"
@@ -389,7 +398,6 @@ const ClientsSegregation = () => {
                                     style={{ width: '100%' }}
                                     format="YYYY-MM-DD"
                                     className="modern-date-picker"
-                                    getPopupContainer={(trigger) => trigger.parentElement}
                                 />
                             </Form.Item>
                         </Col>
@@ -456,11 +464,6 @@ const ClientsSegregation = () => {
                                                         style={{ width: '100%' }}
                                                         className="position-users-select"
                                                         showSearch
-                                                        filterOption={(input, option) => {
-                                                            const label = option?.label || option?.children || '';
-                                                            return label.toLowerCase().includes(input.toLowerCase());
-                                                        }}
-                                                        getPopupContainer={(trigger) => trigger.parentElement}
                                                     >
                                                         {usersForPosition.map((user) => {
                                                             const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || user.userId;
@@ -512,79 +515,87 @@ const ClientsSegregation = () => {
 
             {/* Clients Table */}
             <div className="clients-table-container">
-                <Table
-                    columns={[
-                        {
-                            title: 'Client Name',
-                            dataIndex: 'clientName',
-                            key: 'clientName',
-                            width: '25%',
-                            render: (text) => <span className="client-name-text">{text}</span>
-                        },
-                        {
-                            title: 'Client Onboard Date',
-                            dataIndex: 'onboardDate',
-                            key: 'onboardDate',
-                            width: '25%',
-                            render: (date) => {
-                                if (!date) return <span className="text-secondary">-</span>;
-                                return <span className="text-primary">{dayjs(date).format('MMM DD, YYYY')}</span>;
+                <ConfigProvider
+                    getPopupContainer={() => document.body}
+                >
+                    <Table
+                        columns={[
+                            {
+                                title: 'Client Name',
+                                dataIndex: 'clientName',
+                                key: 'clientName',
+                                width: '25%',
+                                render: (text) => <span className="client-name-text">{text}</span>
+                            },
+                            {
+                                title: 'Client Onboard Date',
+                                dataIndex: 'onboardDate',
+                                key: 'onboardDate',
+                                width: '25%',
+                                render: (date) => {
+                                    if (!date) return <span className="text-secondary">-</span>;
+                                    return <span className="text-primary">{dayjs(date).format('MMM DD, YYYY')}</span>;
+                                }
+                            },
+                            {
+                                title: 'City',
+                                dataIndex: 'city',
+                                key: 'city',
+                                width: '20%',
+                                render: (text) => <span className="client-city-text">{text || '-'}</span>
+                            },
+                            {
+                                title: 'Status',
+                                dataIndex: 'status',
+                                key: 'status',
+                                width: '20%',
+                                render: (status, record) => (
+                                    <div className="status-cell">
+                                        <Switch
+                                            checked={status === 'active'}
+                                            onChange={(checked) => {
+                                                console.log('Status toggle:', record._id, checked ? 'active' : 'inactive');
+                                            }}
+                                            checkedChildren="Active"
+                                            unCheckedChildren="Inactive"
+                                        />
+                                        <Tag color={status === 'active' ? 'success' : 'error'}>
+                                            {status === 'active' ? 'ACTIVE' : 'INACTIVE'}
+                                        </Tag>
+                                    </div>
+                                )
+                            },
+                            {
+                                title: 'Actions',
+                                key: 'actions',
+                                width: '10%',
+                                render: (_, record) => (
+                                    <Button
+                                        className="global-secondary-btn"
+                                        icon={<EditOutlined />}
+                                        onClick={() => handleEdit(record)}
+                                        size="small"
+                                    >
+                                        Edit
+                                    </Button>
+                                )
                             }
-                        },
-                        {
-                            title: 'City',
-                            dataIndex: 'city',
-                            key: 'city',
-                            width: '20%',
-                            render: (text) => <span className="client-city-text">{text || '-'}</span>
-                        },
-                        {
-                            title: 'Status',
-                            dataIndex: 'status',
-                            key: 'status',
-                            width: '20%',
-                            render: (status, record) => (
-                                <div className="status-cell">
-                                    <Switch
-                                        checked={status === 'active'}
-                                        onChange={(checked) => {
-                                            console.log('Status toggle:', record._id, checked ? 'active' : 'inactive');
-                                        }}
-                                        checkedChildren="Active"
-                                        unCheckedChildren="Inactive"
-                                    />
-                                    <Tag color={status === 'active' ? 'success' : 'error'}>
-                                        {status === 'active' ? 'ACTIVE' : 'INACTIVE'}
-                                    </Tag>
-                                </div>
-                            )
-                        },
-                        {
-                            title: 'Actions',
-                            key: 'actions',
-                            width: '10%',
-                            render: (_, record) => (
-                                <Button
-                                    className="global-secondary-btn"
-                                    icon={<EditOutlined />}
-                                    onClick={() => handleEdit(record)}
-                                    size="small"
-                                >
-                                    Edit
-                                </Button>
-                            )
-                        }
-                    ]}
-                    dataSource={clientsData?.data || []}
-                    loading={isLoadingClients}
-                    rowKey="_id"
-                    pagination={{
-                        pageSize: 10,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Total ${total} clients`
-                    }}
-                    className="clients-table"
-                />
+                        ]}
+                        dataSource={(clientsData?.data || []).filter(client =>
+                            client.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            client.city?.toLowerCase().includes(searchTerm.toLowerCase())
+                        )}
+                        loading={isLoadingClients}
+                        rowKey="_id"
+                        pagination={{
+                            pageSize: 10,
+                            showSizeChanger: true,
+                            showTotal: (total) => `Total ${total} clients`,
+                            position: ['bottomRight']
+                        }}
+                        className="clients-table"
+                    />
+                </ConfigProvider>
             </div>
         </div>
     );
