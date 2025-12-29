@@ -372,80 +372,75 @@ table tbody tr td .ant-picker-cell-inner {
 
 /* Drawer Styling */
 .festive-calendar-page .festive-leaves-drawer .ant-drawer-header {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom-width: 2px;
+    padding: 16px 24px;
 }
 
-.festive-calendar-page .festive-leaves-drawer .ant-drawer-title {
-    color: var(--primary-text);
+.drawer-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .festive-calendar-page .festive-leaves-drawer .ant-drawer-body {
-    background-color: var(--primary-bg);
-    color: var(--primary-text);
-    padding: 16px;
+    padding: 24px;
     position: relative;
-}
-
-.festive-calendar-page .festive-leaves-drawer .ant-tabs-tab {
-    color: var(--secondary-text);
-}
-
-.festive-calendar-page .festive-leaves-drawer .ant-tabs-tab-active {
-    color: var(--accent-color);
-}
-
-.festive-calendar-page .festive-leaves-drawer .ant-tabs-ink-bar {
-    background: var(--accent-color);
 }
 
 /* Table Styling */
 .festive-calendar-page .festive-leaves-table {
-    background-color: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
 }
 
 .festive-calendar-page .festive-leaves-table .ant-table-thead>tr>th {
-    background-color: var(--card-bg);
-    color: var(--primary-text);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    padding: 16px !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
 }
 
 .festive-calendar-page .festive-leaves-table .ant-table-tbody>tr>td {
-    background-color: var(--card-bg);
-    color: var(--primary-text);
-    border-bottom: 1px solid var(--border-color);
+    padding: 20px 16px !important;
+    transition: all 0.3s ease;
 }
 
 .festive-calendar-page .festive-leaves-table .ant-table-tbody>tr:hover>td {
     background-color: var(--hover-bg);
 }
 
+.total-leaves-btn:hover {
+    transform: scale(1.05);
+}
+
+.total-leaves-btn .ant-tag {
+    transition: all 0.3s ease;
+    font-weight: 500;
+    padding: 4px 12px;
+}
+
+.global-action-btn.disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    background: var(--tertiary-bg) !important;
+    color: var(--secondary-text) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
 .festive-calendar-page .festive-leaves-table .ant-pagination {
-    color: var(--primary-text);
-}
-
-.festive-calendar-page .festive-leaves-table .ant-pagination-item {
-    background-color: var(--card-bg);
-    border-color: var(--border-color);
-}
-
-.festive-calendar-page .festive-leaves-table .ant-pagination-item a {
-    color: var(--primary-text);
-}
-
-.festive-calendar-page .festive-leaves-table .ant-pagination-item-active {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
-}
-
-.festive-calendar-page .festive-leaves-table .ant-pagination-item-active a {
-    color: #fff;
+    margin: 24px 0 !important;
+    padding: 0 16px;
 }
 
 /* Date Modal Styling */
 .festive-calendar-page .festive-date-modal .ant-modal-header {
     background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
+    padding: 16px 24px;
 }
 
 .festive-calendar-page .festive-date-modal .ant-modal-title {
@@ -455,191 +450,119 @@ table tbody tr td .ant-picker-cell-inner {
 .festive-calendar-page .festive-date-modal .ant-modal-body {
     background-color: var(--primary-bg);
     color: var(--primary-text);
+    padding: 24px;
 }
 
 .festive-calendar-page .festive-date-modal-content {
-    padding: 8px 0;
+    padding: 0;
 }
 
 .festive-calendar-page .festive-modal-dates-list {
+    max-height: 500px;
+    overflow-y: auto;
     padding-right: 8px;
+    margin: 16px 0;
 }
 
-/* Scrollbar for dates list */
-.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar {
-    width: 6px;
+/* Date Row / Card Styling */
+.festive-calendar-page .festive-leave-reason-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--card-bg);
+    overflow: hidden;
+    box-shadow: 0 2px 4px var(--shadow);
 }
 
-.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-track {
-    background: var(--tertiary-bg);
-    border-radius: 3px;
+.festive-calendar-page .festive-leave-reason-card.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.15);
 }
 
-.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 3px;
+.festive-calendar-page .festive-leave-reason-card.action-approve {
+    border-left: 6px solid var(--success-color);
 }
 
-.festive-calendar-page .festive-modal-dates-list::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-text);
+.festive-calendar-page .festive-leave-reason-card.action-reject {
+    border-left: 6px solid var(--danger-color);
 }
 
-/* Date Row */
-.festive-calendar-page .festive-modal-date-row {
+.Leave-Reason-Content {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    padding: 16px;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background-color: var(--card-bg);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
     gap: 16px;
 }
 
-.festive-calendar-page .festive-modal-date-row::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    background-color: var(--accent-color);
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 0;
+.festive-reason-header {
+    margin-bottom: 12px;
 }
 
-.festive-calendar-page .festive-modal-date-row:hover {
-    border-color: var(--accent-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: translateX(2px);
+.festive-date-btn {
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    height: 36px;
+    letter-spacing: 0.2px;
 }
 
-.festive-calendar-page .festive-modal-date-row.selected {
-    border-color: var(--accent-color);
-    background: linear-gradient(90deg, rgba(24, 144, 255, 0.05) 0%, var(--card-bg) 100%);
-    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+.festive-reason-content {
+    background-color: var(--tertiary-bg);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+    margin-top: 8px;
 }
 
-.festive-calendar-page .festive-modal-date-row.selected::before {
-    width: 4px;
+.festive-reason-content .ant-typography {
+    display: block;
+    font-style: italic;
+    color: var(--secondary-text) !important;
 }
 
-.festive-calendar-page .festive-modal-date-row.action-approve {
-    border-color: #52c41a;
-    background: linear-gradient(90deg, rgba(82, 196, 26, 0.05) 0%, var(--card-bg) 100%);
-}
-
-.festive-calendar-page .festive-modal-date-row.action-approve::before {
-    width: 4px;
-    background-color: #52c41a;
-}
-
-.festive-calendar-page .festive-modal-date-row.action-reject {
-    border-color: #ff4d4f;
-    background: linear-gradient(90deg, rgba(255, 77, 79, 0.05) 0%, var(--card-bg) 100%);
-}
-
-.festive-calendar-page .festive-modal-date-row.action-reject::before {
-    width: 4px;
-    background-color: #ff4d4f;
-}
-
-.festive-calendar-page .festive-date-left-content {
-    flex: 1;
+.Approved-Rejected-Buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    z-index: 1;
+    min-width: 110px;
 }
 
-.festive-calendar-page .festive-date-top {
-    display: flex;
-    align-items: center;
+.festive-action-btn {
+    height: 34px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.festive-calendar-page .festive-date-separator {
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 4px 0;
-    transition: all 0.3s ease;
+.festive-action-btn.approve.active {
+    background-color: var(--success-color) !important;
+    border-color: var(--success-color) !important;
 }
 
-.festive-calendar-page .festive-modal-date-row.selected .festive-date-separator {
-    background-color: var(--accent-color);
-    height: 2px;
+.festive-action-btn.reject.active {
+    background-color: var(--danger-color) !important;
+    border-color: var(--danger-color) !important;
 }
 
-.festive-calendar-page .festive-modal-date-row.action-approve .festive-date-separator {
-    background-color: #52c41a;
-    height: 2px;
-}
-
-.festive-calendar-page .festive-modal-date-row.action-reject .festive-date-separator {
-    background-color: #ff4d4f;
-    height: 2px;
-}
-
-.festive-calendar-page .festive-date-reason-section {
-    display: flex;
-    align-items: center;
-    padding-top: 4px;
-    z-index: 1;
-}
-
-.festive-calendar-page .festive-date-btn {
-    min-width: 180px;
-    height: 40px;
-    border-radius: 6px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-weight: 500;
-    position: relative;
-    overflow: hidden;
-}
-
-.festive-calendar-page .festive-date-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.festive-calendar-page .festive-date-btn:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-.festive-calendar-page .festive-date-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.festive-calendar-page .festive-check-icon {
-    margin-right: 8px;
+.festive-check-icon {
+    margin-right: 6px;
     font-weight: bold;
-    animation: checkmark 0.3s ease-in-out;
 }
 
 @keyframes checkmark {
     0% {
-        transform: scale(0) rotate(45deg);
+        transform: scale(0);
         opacity: 0;
     }
 
     50% {
-        transform: scale(1.2) rotate(45deg);
+        transform: scale(1.2);
     }
 
     100% {
-        transform: scale(1) rotate(0deg);
+        transform: scale(1);
         opacity: 1;
     }
 }
@@ -695,21 +618,21 @@ table tbody tr td .ant-picker-cell-inner {
 
 .festive-calendar-page .festive-action-btn.approve {
     background-color: transparent;
-    border-color: #52c41a;
-    color: #52c41a;
+    border-color: var(--success-color);
+    color: var(--success-color);
 }
 
 .festive-calendar-page .festive-action-btn.approve:hover:not(:disabled) {
-    background-color: rgba(82, 196, 26, 0.1);
+    background-color: rgba(81, 207, 102, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(82, 196, 26, 0.2);
+    box-shadow: 0 4px 8px rgba(81, 207, 102, 0.2);
 }
 
 .festive-calendar-page .festive-action-btn.approve.active {
-    background-color: #52c41a;
-    border-color: #52c41a;
+    background-color: var(--success-color);
+    border-color: var(--success-color);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+    box-shadow: 0 2px 8px rgba(81, 207, 102, 0.3);
     animation: pulse-green 0.3s ease-in-out;
 }
 
@@ -717,31 +640,31 @@ table tbody tr td .ant-picker-cell-inner {
 
     0%,
     100% {
-        box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+        box-shadow: 0 2px 8px rgba(81, 207, 102, 0.3);
     }
 
     50% {
-        box-shadow: 0 4px 16px rgba(82, 196, 26, 0.5);
+        box-shadow: 0 4px 16px rgba(81, 207, 102, 0.5);
     }
 }
 
 .festive-calendar-page .festive-action-btn.reject {
     background-color: transparent;
-    border-color: #ff4d4f;
-    color: #ff4d4f;
+    border-color: var(--danger-color);
+    color: var(--danger-color);
 }
 
 .festive-calendar-page .festive-action-btn.reject:hover:not(:disabled) {
-    background-color: rgba(255, 77, 79, 0.1);
+    background-color: rgba(255, 107, 107, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 77, 79, 0.2);
+    box-shadow: 0 4px 8px rgba(255, 107, 107, 0.2);
 }
 
 .festive-calendar-page .festive-action-btn.reject.active {
-    background-color: #ff4d4f;
-    border-color: #ff4d4f;
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
     animation: pulse-red 0.3s ease-in-out;
 }
 
@@ -749,11 +672,11 @@ table tbody tr td .ant-picker-cell-inner {
 
     0%,
     100% {
-        box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
     }
 
     50% {
-        box-shadow: 0 4px 16px rgba(255, 77, 79, 0.5);
+        box-shadow: 0 4px 16px rgba(255, 107, 107, 0.5);
     }
 }
 
@@ -931,23 +854,23 @@ table tbody tr td .ant-picker-cell-inner {
 }
 
 .festive-calendar-page .festive-leave-reason-card.action-approve {
-    border-color: #52c41a;
-    background: linear-gradient(90deg, rgba(82, 196, 26, 0.05) 0%, var(--card-bg) 100%);
+    border-color: var(--success-color);
+    background: linear-gradient(90deg, rgba(81, 207, 102, 0.05) 0%, var(--card-bg) 100%);
 }
 
 .festive-calendar-page .festive-leave-reason-card.action-approve::before {
     width: 4px;
-    background-color: #52c41a;
+    background-color: var(--success-color);
 }
 
 .festive-calendar-page .festive-leave-reason-card.action-reject {
-    border-color: #ff4d4f;
-    background: linear-gradient(90deg, rgba(255, 77, 79, 0.05) 0%, var(--card-bg) 100%);
+    border-color: var(--danger-color);
+    background: linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, var(--card-bg) 100%);
 }
 
 .festive-calendar-page .festive-leave-reason-card.action-reject::before {
     width: 4px;
-    background-color: #ff4d4f;
+    background-color: var(--danger-color);
 }
 
 .Leave-Reason-Content {
@@ -959,7 +882,7 @@ table tbody tr td .ant-picker-cell-inner {
     position: relative;
 }
 
-.Leave-Reason-Content > div:first-child {
+.Leave-Reason-Content>div:first-child {
     flex: 1;
 }
 

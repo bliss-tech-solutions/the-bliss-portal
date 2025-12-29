@@ -69,6 +69,67 @@
 
 .checkin-reason-wrap {
     margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+/* Work Toggle Button */
+.checkin-work-toggle {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.work-toggle-btn {
+    border-radius: 8px !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    font-weight: 500 !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--card-bg) !important;
+    color: var(--secondary-text) !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.work-toggle-btn:hover {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    background: rgba(235, 178, 54, 0.05) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.2) !important;
+}
+
+.work-toggle-btn.active,
+.work-toggle-btn.ant-btn-primary {
+    background: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: #000 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.3) !important;
+}
+
+.work-toggle-btn.active:hover,
+.work-toggle-btn.ant-btn-primary:hover {
+    background: var(--brand-color) !important;
+    color: #000 !important;
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+.work-hint {
+    font-size: 12px;
+    color: var(--brand-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    padding-left: 4px;
+}
+
+.work-hint .anticon {
+    font-size: 14px;
 }
 
 .checkin-textarea {
@@ -152,5 +213,9 @@
         flex-direction: column;
         text-align: center;
         gap: 12px;
+    }
+
+    .work-toggle-btn {
+        width: 100%;
     }
 }

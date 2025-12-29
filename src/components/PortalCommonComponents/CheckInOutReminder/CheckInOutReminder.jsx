@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Modal, Button, Space, Typography, message, Input } from 'antd';
-import { LoginOutlined, FieldTimeOutlined } from '@ant-design/icons';
+import { LoginOutlined, FieldTimeOutlined, TeamOutlined, ToolOutlined } from '@ant-design/icons';
 import './CheckInOutReminder.css';
 import { useSelector } from 'react-redux';
 import { useCheckInMutation, useCheckInStatusQuery } from '../../../store/api';
@@ -28,6 +28,7 @@ const CheckInOutReminder = () => {
     const role = user?.role || user?.position || 'user';
     const [checkIn, { isLoading }] = useCheckInMutation();
     const [reason, setReason] = useState('');
+    const [checkInType, setCheckInType] = useState('OFFICE');
 
     // Hide check-in/check-out for admin role
     const isAdmin = role?.toLowerCase() === 'admin';
@@ -61,10 +62,20 @@ const CheckInOutReminder = () => {
 
     const handleCheckIn = async () => {
         try {
-            await checkIn({ userId, checkInReason: reason || '' }).unwrap();
-            message.success('Checked in successfully');
+            await checkIn({
+                userId,
+                checkInReason: reason || '',
+                checkInType
+            }).unwrap();
+
+            const typeMessage = checkInType === 'WORK'
+                ? 'Checked in successfully (External Work - No time restrictions)'
+                : 'Checked in successfully';
+
+            message.success(typeMessage);
             closeModal();
             setReason('');
+            setCheckInType('OFFICE');
         } catch (err) {
             message.error(err?.data?.message || 'Failed to check in');
         }
@@ -107,6 +118,23 @@ const CheckInOutReminder = () => {
                             onChange={(e) => setReason(e.target.value)}
                             className="checkin-textarea"
                         />
+                    </div>
+
+                    {/* Work Type Toggle */}
+                    <div className="checkin-work-toggle">
+                        <Button
+                            type={checkInType === 'WORK' ? 'primary' : 'default'}
+                            icon={<ToolOutlined />}
+                            onClick={() => setCheckInType(checkInType === 'WORK' ? 'OFFICE' : 'WORK')}
+                            className={`work-toggle-btn ${checkInType === 'WORK' ? 'active' : ''}`}
+                        >
+                            {checkInType === 'WORK' ? 'External Work ✓' : 'Mark as External Work'}
+                        </Button>
+                        {checkInType === 'WORK' && (
+                            <Text className="work-hint">
+                                <TeamOutlined /> No time restrictions for external work
+                            </Text>
+                        )}
                     </div>
                 </div>
 

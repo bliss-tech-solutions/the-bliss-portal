@@ -567,3 +567,87 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
 .ant-modal-wrap {
     filter: none !important;
 }
+
+/* Global Drawer Overrides */
+.ant-drawer-content {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-drawer-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-drawer-title {
+    color: var(--primary-text) !important;
+}
+
+.ant-drawer-close {
+    color: var(--secondary-text) !important;
+}
+
+/* Global Table Overrides */
+.ant-table {
+    background: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-table-thead>tr>th {
+    background-color: var(--tertiary-bg) !important;
+    color: var(--primary-text) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-table-tbody>tr>td {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Global Pagination Overrides */
+.ant-pagination-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ant-pagination-item a {
+    color: var(--primary-text) !important;
+}
+
+.ant-pagination-item-active {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.ant-pagination-item-active a {
+    color: white !important;
+}
+
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+/* Global Tabs Overrides */
+.ant-tabs {
+    color: var(--primary-text) !important;
+}
+
+.ant-tabs-tab {
+    color: var(--secondary-text) !important;
+}
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--accent-color) !important;
+}
+
+.ant-tabs-ink-bar {
+    background: var(--accent-color) !important;
+}

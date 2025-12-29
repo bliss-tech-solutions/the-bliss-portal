@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Form, message, Row, Col, Card, List, Typography, Tag, Space, Empty, Button, Drawer, Tabs, Table, Modal, Input } from 'antd';
+import { Form, message, Row, Col, Card, List, Typography, Tag, Space, Empty, Button, Drawer, Tabs, Table, Modal, Input, Alert } from 'antd';
 import dayjs from 'dayjs';
 import CalenderModule from '../../../PortalCommonComponents/CalenderModule/CalenderModule';
 import { useAddFestiveNoteMutation, useGetFestiveNotesByUserQuery, useUpdateFestiveMutation, useGetAllLeavesQuery, useGetAllUsersQuery, useRejectLeaveMutation } from '../../../../store/api';
@@ -530,7 +530,7 @@ const FestiveCalender = () => {
         <div className="festive-calendar-page">
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={16}>
-                    <Card title={<h2  level={4} style={{ margin: 0 }}>Festive Calendar</h2>}>
+                    <Card title={<h2 level={4} style={{ margin: 0 }}>Festive Calendar</h2>}>
                         <CalenderModule
                             title=""
                             maxTasksPerDate={4}
@@ -652,20 +652,24 @@ const FestiveCalender = () => {
                     <Drawer
                         title={
                             selectedUser ? (
-                                <Space direction="vertical" size={0}>
-                                    <Text strong style={{ fontSize: 16 }}>
+                                <div className="drawer-header-content">
+                                    <Title level={4} style={{ margin: 0, color: 'var(--primary-text)' }}>
                                         {currentUser?.name || 'User'} Leaves
+                                    </Title>
+                                    <Text type="secondary" style={{ fontSize: 13 }}>
+                                        {currentUser?.email || ''} • {currentUser?.position || ''}
                                     </Text>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>
-                                        {currentUser?.email || ''}
-                                    </Text>
-                                </Space>
-                            ) : 'All Users Leaves'
+                                </div>
+                            ) : (
+                                <Title level={4} style={{ margin: 0, color: 'var(--primary-text)' }}>
+                                    All Users Leaves
+                                </Title>
+                            )
                         }
                         placement="right"
                         onClose={handleDrawerClose}
                         open={drawerVisible}
-                        width={1000}
+                        width={selectedUser ? 1100 : 1000}
                         className="festive-leaves-drawer"
                     >
                         {!selectedUser ? (
@@ -673,51 +677,60 @@ const FestiveCalender = () => {
                             <Table
                                 dataSource={usersWithLeaves}
                                 rowKey="id"
-                                pagination={{ pageSize: 10 }}
+                                pagination={{
+                                    pageSize: 10,
+                                    showTotal: (total) => `Total ${total} employees`,
+                                    showSizeChanger: false
+                                }}
                                 className="festive-leaves-table"
                                 columns={[
                                     {
-                                        title: 'User Name',
+                                        title: 'Employee Name',
                                         key: 'userName',
                                         dataIndex: 'name',
-                                        render: (name) => <Text strong>{name}</Text>,
-                                        width: 200,
+                                        render: (name, record) => (
+                                            <Space direction="vertical" size={0}>
+                                                <Text strong style={{ fontSize: 15 }}>{name}</Text>
+                                                <Text type="secondary" style={{ fontSize: 12 }}>{record.position || '-'}</Text>
+                                            </Space>
+                                        ),
+                                        width: 250,
                                     },
                                     {
-                                        title: 'Email',
+                                        title: 'Contact Information',
                                         key: 'email',
                                         dataIndex: 'email',
-                                        render: (email) => <Text type="secondary">{email || '-'}</Text>,
-                                        width: 200,
+                                        render: (email) => (
+                                            <Text type="secondary" style={{ fontSize: 13 }}>
+                                                {email || '-'}
+                                            </Text>
+                                        ),
+                                        width: 220,
                                     },
                                     {
-                                        title: 'Position',
-                                        key: 'position',
-                                        dataIndex: 'position',
-                                        render: (position) => <Tag>{position || '-'}</Tag>,
-                                        width: 150,
-                                    },
-                                    {
-                                        title: 'Leaves status',
+                                        title: 'Selected Status',
                                         key: 'leavesStatus',
                                         render: (_, record) => {
                                             const saved = pendingSelections.get(record.id);
                                             const approvedCount = saved?.approved?.size || 0;
                                             const rejectedCount = saved?.rejected?.size || 0;
                                             return (
-                                                <Space size={8}>
-                                                    <Tag color="green">Approved: {approvedCount}</Tag>
-                                                    <Tag color="red">Rejected: {rejectedCount}</Tag>
+                                                <Space size={12}>
+                                                    <Tag color="success" style={{ padding: '2px 10px', borderRadius: 4, margin: 0 }}>
+                                                        Approve: <strong>{approvedCount}</strong>
+                                                    </Tag>
+                                                    <Tag color="error" style={{ padding: '2px 10px', borderRadius: 4, margin: 0 }}>
+                                                        Reject: <strong>{rejectedCount}</strong>
+                                                    </Tag>
                                                 </Space>
                                             );
                                         },
-                                        width: 220,
+                                        width: 240,
                                     },
                                     {
-                                        title: 'Total Leaves',
+                                        title: 'Pending Dates',
                                         key: 'totalLeaves',
                                         render: (_, record) => {
-                                            // count only remaining (unprocessed) dates across all leaves
                                             const totalDates = record.leaves.reduce((acc, l) => {
                                                 const approved = new Set(l.approvedDates || []);
                                                 const rejected = new Set(l.rejectedDates || []);
@@ -725,11 +738,18 @@ const FestiveCalender = () => {
                                                 return acc + remaining.length;
                                             }, 0);
                                             return (
-                                                <Button type="link" onClick={() => {
-                                                    const leave = buildUserFlattenedLeave(record);
-                                                    handleOpenDateModal(leave, record.id);
-                                                }}>
-                                                    {totalDates} date{totalDates !== 1 ? 's' : ''}
+                                                <Button
+                                                    type="link"
+                                                    className="total-leaves-btn"
+                                                    onClick={() => {
+                                                        const leave = buildUserFlattenedLeave(record);
+                                                        handleOpenDateModal(leave, record.id);
+                                                    }}
+                                                    style={{ padding: 0 }}
+                                                >
+                                                    <Tag color={totalDates > 0 ? "processing" : "default"} style={{ cursor: 'pointer' }}>
+                                                        {totalDates} {totalDates === 1 ? 'Date' : 'Dates'}
+                                                    </Tag>
                                                 </Button>
                                             );
                                         },
@@ -738,27 +758,28 @@ const FestiveCalender = () => {
                                     {
                                         title: 'Action',
                                         key: 'action',
+                                        align: 'center',
                                         render: (_, record) => {
                                             const saved = pendingSelections.get(record.id);
-                                            const totalDates = record.leaves.reduce((acc, l) => acc + (l.dates?.length || 0), 0);
                                             const approvedCount = saved?.approved?.size || 0;
                                             const rejectedCount = saved?.rejected?.size || 0;
-                                            // Enable submit when at least one date has been assigned
                                             const isReady = (approvedCount + rejectedCount) > 0;
                                             return (
                                                 <Button
                                                     type="primary"
                                                     disabled={!isReady}
+                                                    className={`global-action-btn ${isReady ? '' : 'disabled'}`}
+                                                    style={{ height: 32, fontSize: 12 }}
                                                     onClick={async () => {
                                                         try {
                                                             await submitUserSelections(record);
-                                                            message.success('Submitted successfully');
+                                                            message.success(`Status updated for ${record.name}`);
                                                         } catch (e) {
                                                             message.error(e?.data?.message || e?.message || 'Failed to submit');
                                                         }
                                                     }}
                                                 >
-                                                    Submit
+                                                    Apply
                                                 </Button>
                                             );
                                         },
@@ -767,16 +788,17 @@ const FestiveCalender = () => {
                                 ]}
                             />
                         ) : selectedUser && currentUser ? (
-                            <div>
+                            <div className="user-leaves-view">
                                 <Button
                                     type="default"
                                     onClick={() => setSelectedUser(null)}
-                                    style={{ marginBottom: 16 }}
+                                    className="global-secondary-btn back-btn"
+                                    style={{ marginBottom: 24, height: 36, fontSize: 13 }}
                                 >
                                     ← Back to All Users
                                 </Button>
-                                <Tabs defaultActiveKey="all">
-                                    <TabPane tab={`All (${getUserLeavesByStatus.all.length})`} key="all">
+                                <Tabs defaultActiveKey="all" className="festive-tabs">
+                                    <Tabs.TabPane tab={`All Requests (${getUserLeavesByStatus.all.length})`} key="all">
                                         <Table
                                             dataSource={getUserLeavesByStatus.all}
                                             rowKey="id"
@@ -784,16 +806,14 @@ const FestiveCalender = () => {
                                             className="festive-leaves-table"
                                             columns={[
                                                 {
-                                                    title: 'User Name',
-                                                    key: 'userName',
+                                                    title: 'Request ID',
+                                                    key: 'reqId',
                                                     dataIndex: 'id',
-                                                    render: () => (
-                                                        <Text strong>{currentUser.name}</Text>
-                                                    ),
-                                                    width: 150,
+                                                    render: (id) => <Text code style={{ fontSize: 11 }}>{id.slice(-8).toUpperCase()}</Text>,
+                                                    width: 120,
                                                 },
                                                 {
-                                                    title: 'Leaves Dates',
+                                                    title: 'Leave Dates',
                                                     key: 'leavesDates',
                                                     dataIndex: 'dates',
                                                     render: (dates, record) => {
@@ -803,50 +823,54 @@ const FestiveCalender = () => {
                                                         return (
                                                             <Button
                                                                 type="link"
+                                                                className="total-leaves-btn"
                                                                 disabled={remaining.length === 0}
                                                                 onClick={() => handleOpenDateModal({ ...record, dates: remaining })}
+                                                                style={{ padding: 0 }}
                                                             >
-                                                                {remaining.length} date{remaining.length !== 1 ? 's' : ''}
+                                                                <Tag color={remaining.length > 0 ? "processing" : "default"}>
+                                                                    {remaining.length} {remaining.length === 1 ? 'Date' : 'Dates'}
+                                                                </Tag>
                                                             </Button>
                                                         );
                                                     },
                                                     width: 150,
                                                 },
                                                 {
-                                                    title: 'Reason',
+                                                    title: 'Reason for Leave',
                                                     key: 'reason',
                                                     dataIndex: 'reason',
                                                     render: (reason) => (
-                                                        <Text ellipsis={{ tooltip: reason }} style={{ maxWidth: 200 }}>
+                                                        <Text ellipsis={{ tooltip: reason }} style={{ maxWidth: 280, fontSize: 13 }}>
                                                             {reason}
                                                         </Text>
                                                     ),
-                                                    width: 200,
+                                                    width: 300,
                                                 },
                                                 {
-                                                    title: 'Status',
+                                                    title: 'Current Status',
                                                     key: 'status',
                                                     dataIndex: 'status',
                                                     render: (status) => {
                                                         const colorMap = {
-                                                            approved: 'green',
-                                                            pending: 'orange',
-                                                            cancelled: 'red',
+                                                            approved: 'success',
+                                                            pending: 'warning',
+                                                            cancelled: 'error',
                                                         };
                                                         return (
-                                                            <Tag color={colorMap[status] || 'default'}>
-                                                                {status?.toUpperCase() || 'PENDING'}
+                                                            <Tag color={colorMap[status] || 'default'} style={{ borderRadius: 4, textTransform: 'capitalize' }}>
+                                                                {status || 'PENDING'}
                                                             </Tag>
                                                         );
                                                     },
                                                     width: 120,
                                                 },
                                                 {
-                                                    title: 'Requested Date',
+                                                    title: 'Submitted On',
                                                     key: 'createdAt',
                                                     dataIndex: 'createdAt',
                                                     render: (createdAt) => (
-                                                        <Text type="secondary">
+                                                        <Text type="secondary" style={{ fontSize: 13 }}>
                                                             {dayjs(createdAt).format('MMM DD, YYYY')}
                                                         </Text>
                                                     ),
@@ -854,16 +878,16 @@ const FestiveCalender = () => {
                                                 },
                                             ]}
                                         />
-                                    </TabPane>
-                                    <TabPane tab={`Approved (${getUserLeavesByStatus.approved.length})`} key="approved">
-                                        <Empty description="Content coming soon" />
-                                    </TabPane>
-                                    <TabPane tab={`Pending (${getUserLeavesByStatus.pending.length})`} key="pending">
-                                        <Empty description="Content coming soon" />
-                                    </TabPane>
-                                    <TabPane tab={`Cancelled (${getUserLeavesByStatus.cancelled.length})`} key="cancelled">
-                                        <Empty description="Content coming soon" />
-                                    </TabPane>
+                                    </Tabs.TabPane>
+                                    <Tabs.TabPane tab={`Approved (${getUserLeavesByStatus.approved.length})`} key="approved">
+                                        <Empty description="No approved leaves for this period" style={{ marginTop: 40 }} />
+                                    </Tabs.TabPane>
+                                    <Tabs.TabPane tab={`Pending (${getUserLeavesByStatus.pending.length})`} key="pending">
+                                        <Empty description="No pending leaves" style={{ marginTop: 40 }} />
+                                    </Tabs.TabPane>
+                                    <Tabs.TabPane tab={`Cancelled (${getUserLeavesByStatus.cancelled.length})`} key="cancelled">
+                                        <Empty description="No cancelled leaves" style={{ marginTop: 40 }} />
+                                    </Tabs.TabPane>
                                 </Tabs>
                             </div>
                         ) : (
@@ -1014,13 +1038,19 @@ const FestiveCalender = () => {
                                         </Row>
                                     </div>
                                     <div className="festive-selection-summary">
-                                        <Space>
-                                            <Text type="secondary">Selected: </Text>
-                                            <Text strong style={{ fontSize: 16 }}>
-                                                {selectedDates.get(selectedLeave.id)?.size || 0}
-                                            </Text>
-                                            <Text type="secondary">date(s)</Text>
-                                        </Space>
+                                        <Alert
+                                            message={
+                                                <Space>
+                                                    <Text strong>Selection Summary:</Text>
+                                                    <Tag color="blue" style={{ borderRadius: 12, padding: '0 12px' }}>
+                                                        {selectedDates.get(selectedLeave.id)?.size || 0} Dates Selected
+                                                    </Tag>
+                                                </Space>
+                                            }
+                                            type="info"
+                                            showIcon
+                                            style={{ borderRadius: 8 }}
+                                        />
                                     </div>
                                 </div>
                             )}

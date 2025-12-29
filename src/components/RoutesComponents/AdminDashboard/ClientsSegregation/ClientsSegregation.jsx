@@ -63,13 +63,27 @@ const ClientsSegregation = () => {
     const positionOptions = getUniquePositions();
 
     // Track selected users for each position separately
-    const [selectedUsersByPosition, setSelectedUsersByPosition] = useState({
-        'All SME': [],
-        'All Graphics Designer': [],
-        'All Video Editor': [],
-        'All Content Writer': [],
-        'All schedulers and apis': []
-    });
+    const [selectedUsersByPosition, setSelectedUsersByPosition] = useState({});
+
+    // Initialize/sync selectedUsersByPosition when positionOptions are available
+    useEffect(() => {
+        if (positionOptions.length > 0 && Object.keys(selectedUsersByPosition).length === 0) {
+            const initialState = {};
+            positionOptions.forEach(pos => {
+                initialState[pos.label] = [];
+            });
+            setSelectedUsersByPosition(initialState);
+        }
+    }, [positionOptions]);
+
+    // Helper to get reset state
+    const getResetSelectedUsers = () => {
+        const resetState = {};
+        positionOptions.forEach(pos => {
+            resetState[pos.label] = [];
+        });
+        return resetState;
+    };
 
     // Get users for a specific position
     const getUsersForPosition = (positionLabel) => {
@@ -101,7 +115,8 @@ const ClientsSegregation = () => {
                 if (updatedSelection[pos].includes(u.userId)) {
                     allSelectedUsers.push({
                         userId: u.userId,
-                        name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || u.userId
+                        name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || u.userId,
+                        position: pos
                     });
                 }
             });
@@ -128,26 +143,33 @@ const ClientsSegregation = () => {
         const assignedUsers = client.assignedUsers || [];
 
         // Reconstruct selected users by position from assigned users
-        const usersByPos = {
-            'All SME': [],
-            'All Graphics Designer': [],
-            'All Video Editor': [],
-            'All Content Writer': [],
-            'All schedulers and apis': []
-        };
+        const usersByPos = getResetSelectedUsers();
 
         if (assignedUsers.length > 0) {
             assignedUsers.forEach(au => {
-                const user = allUsers.find(u => u.userId === au.userId);
-                if (user) {
-                    const posOption = positionOptions.find(p => {
-                        if (p.isAllExecution) {
-                            return user.role === 'Execution';
+                let positionToUse = au.position;
+
+                // Backward compatibility for the temporary buggy label
+                if (positionToUse === 'All schedulers and apis') {
+                    positionToUse = 'All schedulers';
+                }
+
+                // If position is already stored in assignedUser and exists in our current options, use it
+                if (positionToUse && usersByPos[positionToUse]) {
+                    usersByPos[positionToUse].push(au.userId);
+                } else {
+                    // Fallback to finding user in allUsers and matching position (legacy data)
+                    const user = allUsers.find(u => u.userId === au.userId);
+                    if (user) {
+                        const posOption = positionOptions.find(p => {
+                            if (p.isAllExecution) {
+                                return user.role === 'Execution';
+                            }
+                            return p.role === user.role && p.position === user.position;
+                        });
+                        if (posOption && usersByPos[posOption.label]) {
+                            usersByPos[posOption.label].push(user.userId);
                         }
-                        return p.role === user.role && p.position === user.position;
-                    });
-                    if (posOption && usersByPos[posOption.label]) {
-                        usersByPos[posOption.label].push(user.userId);
                     }
                 }
             });
@@ -225,13 +247,7 @@ const ClientsSegregation = () => {
                     itsDataReceived: false,
                     assignedUsers: []
                 });
-                setSelectedUsersByPosition({
-                    'All SME': [],
-                    'All Graphics Designer': [],
-                    'All Video Editor': [],
-                    'All Content Writer': [],
-                    'All schedulers and apis': []
-                });
+                setSelectedUsersByPosition(getResetSelectedUsers());
                 setEditingClient(null);
                 setIsOpen(false);
 
@@ -257,13 +273,7 @@ const ClientsSegregation = () => {
                     itsDataReceived: false,
                     assignedUsers: []
                 });
-                setSelectedUsersByPosition({
-                    'All SME': [],
-                    'All Graphics Designer': [],
-                    'All Video Editor': [],
-                    'All Content Writer': [],
-                    'All schedulers and apis': []
-                });
+                setSelectedUsersByPosition(getResetSelectedUsers());
 
                 // Close modal immediately
                 setIsOpen(false);
@@ -287,14 +297,7 @@ const ClientsSegregation = () => {
     const handleClose = () => {
         setIsOpen(false);
         setEditingClient(null);
-        setSelectedUsersByPosition({
-            'All SME': [],
-            'All Graphics Designer': [],
-            'All Video Editor': [],
-            'All Content Writer': [],
-            'All schedulers and apis': [],
-            'Social Media Manager': []
-        });
+        setSelectedUsersByPosition(getResetSelectedUsers());
         // Reset form on close
         setFormData({
             clientName: '',
