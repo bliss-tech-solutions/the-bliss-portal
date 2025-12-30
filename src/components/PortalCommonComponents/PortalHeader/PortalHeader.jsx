@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { selectCurrentHeaderLogo, toggleTheme, selectTheme } from "../../../store/slices/themeSlice";
 import { logout } from "../../../store/slices/authSlice";
 import { useNotification } from "../../../contexts/NotificationContext";
-import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined, ExportOutlined } from "@ant-design/icons";
+import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined, ExportOutlined, WarningOutlined } from "@ant-design/icons";
 import { useCheckoutMutation, useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../store/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -303,7 +303,14 @@ const PortalHeader = () => {
             return uniqueUsers.size;
         }
 
-        return 0;
+    }, [tasksData, userRole]);
+
+    // Filter pending tasks for checkout modal (only for user role)
+    const checkoutPendingTasks = useMemo(() => {
+        if (userRole !== 'user' || !tasksData?.data || !Array.isArray(tasksData.data)) return [];
+        return tasksData.data.filter(
+            task => (task.taskStatus === 'pending' || task.taskStatus === 'Pending') && !task.isArchived
+        );
     }, [tasksData, userRole]);
 
     // Profile dropdown items
@@ -553,8 +560,79 @@ const PortalHeader = () => {
                 okText="Check Out"
                 confirmLoading={isCheckoutLoading}
                 cancelText="Cancel"
-                centered
             >
+                {userRole === 'user' && checkoutPendingTasks.length > 0 && (
+                    <div className="checkout-pending-warning" style={{
+                        marginBottom: '16px',
+                        padding: '12px',
+                        backgroundColor: 'var(--card-bg)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '8px'
+                    }}>
+                        <div style={{ color: '#cf1322', fontWeight: 'bold', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <WarningOutlined />
+                            Pending Tasks Alert
+                        </div>
+                        <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--text-color)', opacity: 0.85 }}>You have {checkoutPendingTasks.length} pending task(s). Please complete them if possible before checking out.</p>
+                        
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+                            gap: '12px', 
+                            maxHeight: '200px', 
+                            overflowY: 'auto',
+                            padding: '4px'
+                        }}>
+                            {checkoutPendingTasks.map((task, index) => (
+                                <div key={task._id || index} style={{
+                                    backgroundColor: 'var(--card-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '6px',
+                                    padding: '10px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                }}>
+                                    <div style={{ 
+                                        fontSize: '13px', 
+                                        fontWeight: '600', 
+                                        color: 'var(--text-color)',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {task.taskName || 'Untitled Task'}
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '11px', 
+                                        color: 'var(--text-color)', 
+                                        opacity: 0.7,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                    }}>
+                                        <UserOutlined style={{ fontSize: '10px' }} />
+                                        <span>{getUserName(task.userId)}</span>
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '11px', 
+                                        color: 'var(--text-color)', 
+                                        opacity: 0.5,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        marginTop: 'auto'
+                                    }}>
+                                        <ClockCircleOutlined style={{ fontSize: '10px' }} />
+                                        <span>{dayjs(task.createdAt || task.updatedAt).fromNow()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <p>You can optionally add a reason for checking out.</p>
                 <Input.TextArea
                     rows={3}
