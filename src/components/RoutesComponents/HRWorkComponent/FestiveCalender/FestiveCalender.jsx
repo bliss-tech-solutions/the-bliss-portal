@@ -215,28 +215,17 @@ const FestiveCalender = () => {
         return Array.from(usersMap.values()).filter(user => user.leaves.length > 0);
     }, [allLeavesData, allUsersData]);
 
-    // Socket listener for real-time leave updates
-    useEffect(() => {
-        if (!socket) return;
+    // Filter users to only those with pending leaves for main display
+    const usersWithPendingLeaves = useMemo(() => {
+        return usersWithLeaves
+            .map(user => ({
+                ...user,
+                leaves: user.leaves.filter(l => l.status === 'pending')
+            }))
+            .filter(user => user.leaves.length > 0);
+    }, [usersWithLeaves]);
 
-        const handleLeaveUpdate = (data) => {
-            console.log('✅ Leave update received:', data);
-            refetchAllLeaves();
-        };
 
-        const handleLeaveRequest = (data) => {
-            console.log('✅ New leave request received:', data);
-            refetchAllLeaves();
-        };
-
-        socket.on('leave-updated', handleLeaveUpdate);
-        socket.on('leave-requested', handleLeaveRequest);
-
-        return () => {
-            socket.off('leave-updated', handleLeaveUpdate);
-            socket.off('leave-requested', handleLeaveRequest);
-        };
-    }, [socket, refetchAllLeaves]);
 
     // Get leaves by status for selected user
     const getUserLeavesByStatus = useMemo(() => {
@@ -602,11 +591,11 @@ const FestiveCalender = () => {
                         className="festive-leaves-container"
                     >
                         <div className="festive-leaves-list">
-                            {usersWithLeaves.length === 0 ? (
-                                <Empty description="No leaves found" />
+                            {usersWithPendingLeaves.length === 0 ? (
+                                <Empty description="No pending leaves" />
                             ) : (
                                 <List
-                                    dataSource={usersWithLeaves.slice(0, 5)}
+                                    dataSource={usersWithPendingLeaves.slice(0, 5)}
                                     renderItem={(user) => (
                                         <List.Item
                                             className="festive-leave-item"
@@ -637,12 +626,13 @@ const FestiveCalender = () => {
                         <div className="festive-leaves-view-button">
                             <Button
                                 type="default"
+                                className='global-action-btn'
                                 block
                                 onClick={() => {
                                     setSelectedUser(null);
                                     setDrawerVisible(true);
                                 }}
-                                disabled={usersWithLeaves.length === 0}
+                                disabled={usersWithPendingLeaves.length === 0}
                             >
                                 View Leaves
                             </Button>
@@ -675,7 +665,7 @@ const FestiveCalender = () => {
                         {!selectedUser ? (
                             // Show all users table
                             <Table
-                                dataSource={usersWithLeaves}
+                                dataSource={usersWithPendingLeaves}
                                 rowKey="id"
                                 pagination={{
                                     pageSize: 10,
@@ -905,42 +895,45 @@ const FestiveCalender = () => {
                                 setModalInstructions('');
                             }}
                             footer={[
-                                <Button key="cancel" onClick={() => {
-                                    setDateModalVisible(false);
-                                    setSelectedLeave(null);
-                                    setModalContextUserId(null);
-                                    setModalInstructions('');
-                                }}>Cancel</Button>,
-                                <Button key="ok" type="primary" onClick={() => {
-                                    if (!selectedLeave) return;
-                                    // Save selections into pendingSelections when opened from all-users table
-                                    if (modalContextUserId) {
-                                        const datesSelected = selectedDates.get(selectedLeave.id);
-                                        const approved = new Set();
-                                        const rejected = new Set();
-                                        if (datesSelected && datesSelected.size) {
-                                            Array.from(datesSelected).forEach(dateStr => {
-                                                const action = dateActions.get(`${selectedLeave.id}-${dateStr}`);
-                                                if (action === 'approve') approved.add(dateStr);
-                                                else if (action === 'reject') rejected.add(dateStr);
+                                <div className="FlexAdjustContainer">
+                                    <Button key="cancel" onClick={() => {
+                                        setDateModalVisible(false);
+                                        setSelectedLeave(null);
+                                        setModalContextUserId(null);
+                                        setModalInstructions('');
+
+                                    }} className='global-action-btn'>Cancel</Button>
+                                    <Button key="ok" type="primary" onClick={() => {
+                                        if (!selectedLeave) return;
+                                        // Save selections into pendingSelections when opened from all-users table
+                                        if (modalContextUserId) {
+                                            const datesSelected = selectedDates.get(selectedLeave.id);
+                                            const approved = new Set();
+                                            const rejected = new Set();
+                                            if (datesSelected && datesSelected.size) {
+                                                Array.from(datesSelected).forEach(dateStr => {
+                                                    const action = dateActions.get(`${selectedLeave.id}-${dateStr}`);
+                                                    if (action === 'approve') approved.add(dateStr);
+                                                    else if (action === 'reject') rejected.add(dateStr);
+                                                });
+                                            }
+                                            setPendingSelections(prev => {
+                                                const next = new Map(prev);
+                                                const existing = next.get(modalContextUserId) || { approved: new Set(), rejected: new Set(), instructions: '' };
+                                                // merge
+                                                approved.forEach(d => existing.approved.add(d));
+                                                rejected.forEach(d => existing.rejected.add(d));
+                                                existing.instructions = modalInstructions;
+                                                next.set(modalContextUserId, existing);
+                                                return next;
                                             });
                                         }
-                                        setPendingSelections(prev => {
-                                            const next = new Map(prev);
-                                            const existing = next.get(modalContextUserId) || { approved: new Set(), rejected: new Set(), instructions: '' };
-                                            // merge
-                                            approved.forEach(d => existing.approved.add(d));
-                                            rejected.forEach(d => existing.rejected.add(d));
-                                            existing.instructions = modalInstructions;
-                                            next.set(modalContextUserId, existing);
-                                            return next;
-                                        });
-                                    }
-                                    setDateModalVisible(false);
-                                    setSelectedLeave(null);
-                                    setModalContextUserId(null);
-                                    setModalInstructions('');
-                                }}>OK</Button>
+                                        setDateModalVisible(false);
+                                        setSelectedLeave(null);
+                                        setModalContextUserId(null);
+                                        setModalInstructions('');
+                                    }} className='global-action-btn'>OK</Button>
+                                </div>
                             ]}
                             width={700}
                             className="festive-date-modal"
@@ -981,7 +974,7 @@ const FestiveCalender = () => {
                                                                             size="middle"
                                                                             type={isSelected ? 'primary' : 'default'}
                                                                             onClick={() => handleDateSelect(dateStr, selectedLeave.id)}
-                                                                            className="festive-date-btn"
+                                                                            className="global-action-btn"
                                                                             icon={isSelected ? <span className="festive-check-icon">✓</span> : null}
                                                                             style={{ marginBottom: 8 }}
                                                                         >
@@ -995,7 +988,7 @@ const FestiveCalender = () => {
                                                                 <div className='Approved-Rejected-Buttons'>
                                                                     <Button
                                                                         type={action === 'approve' ? 'primary' : 'default'}
-                                                                        className={`festive-action-btn approve ${action === 'approve' ? 'active' : ''}`}
+                                                                        className={`global-action-btn approve ${action === 'approve' ? 'active' : ''}`}
                                                                         onClick={() => handleApproveDate(dateStr, selectedLeave.id)}
                                                                     >
                                                                         Approve

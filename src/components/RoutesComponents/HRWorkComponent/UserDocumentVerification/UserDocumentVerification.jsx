@@ -30,13 +30,18 @@ const UserDocumentVerification = () => {
     const [activeTab, setActiveTab] = useState("1");
     const [form] = Form.useForm();
     const [aadharFileList, setAadharFileList] = useState([]);
-    const [passportFileList, setPassportFileList] = useState([]);
+    const [salarySlipFileList, setSalarySlipFileList] = useState([]);
+    const [checkPhotoFileList, setCheckPhotoFileList] = useState([]);
     const [offerLetterFileList, setOfferLetterFileList] = useState([]);
+
     const [aadharUrl, setAadharUrl] = useState("");
-    const [passportUrl, setPassportUrl] = useState("");
+    const [salarySlipUrl, setSalarySlipUrl] = useState("");
+    const [checkPhotoUrl, setCheckPhotoUrl] = useState("");
     const [offerLetterUrl, setOfferLetterUrl] = useState("");
+
     const [uploadingAadhar, setUploadingAadhar] = useState(false);
-    const [uploadingPassport, setUploadingPassport] = useState(false);
+    const [uploadingSalarySlip, setUploadingSalarySlip] = useState(false);
+    const [uploadingCheckPhoto, setUploadingCheckPhoto] = useState(false);
     const [uploadingOffer, setUploadingOffer] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,13 +61,18 @@ const UserDocumentVerification = () => {
 
     // Edit File States
     const [editAadharFileList, setEditAadharFileList] = useState([]);
-    const [editPassportFileList, setEditPassportFileList] = useState([]);
+    const [editSalarySlipFileList, setEditSalarySlipFileList] = useState([]);
+    const [editCheckPhotoFileList, setEditCheckPhotoFileList] = useState([]);
     const [editOfferLetterFileList, setEditOfferLetterFileList] = useState([]);
+
     const [editAadharUrl, setEditAadharUrl] = useState("");
-    const [editPassportUrl, setEditPassportUrl] = useState("");
+    const [editSalarySlipUrl, setEditSalarySlipUrl] = useState("");
+    const [editCheckPhotoUrl, setEditCheckPhotoUrl] = useState("");
     const [editOfferLetterUrl, setEditOfferLetterUrl] = useState("");
+
     const [editUploadingAadhar, setEditUploadingAadhar] = useState(false);
-    const [editUploadingPassport, setEditUploadingPassport] = useState(false);
+    const [editUploadingSalarySlip, setEditUploadingSalarySlip] = useState(false);
+    const [editUploadingCheckPhoto, setEditUploadingCheckPhoto] = useState(false);
     const [editUploadingOffer, setEditUploadingOffer] = useState(false);
 
     const handleEditClick = (document) => {
@@ -70,16 +80,21 @@ const UserDocumentVerification = () => {
         setEditModalVisible(true);
 
         setEditAadharUrl(document.aadharCardImage || "");
-        setEditPassportUrl(document.passportPhoto || "");
+        setEditSalarySlipUrl(document.oldSalarySlip || "");
+        setEditCheckPhotoUrl(document.checkPhoto || "");
         setEditOfferLetterUrl(document.offerLetter || "");
 
         if (document.aadharCardImage) {
             setEditAadharFileList([{ uid: '-1', name: 'Aadhar Card', status: 'done', url: document.aadharCardImage }]);
         } else setEditAadharFileList([]);
 
-        if (document.passportPhoto) {
-            setEditPassportFileList([{ uid: '-1', name: 'Passport Photo', status: 'done', url: document.passportPhoto }]);
-        } else setEditPassportFileList([]);
+        if (document.oldSalarySlip) {
+            setEditSalarySlipFileList([{ uid: '-1', name: 'Salary Slip', status: 'done', url: document.oldSalarySlip }]);
+        } else setEditSalarySlipFileList([]);
+
+        if (document.checkPhoto) {
+            setEditCheckPhotoFileList([{ uid: '-1', name: 'Check Photo', status: 'done', url: document.checkPhoto }]);
+        } else setEditCheckPhotoFileList([]);
 
         if (document.offerLetter) {
             setEditOfferLetterFileList([{ uid: '-1', name: 'Offer Letter', status: 'done', url: document.offerLetter }]);
@@ -89,7 +104,8 @@ const UserDocumentVerification = () => {
             ...document,
             joiningDate: document.joiningDate ? dayjs(document.joiningDate) : null,
             aadharCardImage: document.aadharCardImage,
-            passportPhoto: document.passportPhoto,
+            oldSalarySlip: document.oldSalarySlip,
+            checkPhoto: document.checkPhoto,
             offerLetter: document.offerLetter
         });
     };
@@ -109,7 +125,8 @@ const UserDocumentVerification = () => {
                 blissSalary: Number(values.blissSalary),
                 joiningDate: values.joiningDate ? dayjs(values.joiningDate).format('YYYY-MM-DD') : null,
                 aadharCardImage: editAadharUrl,
-                passportPhoto: editPassportUrl,
+                oldSalarySlip: editSalarySlipUrl,
+                checkPhoto: editCheckPhotoUrl,
                 offerLetter: editOfferLetterUrl,
             };
 
@@ -163,34 +180,64 @@ const UserDocumentVerification = () => {
         } finally { setEditUploadingAadhar(false); }
     };
 
-    const handleEditPassportUpload = async ({ file, fileList }) => {
+    const handleEditSalarySlipUpload = async ({ file, fileList }) => {
         if (file.status === 'removed') {
-            setEditPassportFileList([]);
-            setEditPassportUrl("");
-            editForm.setFieldsValue({ passportPhoto: undefined });
+            setEditSalarySlipFileList([]);
+            setEditSalarySlipUrl("");
+            editForm.setFieldsValue({ oldSalarySlip: undefined });
             return;
         }
         const fileToUpload = file.originFileObj || file;
         if (!fileToUpload || !(fileToUpload instanceof File)) return;
 
         file.status = 'uploading';
-        setEditPassportFileList([...fileList]);
-        setEditUploadingPassport(true);
+        setEditSalarySlipFileList([...fileList]);
+        setEditUploadingSalarySlip(true);
+
+        try {
+            const result = await uploadToCloudinary(fileToUpload, 'raw');
+            if (result?.secure_url) {
+                const url = result.secure_url;
+                const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
+                setEditSalarySlipFileList(updatedList);
+                setEditSalarySlipUrl(url);
+                editForm.setFieldsValue({ oldSalarySlip: url });
+                success('Salary slip uploaded');
+            }
+        } catch (e) {
+            showError('Upload failed');
+            setEditSalarySlipFileList(fileList.filter(f => f.uid !== file.uid));
+        } finally { setEditUploadingSalarySlip(false); }
+    };
+
+    const handleEditCheckPhotoUpload = async ({ file, fileList }) => {
+        if (file.status === 'removed') {
+            setEditCheckPhotoFileList([]);
+            setEditCheckPhotoUrl("");
+            editForm.setFieldsValue({ checkPhoto: undefined });
+            return;
+        }
+        const fileToUpload = file.originFileObj || file;
+        if (!fileToUpload || !(fileToUpload instanceof File)) return;
+
+        file.status = 'uploading';
+        setEditCheckPhotoFileList([...fileList]);
+        setEditUploadingCheckPhoto(true);
 
         try {
             const result = await uploadToCloudinary(fileToUpload, 'image');
             if (result?.secure_url) {
                 const url = result.secure_url;
                 const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
-                setEditPassportFileList(updatedList);
-                setEditPassportUrl(url);
-                editForm.setFieldsValue({ passportPhoto: url });
-                success('Passport uploaded');
+                setEditCheckPhotoFileList(updatedList);
+                setEditCheckPhotoUrl(url);
+                editForm.setFieldsValue({ checkPhoto: url });
+                success('Check photo uploaded');
             }
         } catch (e) {
             showError('Upload failed');
-            setEditPassportFileList(fileList.filter(f => f.uid !== file.uid));
-        } finally { setEditUploadingPassport(false); }
+            setEditCheckPhotoFileList(fileList.filter(f => f.uid !== file.uid));
+        } finally { setEditUploadingCheckPhoto(false); }
     };
 
     const handleEditOfferLetterUpload = async ({ file, fileList }) => {
@@ -339,62 +386,64 @@ const UserDocumentVerification = () => {
         }
     };
 
-    const handlePassportUpload = async ({ file, fileList }) => {
-        // Handle file removal
+    const handleSalarySlipUpload = async ({ file, fileList }) => {
         if (file.status === 'removed') {
-            setPassportFileList([]);
-            setPassportUrl("");
-            form.setFieldsValue({ passportPhoto: undefined });
+            setSalarySlipFileList([]);
+            setSalarySlipUrl("");
+            form.setFieldsValue({ oldSalarySlip: undefined });
             return;
         }
-
-        // Handle new file upload
         const fileToUpload = file.originFileObj || file;
-        if (!fileToUpload || !(fileToUpload instanceof File)) {
-            showError('Invalid file selected');
-            return;
-        }
+        if (!fileToUpload || !(fileToUpload instanceof File)) return;
 
-        // Update file list with uploading status
         file.status = 'uploading';
-        setPassportFileList([...fileList]);
-        setUploadingPassport(true);
+        setSalarySlipFileList([...fileList]);
+        setUploadingSalarySlip(true);
 
         try {
-            // Upload to Cloudinary as image
-            const result = await uploadToCloudinary(fileToUpload, 'image');
-
-            if (!result || !result.secure_url) {
-                throw new Error('Invalid response from Cloudinary');
+            const result = await uploadToCloudinary(fileToUpload, 'raw');
+            if (result?.secure_url) {
+                const url = result.secure_url;
+                const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
+                setSalarySlipFileList(updatedList);
+                setSalarySlipUrl(url);
+                form.setFieldsValue({ oldSalarySlip: url });
+                success('Salary slip uploaded successfully');
             }
+        } catch (e) {
+            showError('Upload failed');
+            setSalarySlipFileList(fileList.filter(f => f.uid !== file.uid));
+        } finally { setUploadingSalarySlip(false); }
+    };
 
-            const documentUrl = result.secure_url;
-
-            // Update file list with success status and URL
-            const updatedFileList = fileList.map(f => {
-                if (f.uid === file.uid) {
-                    return {
-                        ...f,
-                        status: 'done',
-                        url: documentUrl,
-                        response: { secure_url: documentUrl }
-                    };
-                }
-                return f;
-            });
-
-            setPassportFileList(updatedFileList);
-            setPassportUrl(documentUrl);
-            form.setFieldsValue({ passportPhoto: documentUrl });
-            success('Passport photo uploaded successfully');
-        } catch (error) {
-            console.error('Passport upload error:', error);
-            showError('Failed to upload passport photo: ' + (error.message || 'Unknown error'));
-            // Remove failed file from list
-            setPassportFileList(fileList.filter(f => f.uid !== file.uid));
-        } finally {
-            setUploadingPassport(false);
+    const handleCheckPhotoUpload = async ({ file, fileList }) => {
+        if (file.status === 'removed') {
+            setCheckPhotoFileList([]);
+            setCheckPhotoUrl("");
+            form.setFieldsValue({ checkPhoto: undefined });
+            return;
         }
+        const fileToUpload = file.originFileObj || file;
+        if (!fileToUpload || !(fileToUpload instanceof File)) return;
+
+        file.status = 'uploading';
+        setCheckPhotoFileList([...fileList]);
+        setUploadingCheckPhoto(true);
+
+        try {
+            const result = await uploadToCloudinary(fileToUpload, 'image');
+            if (result?.secure_url) {
+                const url = result.secure_url;
+                const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
+                setCheckPhotoFileList(updatedList);
+                setCheckPhotoUrl(url);
+                form.setFieldsValue({ checkPhoto: url });
+                success('Check photo uploaded successfully');
+            }
+        } catch (e) {
+            showError('Upload failed');
+            setCheckPhotoFileList(fileList.filter(f => f.uid !== file.uid));
+        } finally { setUploadingCheckPhoto(false); }
     };
 
     const handleOfferLetterUpload = async ({ file, fileList }) => {
@@ -457,7 +506,7 @@ const UserDocumentVerification = () => {
 
     const handleSubmit = async (values) => {
         // Validate that all documents are uploaded
-        if (!aadharUrl || !passportUrl || !offerLetterUrl) {
+        if (!aadharUrl || !salarySlipUrl || !checkPhotoUrl || !offerLetterUrl) {
             showError('Please upload all required documents before submitting');
             return;
         }
@@ -487,7 +536,8 @@ const UserDocumentVerification = () => {
                     accountType: values.bankDetails?.accountType,
                 },
                 aadharCardImage: aadharUrl,
-                passportPhoto: passportUrl,
+                oldSalarySlip: salarySlipUrl,
+                checkPhoto: checkPhotoUrl,
                 offerLetter: offerLetterUrl,
             };
 
@@ -516,15 +566,18 @@ const UserDocumentVerification = () => {
     const handleReset = () => {
         form.resetFields();
         setAadharFileList([]);
-        setPassportFileList([]);
+        setSalarySlipFileList([]);
+        setCheckPhotoFileList([]);
         setOfferLetterFileList([]);
         setAadharUrl("");
-        setPassportUrl("");
+        setSalarySlipUrl("");
+        setCheckPhotoUrl("");
         setOfferLetterUrl("");
         // Clear form validation
         form.setFieldsValue({
             aadharCardImage: undefined,
-            passportPhoto: undefined,
+            oldSalarySlip: undefined,
+            checkPhoto: undefined,
             offerLetter: undefined
         });
     };
@@ -536,6 +589,58 @@ const UserDocumentVerification = () => {
         { title: 'Current Salary', dataIndex: 'blissSalary', key: 'blissSalary', render: (val) => val ? `₹${Number(val).toLocaleString()}` : 'N/A' },
         { title: 'Joining Date', dataIndex: 'joiningDate', key: 'joiningDate', render: (date) => date ? dayjs(date).format('MMM D, YYYY') : '-' },
         { title: 'Experience', dataIndex: 'experience', key: 'experience' },
+        // {
+        //     title: 'Documents',
+        //     key: 'documents',
+        //     render: (_, record) => (
+        //         <Space>
+        //             {record.aadharCardImage && (
+        //                 <Button
+        //                     size="small"
+        //                     icon={<EyeOutlined />}
+        //                     href={record.aadharCardImage}
+        //                     target="_blank"
+        //                     className="global-secondary-btn"
+        //                 >
+        //                     AdharCard
+        //                 </Button>
+        //             )}
+        //             {record.oldSalarySlip && (
+        //                 <Button
+        //                     size="small"
+        //                     icon={<DownloadOutlined />}
+        //                     href={record.oldSalarySlip}
+        //                     target="_blank"
+        //                     className="global-secondary-btn"
+        //                 >
+        //                     old salary slip
+        //                 </Button>
+        //             )}
+        //             {record.checkPhoto && (
+        //                 <Button
+        //                     size="small"
+        //                     icon={<EyeOutlined />}
+        //                     href={record.checkPhoto}
+        //                     target="_blank"
+        //                     className="global-secondary-btn"
+        //                 >
+        //                     Check photo
+        //                 </Button>
+        //             )}
+        //             {record.offerLetter && (
+        //                 <Button
+        //                     size="small"
+        //                     icon={<DownloadOutlined />}
+        //                     href={record.offerLetter}
+        //                     target="_blank"
+        //                     className="global-secondary-btn"
+        //                 >
+        //                     offer letter bliss
+        //                 </Button>
+        //             )}
+        //         </Space>
+        //     ),
+        // },
         {
             title: 'Action',
             key: 'action',
@@ -864,29 +969,16 @@ const UserDocumentVerification = () => {
                                     Document Uploads
                                 </h3>
                                 <Row gutter={[16, 16]}>
-                                    <Col xs={24} md={8}>
+                                    <Col xs={24} sm={12} md={6}>
                                         <Form.Item
-                                            label="Aadhar Card"
+                                            label="AdharCard"
                                             name="aadharCardImage"
                                             validateStatus={uploadingAadhar ? "validating" : ""}
                                             help={uploadingAadhar ? "Uploading..." : ""}
-                                            rules={[
-                                                {
-                                                    validator: async () => {
-                                                        if (uploadingAadhar) {
-                                                            // Don't show error while uploading
-                                                            return Promise.resolve();
-                                                        }
-                                                        if (!aadharUrl) {
-                                                            return Promise.reject(new Error('Please upload Aadhar card'));
-                                                        }
-                                                        return Promise.resolve();
-                                                    }
-                                                }
-                                            ]}
+                                            rules={[{ validator: async () => !uploadingAadhar && !aadharUrl ? Promise.reject('Upload AdharCard') : Promise.resolve() }]}
                                         >
                                             <Upload
-                                                name="aadharCard"
+                                                name="adharCard"
                                                 listType="picture-card"
                                                 fileList={aadharFileList}
                                                 onChange={handleAadharUpload}
@@ -897,85 +989,71 @@ const UserDocumentVerification = () => {
                                             >
                                                 {aadharFileList.length < 1 && (
                                                     <div className="udv-upload-button">
-                                                        {uploadingAadhar ? (
-                                                            <Spin size="small" />
-                                                        ) : (
-                                                            <>
-                                                                <UploadOutlined className="udv-upload-icon" />
-                                                                <div className="udv-upload-text">Upload Aadhar</div>
-                                                            </>
-                                                        )}
+                                                        {uploadingAadhar ? <Spin size="small" /> : <><UploadOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Adhar</div></>}
                                                     </div>
                                                 )}
                                             </Upload>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={8}>
+                                    <Col xs={24} sm={12} md={6}>
                                         <Form.Item
-                                            label="Passport Photo"
-                                            name="passportPhoto"
-                                            validateStatus={uploadingPassport ? "validating" : ""}
-                                            help={uploadingPassport ? "Uploading..." : ""}
-                                            rules={[
-                                                {
-                                                    validator: async () => {
-                                                        if (uploadingPassport) {
-                                                            // Don't show error while uploading
-                                                            return Promise.resolve();
-                                                        }
-                                                        if (!passportUrl) {
-                                                            return Promise.reject(new Error('Please upload passport photo'));
-                                                        }
-                                                        return Promise.resolve();
-                                                    }
-                                                }
-                                            ]}
+                                            label="old salary slip"
+                                            name="oldSalarySlip"
+                                            validateStatus={uploadingSalarySlip ? "validating" : ""}
+                                            help={uploadingSalarySlip ? "Uploading..." : ""}
+                                            rules={[{ validator: async () => !uploadingSalarySlip && !salarySlipUrl ? Promise.reject('Upload Salary Slip') : Promise.resolve() }]}
                                         >
                                             <Upload
-                                                name="passportPhoto"
+                                                name="oldSalarySlip"
                                                 listType="picture-card"
-                                                fileList={passportFileList}
-                                                onChange={handlePassportUpload}
+                                                fileList={salarySlipFileList}
+                                                onChange={handleSalarySlipUpload}
+                                                beforeUpload={() => false}
+                                                accept=".pdf,.doc,.docx,image/*"
+                                                maxCount={1}
+                                                className="udv-upload"
+                                            >
+                                                {salarySlipFileList.length < 1 && (
+                                                    <div className="udv-upload-button">
+                                                        {uploadingSalarySlip ? <Spin size="small" /> : <><FileTextOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Slip</div></>}
+                                                    </div>
+                                                )}
+                                            </Upload>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={24} sm={12} md={6}>
+                                        <Form.Item
+                                            label="Check photo"
+                                            name="checkPhoto"
+                                            validateStatus={uploadingCheckPhoto ? "validating" : ""}
+                                            help={uploadingCheckPhoto ? "Uploading..." : ""}
+                                            rules={[{ validator: async () => !uploadingCheckPhoto && !checkPhotoUrl ? Promise.reject('Upload Check Photo') : Promise.resolve() }]}
+                                        >
+                                            <Upload
+                                                name="checkPhoto"
+                                                listType="picture-card"
+                                                fileList={checkPhotoFileList}
+                                                onChange={handleCheckPhotoUpload}
                                                 beforeUpload={() => false}
                                                 accept="image/*"
                                                 maxCount={1}
                                                 className="udv-upload"
                                             >
-                                                {passportFileList.length < 1 && (
+                                                {checkPhotoFileList.length < 1 && (
                                                     <div className="udv-upload-button">
-                                                        {uploadingPassport ? (
-                                                            <Spin size="small" />
-                                                        ) : (
-                                                            <>
-                                                                <IdcardOutlined className="udv-upload-icon" />
-                                                                <div className="udv-upload-text">Upload Photo</div>
-                                                            </>
-                                                        )}
+                                                        {uploadingCheckPhoto ? <Spin size="small" /> : <><PictureOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Check</div></>}
                                                     </div>
                                                 )}
                                             </Upload>
                                         </Form.Item>
                                     </Col>
-                                    <Col xs={24} md={8}>
+                                    <Col xs={24} sm={12} md={6}>
                                         <Form.Item
-                                            label="Offer Letter"
+                                            label="offer letter bliss"
                                             name="offerLetter"
                                             validateStatus={uploadingOffer ? "validating" : ""}
                                             help={uploadingOffer ? "Uploading..." : ""}
-                                            rules={[
-                                                {
-                                                    validator: async () => {
-                                                        if (uploadingOffer) {
-                                                            // Don't show error while uploading
-                                                            return Promise.resolve();
-                                                        }
-                                                        if (!offerLetterUrl) {
-                                                            return Promise.reject(new Error('Please upload offer letter'));
-                                                        }
-                                                        return Promise.resolve();
-                                                    }
-                                                }
-                                            ]}
+                                            rules={[{ validator: async () => !uploadingOffer && !offerLetterUrl ? Promise.reject('Upload Offer Letter') : Promise.resolve() }]}
                                         >
                                             <Upload
                                                 name="offerLetter"
@@ -983,20 +1061,13 @@ const UserDocumentVerification = () => {
                                                 fileList={offerLetterFileList}
                                                 onChange={handleOfferLetterUpload}
                                                 beforeUpload={() => false}
-                                                accept=".pdf,.doc,.docx"
+                                                accept=".pdf,.doc,.docx,image/*"
                                                 maxCount={1}
                                                 className="udv-upload"
                                             >
                                                 {offerLetterFileList.length < 1 && (
                                                     <div className="udv-upload-button">
-                                                        {uploadingOffer ? (
-                                                            <Spin size="small" />
-                                                        ) : (
-                                                            <>
-                                                                <FileTextOutlined className="udv-upload-icon" />
-                                                                <div className="udv-upload-text">Upload Letter</div>
-                                                            </>
-                                                        )}
+                                                        {uploadingOffer ? <Spin size="small" /> : <><FileTextOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Letter</div></>}
                                                     </div>
                                                 )}
                                             </Upload>
@@ -1014,7 +1085,7 @@ const UserDocumentVerification = () => {
                                     icon={<CheckCircleOutlined />}
                                     className="udv-submit-button"
                                     loading={isSubmitting}
-                                    disabled={uploadingAadhar || uploadingPassport || uploadingOffer || isSubmitting}
+                                    disabled={uploadingAadhar || uploadingSalarySlip || uploadingCheckPhoto || uploadingOffer || isSubmitting}
                                 >
                                     {isSubmitting ? 'Submitting...' : 'Submit Document'}
                                 </Button>
@@ -1175,20 +1246,31 @@ const UserDocumentVerification = () => {
                                                         target="_blank"
                                                         className="global-secondary-btn"
                                                     >
-                                                        Aadhar
+                                                        AdharCard
                                                     </Button>
                                                 )}
-                                                {/* {document.passportPhoto && (
+                                                {document.oldSalarySlip && (
                                                     <Button
                                                         size="small"
-                                                        icon={<EyeOutlined />}
-                                                        href={document.passportPhoto}
+                                                        icon={<DownloadOutlined />}
+                                                        href={document.oldSalarySlip}
                                                         target="_blank"
                                                         className="global-secondary-btn"
                                                     >
-                                                        Passport
+                                                        old salary slip
                                                     </Button>
-                                                )} */}
+                                                )}
+                                                {document.checkPhoto && (
+                                                    <Button
+                                                        size="small"
+                                                        icon={<EyeOutlined />}
+                                                        href={document.checkPhoto}
+                                                        target="_blank"
+                                                        className="global-secondary-btn"
+                                                    >
+                                                        Check photo
+                                                    </Button>
+                                                )}
                                                 {document.offerLetter && (
                                                     <Button
                                                         size="small"
@@ -1197,7 +1279,7 @@ const UserDocumentVerification = () => {
                                                         target="_blank"
                                                         className="global-secondary-btn"
                                                     >
-                                                        Offer Letter
+                                                        offer letter bliss
                                                     </Button>
                                                 )}
                                                 <Button
@@ -1408,15 +1490,15 @@ const UserDocumentVerification = () => {
                     <div className="udv-form-section">
                         <h3 className="udv-section-title"><PictureOutlined className="udv-section-icon" /> Document Uploads</h3>
                         <Row gutter={[16, 16]}>
-                            <Col xs={24} md={8}>
+                            <Col xs={24} sm={12} md={6}>
                                 <Form.Item
-                                    label="Aadhar Card"
+                                    label="AdharCard"
                                     name="aadharCardImage"
                                     validateStatus={editUploadingAadhar ? "validating" : ""}
                                     help={editUploadingAadhar ? "Uploading..." : ""}
                                 >
                                     <Upload
-                                        name="aadharCard"
+                                        name="adharCard"
                                         listType="picture-card"
                                         fileList={editAadharFileList}
                                         onChange={handleEditAadharUpload}
@@ -1427,40 +1509,65 @@ const UserDocumentVerification = () => {
                                     >
                                         {editAadharFileList.length < 1 && (
                                             <div className="udv-upload-button">
-                                                {editUploadingAadhar ? <Spin size="small" /> : <><UploadOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Aadhar</div></>}
+                                                {editUploadingAadhar ? <Spin size="small" /> : <><UploadOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Adhar</div></>}
                                             </div>
                                         )}
                                     </Upload>
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={8}>
+                            <Col xs={24} sm={12} md={6}>
                                 <Form.Item
-                                    label="Passport Photo"
-                                    name="passportPhoto"
-                                    validateStatus={editUploadingPassport ? "validating" : ""}
-                                    help={editUploadingPassport ? "Uploading..." : ""}
+                                    label="old salary slip"
+                                    name="oldSalarySlip"
+                                    validateStatus={editUploadingSalarySlip ? "validating" : ""}
+                                    help={editUploadingSalarySlip ? "Uploading..." : ""}
                                 >
                                     <Upload
-                                        name="passportPhoto"
+                                        name="oldSalarySlip"
                                         listType="picture-card"
-                                        fileList={editPassportFileList}
-                                        onChange={handleEditPassportUpload}
+                                        fileList={editSalarySlipFileList}
+                                        onChange={handleEditSalarySlipUpload}
+                                        beforeUpload={() => false}
+                                        accept=".pdf,.doc,.docx,image/*"
+                                        maxCount={1}
+                                        className="udv-upload"
+                                    >
+                                        {editSalarySlipFileList.length < 1 && (
+                                            <div className="udv-upload-button">
+                                                {editUploadingSalarySlip ? <Spin size="small" /> : <><FileTextOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Slip</div></>}
+                                            </div>
+                                        )}
+                                    </Upload>
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12} md={6}>
+                                <Form.Item
+                                    label="Check photo"
+                                    name="checkPhoto"
+                                    validateStatus={editUploadingCheckPhoto ? "validating" : ""}
+                                    help={editUploadingCheckPhoto ? "Uploading..." : ""}
+                                >
+                                    <Upload
+                                        name="checkPhoto"
+                                        listType="picture-card"
+                                        fileList={editCheckPhotoFileList}
+                                        onChange={handleEditCheckPhotoUpload}
                                         beforeUpload={() => false}
                                         accept="image/*"
                                         maxCount={1}
                                         className="udv-upload"
                                     >
-                                        {editPassportFileList.length < 1 && (
+                                        {editCheckPhotoFileList.length < 1 && (
                                             <div className="udv-upload-button">
-                                                {editUploadingPassport ? <Spin size="small" /> : <><UploadOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Photo</div></>}
+                                                {editUploadingCheckPhoto ? <Spin size="small" /> : <><PictureOutlined className="udv-upload-icon" /><div className="udv-upload-text">Upload Check</div></>}
                                             </div>
                                         )}
                                     </Upload>
                                 </Form.Item>
                             </Col>
-                            <Col xs={24} md={8}>
+                            <Col xs={24} sm={12} md={6}>
                                 <Form.Item
-                                    label="Offer Letter"
+                                    label="offer letter bliss"
                                     name="offerLetter"
                                     validateStatus={editUploadingOffer ? "validating" : ""}
                                     help={editUploadingOffer ? "Uploading..." : ""}
@@ -1471,7 +1578,7 @@ const UserDocumentVerification = () => {
                                         fileList={editOfferLetterFileList}
                                         onChange={handleEditOfferLetterUpload}
                                         beforeUpload={() => false}
-                                        accept=".pdf,.doc,.docx"
+                                        accept=".pdf,.doc,.docx,image/*"
                                         maxCount={1}
                                         className="udv-upload"
                                     >
@@ -1494,7 +1601,7 @@ const UserDocumentVerification = () => {
                             icon={<CheckCircleOutlined />}
                             className="udv-submit-button"
                             loading={isUpdating}
-                            disabled={editUploadingAadhar || editUploadingPassport || editUploadingOffer || isUpdating}
+                            disabled={editUploadingAadhar || editUploadingSalarySlip || editUploadingCheckPhoto || editUploadingOffer || isUpdating}
                         >
                             {isUpdating ? 'Updating...' : 'Update Document'}
                         </Button>
@@ -1526,9 +1633,15 @@ const UserDocumentVerification = () => {
                             <Col xs={24} sm={8}>
                                 <div className="udv-summary-stat">
                                     <span className="udv-summary-label">Current Salary</span>
-                                    <span className="udv-summary-value large highlight">
-                                        ₹{salaryModalUser?.blissSalary?.toLocaleString() || '0'}
-                                    </span>
+                                    <div className="udv-summary-value-group">
+                                        <span className="udv-summary-value large highlight">
+                                            ₹{salaryModalUser?.blissSalary?.toLocaleString() || '0'}
+                                        </span>
+                                        <span className="udv-summary-lpa">
+                                            ({(((salaryModalUser?.blissSalary || 0) * 12) / 100000).toFixed(2)} LPA)
+                                        </span>
+                                    </div>
+                                    {/* <Tag color="success" className="udv-status-tag">OKAY</Tag> */}
                                 </div>
                             </Col>
                             <Col xs={12} sm={8}>
@@ -1546,77 +1659,88 @@ const UserDocumentVerification = () => {
                         </Row>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                        <div>
-                            <h3 className="udv-section-title small-margin"><CalendarOutlined className="udv-section-icon" /> Salary History</h3>
-                            <div className="udv-compact-table-wrapper">
-                                <Table
-                                    className="udv-table udv-table-small"
-                                    dataSource={salaryHistoryList}
-                                    columns={[
-                                        { title: 'Effective Date', dataIndex: 'effectiveDate', key: 'effectiveDate', render: d => d ? dayjs(d).format('MMM D, YYYY') : '-' },
-                                        { title: 'Old Salary', dataIndex: 'oldSalary', key: 'oldSalary', render: v => v ? `₹${Number(v).toLocaleString()}` : '-' },
-                                        { title: 'Increment %', dataIndex: 'incrementPercent', key: 'incrementPercent', render: v => v ? <Tag color="blue">{v}%</Tag> : '-' },
-                                        { title: 'Amount', dataIndex: 'incrementAmount', key: 'incrementAmount', render: v => v ? <span style={{ color: 'var(--brand-color)', fontWeight: 'bold' }}>+₹{Number(v).toLocaleString()}</span> : '-' },
-                                        { title: 'New Salary', dataIndex: 'newSalary', key: 'newSalary', render: v => v ? `₹${Number(v).toLocaleString()}` : '-' },
-                                        { title: 'Note', dataIndex: 'note', key: 'note', ellipsis: true }
-                                    ]}
-                                    rowKey="_id"
-                                    pagination={false}
-                                    loading={isLoadingHistory}
-                                    size="small"
-                                    // className="udv-table-small"
-                                    scroll={{ x: true }}
-                                />
-                            </div>
-                        </div>
 
-                        <div className="udv-increment-panel">
-                            <h3 className="udv-section-title small-margin"><DollarOutlined className="udv-section-icon" /> Increment Salary</h3>
-                            <Form
-                                form={incrementForm}
-                                layout="vertical"
-                                onFinish={handleIncrementSalary}
-                                onValuesChange={(changed) => {
-                                    if (changed.incrementPercent !== undefined) setPreviewPercent(changed.incrementPercent);
-                                }}
-                                className="udv-form"
-                            >
-                                {previewPercent > 0 && salaryModalUser?.blissSalary && (
+                    <div className="udv-increment-panel">
+                        <h3 className="udv-section-title small-margin"><DollarOutlined className="udv-section-icon" /> Increment Salary</h3>
+                        <Form
+                            form={incrementForm}
+                            layout="vertical"
+                            onFinish={handleIncrementSalary}
+                            onValuesChange={(changed) => {
+                                if (changed.incrementPercent !== undefined) setPreviewPercent(changed.incrementPercent);
+                            }}
+                            className="udv-form"
+                        >
+                            {previewPercent > 0 && salaryModalUser?.blissSalary && (() => {
+                                const currentMonthly = Number(salaryModalUser.blissSalary);
+                                const increaseMonthly = currentMonthly * (Number(previewPercent) / 100);
+                                const newMonthly = currentMonthly + increaseMonthly;
+                                const newLPA = (newMonthly * 12) / 100000;
+                                const increaseLPA = (increaseMonthly * 12) / 100000;
+
+                                return (
                                     <div className="udv-salary-preview-card">
                                         <div className="preview-row">
                                             <span>New Salary:</span>
-                                            <span className="preview-value">₹{(Number(salaryModalUser.blissSalary) * (1 + Number(previewPercent) / 100)).toLocaleString()}</span>
+                                            <div className="preview-value-column">
+                                                <span className="preview-value">₹{newMonthly.toLocaleString()} /mo</span>
+                                                <span className="preview-lpa">{newLPA.toFixed(2)} LPA</span>
+                                            </div>
                                         </div>
                                         <div className="preview-row increase">
                                             <span>Increase:</span>
-                                            <span>+₹{(Number(salaryModalUser.blissSalary) * (Number(previewPercent) / 100)).toLocaleString()}</span>
+                                            <div className="preview-value-column align-right">
+                                                <span className="increase-value">+₹{increaseMonthly.toLocaleString()} /mo</span>
+                                                <span className="increase-lpa">+{increaseLPA.toFixed(2)} LPA</span>
+                                            </div>
                                         </div>
                                     </div>
-                                )}
+                                );
+                            })()}
 
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Form.Item label="Increment Percentage (%)" name="incrementPercent" rules={[{ required: true, message: 'Enter %' }]}>
-                                            <Input type="number" prefix={<b>%</b>} className="udv-input" placeholder="e.g. 10" />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Form.Item label="Effective Date" name="effectiveFrom" rules={[{ required: true, message: 'Select date' }]}>
-                                            <DatePicker className="udv-date-picker" style={{ width: '100%' }} />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Form.Item label="Increment Percentage (%)" name="incrementPercent" rules={[{ required: true, message: 'Enter %' }]}>
+                                        <Input type="number" prefix={<b>%</b>} className="udv-input" placeholder="e.g. 10" />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item label="Effective Date" name="effectiveFrom" rules={[{ required: true, message: 'Select date' }]}>
+                                        <DatePicker className="udv-date-picker" style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
 
-                                <Form.Item label="Reason / Notes" name="note">
-                                    <TextArea rows={3} className="udv-textarea" placeholder="Note..." />
-                                </Form.Item>
-                                <div style={{ marginTop: 16 }}>
-                                    <Button type="primary" htmlType="submit" loading={isIncrementing} block className="udv-submit-button">
-                                        Apply Increment
-                                    </Button>
-                                </div>
-                            </Form>
+                            <Form.Item label="Reason / Notes" name="note">
+                                <TextArea rows={3} className="udv-textarea" placeholder="Note..." />
+                            </Form.Item>
+                            <div style={{ marginTop: 16 }}>
+                                <Button type="primary" htmlType="submit" loading={isIncrementing} block className="udv-submit-button">
+                                    Apply Increment
+                                </Button>
+                            </div>
+                        </Form>
+                    </div>
+                    <br /><br />
+                    <div>
+                        <h3 className="udv-section-title small-margin"><CalendarOutlined className="udv-section-icon" /> Salary History</h3>
+                        <div className="udv-compact-table-wrapper">
+                            <Table
+                                className="udv-table udv-table-small"
+                                dataSource={salaryHistoryList}
+                                columns={[
+                                    { title: 'Effective Date', dataIndex: 'effectiveDate', key: 'effectiveDate', render: d => d ? dayjs(d).format('MMM D, YYYY') : '-' },
+                                    { title: 'Old Salary', dataIndex: 'oldSalary', key: 'oldSalary', render: v => v ? `₹${Number(v).toLocaleString()}` : '-' },
+                                    { title: 'Increment %', dataIndex: 'incrementPercent', key: 'incrementPercent', render: v => v ? <Tag color="blue">{v}%</Tag> : '-' },
+                                    { title: 'Amount', dataIndex: 'incrementAmount', key: 'incrementAmount', render: v => v ? <span style={{ color: 'var(--brand-color)', fontWeight: 'bold' }}>+₹{Number(v).toLocaleString()}</span> : '-' },
+                                    { title: 'New Salary', dataIndex: 'newSalary', key: 'newSalary', render: v => v ? `₹${Number(v).toLocaleString()}` : '-' },
+                                    { title: 'Note', dataIndex: 'note', key: 'note', ellipsis: true }
+                                ]}
+                                rowKey="_id"
+                                pagination={false}
+                                loading={isLoadingHistory}
+                                size="small"
+                            />
                         </div>
                     </div>
                 </div>

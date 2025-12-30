@@ -52,31 +52,31 @@
     color: var(--primary-text) !important;
 }
 
-.ua-container .ant-table-thead > tr > th {
+.ua-container .ant-table-thead>tr>th {
     background-color: var(--secondary-bg) !important;
     color: var(--primary-text) !important;
     border-color: var(--border-color) !important;
 }
 
-.ua-container .ant-table-tbody > tr > td {
+.ua-container .ant-table-tbody>tr>td {
     border-color: var(--border-color) !important;
     color: var(--primary-text) !important;
 }
 
-.ua-container .ant-table-tbody > tr:hover > td {
+.ua-container .ant-table-tbody>tr:hover>td {
     background-color: var(--hover-bg) !important;
 }
 
-.ua-container .ant-table-tbody > tr {
+.ua-container .ant-table-tbody>tr {
     background-color: var(--card-bg) !important;
 }
 
-.ua-container .ant-table-tbody > tr.ant-table-row-selected > td {
+.ua-container .ant-table-tbody>tr.ant-table-row-selected>td {
     background-color: var(--hover-bg) !important;
 }
 
-.ua-container .ant-table-bordered .ant-table-thead > tr > th,
-.ua-container .ant-table-bordered .ant-table-tbody > tr > td {
+.ua-container .ant-table-bordered .ant-table-thead>tr>th,
+.ua-container .ant-table-bordered .ant-table-tbody>tr>td {
     border-color: var(--border-color) !important;
 }
 
@@ -135,4 +135,96 @@
 
 .ua-copy-button:active {
     transform: scale(0.95);
+}
+
+/* Drawer Styling */
+.ua-details-drawer .ant-drawer-content {
+    background-color: var(--primary-bg);
+}
+
+.ua-details-drawer .ant-drawer-header {
+    background-color: var(--secondary-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.ua-details-drawer .ant-drawer-title {
+    color: var(--primary-text);
+}
+
+.ua-drawer-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.ua-drawer-content {
+    padding: 0 4px;
+}
+
+.ua-user-info-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.ua-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.ua-info-header h4 {
+    margin: 0 !important;
+    color: var(--primary-text);
+}
+
+.ua-filters-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    background: var(--secondary-bg);
+    padding: 12px 16px;
+    border-radius: 8px;
+}
+
+.ua-history-table {
+    margin-top: 16px;
+}
+
+.ua-history-table .ant-table {
+    background: transparent !important;
+}
+
+.ua-history-table .ant-table-thead>tr>th {
+    background-color: var(--secondary-bg) !important;
+    color: var(--secondary-text) !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ua-history-table .ant-table-tbody>tr>td {
+    padding: 12px 16px !important;
+}
+
+/* Premium scrollbar for drawer */
+.ua-details-drawer .ant-drawer-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ua-details-drawer .ant-drawer-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ua-details-drawer .ant-drawer-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.ua-details-drawer .ant-drawer-body::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-text);
 }

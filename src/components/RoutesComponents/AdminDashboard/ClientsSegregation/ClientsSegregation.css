@@ -186,6 +186,7 @@
 
 .client-city-text {
     color: var(--secondary-text);
+    text-transform: uppercase;
 }
 
 .status-cell {

@@ -62,62 +62,8 @@ const TaskAndLeaveCalender = () => {
         return allLeaves.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }, [leavesData]);
 
-    // Socket.IO listeners for real-time updates
-    const { socket } = useSocket();
-    useEffect(() => {
-        if (!socket || !userId) return;
 
-        const handleLeaveRequested = ({ userId: eventUserId, month, reason }) => {
-            if (eventUserId === userId) {
-                refetchLeaves();
-            }
-        };
 
-        const handleLeaveUpdated = ({ userId: eventUserId, month, leaveId }) => {
-            if (eventUserId === userId) {
-                refetchLeaves();
-            }
-        };
-
-        const handleLeaveDeleted = ({ userId: eventUserId, month, leaveId }) => {
-            if (eventUserId === userId) {
-                refetchLeaves();
-            }
-        };
-
-        socket.on('leave:requested', handleLeaveRequested);
-        socket.on('leave:updated', handleLeaveUpdated);
-        socket.on('leave:deleted', handleLeaveDeleted);
-
-        return () => {
-            socket.off('leave:requested', handleLeaveRequested);
-            socket.off('leave:updated', handleLeaveUpdated);
-            socket.off('leave:deleted', handleLeaveDeleted);
-        };
-    }, [socket, userId, refetchLeaves]);
-
-    // Group consecutive dates into ranges
-    const groupDatesIntoRanges = (dates) => {
-        if (dates.length === 0) return [];
-        const sorted = [...dates].sort();
-        const ranges = [];
-        let start = sorted[0];
-        let end = sorted[0];
-
-        for (let i = 1; i < sorted.length; i++) {
-            const current = dayjs(sorted[i]);
-            const prev = dayjs(sorted[i - 1]);
-            if (current.diff(prev, 'day') === 1) {
-                end = sorted[i];
-            } else {
-                ranges.push({ startDate: start, endDate: end });
-                start = sorted[i];
-                end = sorted[i];
-            }
-        }
-        ranges.push({ startDate: start, endDate: end });
-        return ranges;
-    };
 
     // Local storage keys
     const LS_DATES_KEY = 'leaveSelectedDates';
@@ -185,16 +131,13 @@ const TaskAndLeaveCalender = () => {
 
     const handleConfirmOk = async () => {
         try {
-            // Group dates into ranges
-            const ranges = groupDatesIntoRanges(selectedDates);
-
             // Get month abbreviation from first selected date
             const monthAbbr = dayjs(selectedDates[0]).format('MMM').toUpperCase();
 
-            // Format ranges with date strings (YYYY-MM-DD format)
-            const formattedLeaves = ranges.map(range => ({
-                startDate: dayjs(range.startDate).format('YYYY-MM-DD'),
-                endDate: dayjs(range.endDate).format('YYYY-MM-DD')
+            // Format leaves: treat each date as a separate leave entry
+            const formattedLeaves = selectedDates.map(date => ({
+                startDate: date, // already in YYYY-MM-DD format
+                endDate: date
             }));
 
             const body = {
@@ -233,10 +176,37 @@ const TaskAndLeaveCalender = () => {
                             getTasksForDate={getTasksForDate}
                             onDateSelect={toggleDate}
                             maxTasksPerDate={8}
-                            // Disable all past dates; allow today and future
-                            disabledDate={(current) =>
-                                current && current.startOf('day').isBefore(dayjs().startOf('day'))
-                            }
+                            // Disable all past dates; allow today and future, plus specific rules
+                            disabledDate={(current) => {
+                                if (!current) return false;
+
+                                // Disable past dates
+                                if (current.startOf('day').isBefore(dayjs().startOf('day'))) return true;
+
+                                // Specific holidays in 2026
+                                const holidays2026 = [
+                                    '2026-01-14', '2026-01-15', '2026-01-26',
+                                    '2026-03-04',
+                                    '2026-08-15', '2026-08-28',
+                                    '2026-09-04',
+                                    '2026-10-20'
+                                ];
+                                if (holidays2026.includes(current.format('YYYY-MM-DD'))) return true;
+
+                                const dayOfWeek = current.day(); // 0 (Sun) to 6 (Sat)
+
+                                // Disable Saturdays (6) and Mondays (1)
+                                if (dayOfWeek === 6 || dayOfWeek === 1) return true;
+
+                                // Disable 3rd Friday of the month
+                                // Friday is 5. The 3rd Friday will always be between the 15th and 21st (inclusive)
+                                if (dayOfWeek === 5) {
+                                    const date = current.date();
+                                    if (date >= 15 && date <= 21) return true;
+                                }
+
+                                return false;
+                            }}
                         />
                     </Card>
                 </Col>

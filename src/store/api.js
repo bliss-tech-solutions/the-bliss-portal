@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -32,6 +32,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['Leaves'],
         }),
         getUserLeaves: builder.query({
             query: (userId) => ({
@@ -39,6 +40,30 @@ export const api = createApi({
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
+            providesTags: ['Leaves'],
+            async onCacheEntryAdded(arg, { cacheDataLoaded, cacheEntryRemoved, dispatch }) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+
+                const handleUpdate = () => dispatch(api.util.invalidateTags(['Leaves']));
+
+                try {
+                    await cacheDataLoaded;
+                    socket.on('leave:requested', handleUpdate);
+                    socket.on('leave:updated', handleUpdate);
+                    socket.on('leave:deleted', handleUpdate);
+                    socket.on('leave-updated', handleUpdate);
+                    socket.on('leave-requested', handleUpdate);
+                } catch { }
+
+                await cacheEntryRemoved;
+                socket.off('leave:requested', handleUpdate);
+                socket.off('leave:updated', handleUpdate);
+                socket.off('leave:deleted', handleUpdate);
+                socket.off('leave-updated', handleUpdate);
+                socket.off('leave-requested', handleUpdate);
+            },
         }),
         getAllLeaves: builder.query({
             query: () => ({
@@ -46,6 +71,30 @@ export const api = createApi({
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
+            providesTags: ['Leaves'],
+            async onCacheEntryAdded(arg, { cacheDataLoaded, cacheEntryRemoved, dispatch }) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+
+                const handleUpdate = () => dispatch(api.util.invalidateTags(['Leaves']));
+
+                try {
+                    await cacheDataLoaded;
+                    socket.on('leave:requested', handleUpdate);
+                    socket.on('leave:updated', handleUpdate);
+                    socket.on('leave:deleted', handleUpdate);
+                    socket.on('leave-updated', handleUpdate);
+                    socket.on('leave-requested', handleUpdate);
+                } catch { }
+
+                await cacheEntryRemoved;
+                socket.off('leave:requested', handleUpdate);
+                socket.off('leave:updated', handleUpdate);
+                socket.off('leave:deleted', handleUpdate);
+                socket.off('leave-updated', handleUpdate);
+                socket.off('leave-requested', handleUpdate);
+            },
         }),
         // HR: approve/reject specific dates within a leave
         rejectLeave: builder.mutation({
@@ -55,6 +104,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['Leaves'],
         }),
         addFestiveNote: builder.mutation({
             query: (body) => ({
@@ -630,7 +680,33 @@ export const api = createApi({
             }),
             invalidatesTags: ['User'],
         }),
+
+        getSalaryCalculation: builder.query({
+            query: ({ userId, month, year }) => {
+                let url = `/api/salaryCalculation/calculate/${userId}`;
+                const params = new URLSearchParams();
+                if (month) params.append('month', month);
+                if (year) params.append('year', year);
+                const queryString = params.toString();
+                if (queryString) {
+                    url += `?${queryString}`;
+                }
+                return {
+                    url,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                }
+            },
+        }),
+        getAllUsersSalaryCalculation: builder.query({
+            query: () => ({
+                url: '/api/salaryCalculation/calculate-all-users',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+        }),
     }),
+
 })
 
 export const {
@@ -696,7 +772,9 @@ export const {
     useIncrementSalaryMutation,
     useGetSalaryHistoryQuery,
     useDeleteClientAttachmentMutation,
-    useArchiveClientAttachmentMutation
+    useArchiveClientAttachmentMutation,
+    useGetSalaryCalculationQuery,
+    useGetAllUsersSalaryCalculationQuery
 } = api
 
 

@@ -1,9 +1,13 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
-import { Table, Button, Space } from 'antd';
+import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider } from 'antd';
 import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
 import './UserAttendanceData.css';
-import { useGetAllUsersQuery, useGetTodayCheckinQuery } from '../../../../store/api';
+import { useGetAllUsersQuery, useGetTodayCheckinQuery, useGetAllCheckinsQuery } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
+import dayjs from 'dayjs';
+
+const { RangePicker } = DatePicker;
+const { Title, Text } = Typography;
 
 const TodayTime = ({ userId, type }) => {
     const { data } = useGetTodayCheckinQuery(userId, { skip: !userId });
@@ -43,21 +47,33 @@ const UserAttendanceData = () => {
     const dragFromIndexRef = useRef(null);
     const resizingRef = useRef({ key: null, startX: 0, startWidth: 0 });
 
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [dateRange, setDateRange] = useState(null);
+
     const { success, warning, error: showError } = useNotification();
     const { data: usersResp, isLoading } = useGetAllUsersQuery();
+    const { data: allCheckinsResp, isLoading: isCheckinsLoading } = useGetAllCheckinsQuery();
+
     const dataSource = useMemo(() => {
         const users = usersResp?.data || [];
-        return users.map((u, idx) => ({
-            key: u.userId || u._id || idx,
-            userId: u.userId || u._id || '-',
-            userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.userEmail || u.email || '-',
-            todayIn: <TodayTime userId={u.userId} type="in" />,
-            leaveTime: <TodayTime userId={u.userId} type="out" />,
-            avgHours: <TodayDur userId={u.userId} />,
-            position: u.position || u.role || '-',
-            details: u.userId || u._id || idx,
-            index: idx + 1,
-        }));
+        return users
+            .filter(u => {
+                const role = (u.role || '').toLowerCase();
+                const position = (u.position || '').toLowerCase();
+                return role !== 'admin' && position !== 'admin';
+            })
+            .map((u, idx) => ({
+                key: u.userId || u._id || idx,
+                userId: u.userId || u._id || '-',
+                userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.userEmail || u.email || '-',
+                todayIn: <TodayTime userId={u.userId} type="in" />,
+                leaveTime: <TodayTime userId={u.userId} type="out" />,
+                avgHours: <TodayDur userId={u.userId} />,
+                position: u.position || u.role || '-',
+                details: u,
+                index: idx + 1,
+            }));
     }, [usersResp]);
 
     const handleCopyUserId = useCallback(async (userId) => {
@@ -134,7 +150,11 @@ const UserAttendanceData = () => {
                     align: 'center',
                     render: (_, record) => (
                         <Space>
-                            <Button size="small" type="link" icon={<InfoCircleOutlined />} onClick={() => { /* placeholder */ }}>
+                            <Button size="small" type="link" icon={<InfoCircleOutlined />} onClick={() => {
+                                setSelectedUser(record.details);
+                                setDateRange(null);
+                                setIsDrawerOpen(true);
+                            }}>
                                 Details
                             </Button>
                         </Space>
@@ -226,6 +246,82 @@ const UserAttendanceData = () => {
                 bordered
                 size="middle"
             />
+
+            <Drawer
+                title={<span className="ua-drawer-title">Attendance Details</span>}
+                placement="right"
+                onClose={() => setIsDrawerOpen(false)}
+                open={isDrawerOpen}
+                width={1000}
+                className="ua-details-drawer"
+            >
+                {selectedUser && (
+                    <div className="ua-drawer-content">
+                        <div className="ua-user-info-card">
+                            <div className="ua-info-header">
+                                <Title level={4}>{[selectedUser.firstName, selectedUser.lastName].filter(Boolean).join(' ') || selectedUser.email}</Title>
+                                <Tag color="blue">{selectedUser.position || selectedUser.role || 'Employee'}</Tag>
+                            </div>
+                            <Text type="secondary">User ID: {selectedUser.userId || selectedUser._id}</Text>
+                        </div>
+
+                        <Divider />
+
+                        <div className="ua-filters-bar">
+                            <Text strong>Filter by Date Range: </Text>
+                            <RangePicker
+                                onChange={(val) => setDateRange(val)}
+                                value={dateRange}
+                                style={{ marginLeft: 12 }}
+                            />
+                        </div>
+
+                        <Table
+                            className="ua-history-table"
+                            loading={isCheckinsLoading}
+                            dataSource={
+                                (allCheckinsResp?.data || [])
+                                    .filter(c => c.userId === selectedUser.userId)
+                                    .filter(c => {
+                                        if (!dateRange || !dateRange[0] || !dateRange[1]) return true;
+                                        const checkDate = dayjs(c.checkInAt || c.checkinAt);
+                                        return checkDate.isAfter(dateRange[0].startOf('day')) &&
+                                            checkDate.isBefore(dateRange[1].endOf('day'));
+                                    })
+                                    .map((c, i) => ({
+                                        key: c._id || i,
+                                        date: dayjs(c.checkInAt || c.checkinAt).format('DD MMM YYYY'),
+                                        checkIn: dayjs(c.checkInAt || c.checkinAt).format('hh:mm A'),
+                                        checkOut: (c.checkOutAt || c.checkoutAt) ? dayjs(c.checkOutAt || c.checkoutAt).format('hh:mm A') : '-',
+                                        workingHours: (() => {
+                                            const inT = new Date(c.checkInAt || c.checkinAt);
+                                            const outT = (c.checkOutAt || c.checkoutAt) ? new Date(c.checkOutAt || c.checkoutAt) : null;
+                                            if (!outT || isNaN(outT.getTime())) return '-';
+                                            const ms = outT - inT;
+                                            if (ms <= 0) return '-';
+                                            const hrs = Math.floor(ms / 3600000);
+                                            const mins = Math.floor((ms % 3600000) / 60000);
+                                            return `${hrs}h ${String(mins).padStart(2, '0')}m`;
+                                        })(),
+                                        position: selectedUser.position || selectedUser.role || '-',
+                                        name: [selectedUser.firstName, selectedUser.lastName].filter(Boolean).join(' ') || selectedUser.email
+                                    }))
+                                    .reverse()
+                            }
+                            columns={[
+                                { title: 'Date', dataIndex: 'date', key: 'date' },
+                                { title: 'Name', dataIndex: 'name', key: 'name' },
+                                { title: 'Position', dataIndex: 'position', key: 'position' },
+                                { title: 'Check In', dataIndex: 'checkIn', key: 'checkIn' },
+                                { title: 'Check Out', dataIndex: 'checkOut', key: 'checkOut' },
+                                { title: 'Working Hours', dataIndex: 'workingHours', key: 'workingHours' },
+                            ]}
+                            pagination={{ pageSize: 12 }}
+                            size="small"
+                        />
+                    </div>
+                )}
+            </Drawer>
         </div>
     );
 };

@@ -1,0 +1,2 @@
+
+const { Title, Text } = Typography;

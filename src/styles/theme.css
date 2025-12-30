@@ -640,7 +640,8 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
     color: var(--primary-text) !important;
 }
 
-.ant-tabs-tab {
+.ant-tabs-tab,
+.ant-pagination-total-text {
     color: var(--secondary-text) !important;
 }
 
@@ -650,4 +651,9 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
 
 .ant-tabs-ink-bar {
     background: var(--accent-color) !important;
+}
+
+.ant-alert {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
 }

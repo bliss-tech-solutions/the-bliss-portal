@@ -29,7 +29,7 @@ import ClientsSegregation from '../RoutesComponents/AdminDashboard/ClientsSegreg
 import ClientAssignManament from '../RoutesComponents/AdminDashboard/ClientAssignManament/ClientAssignManament';
 import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAndData/ClientAndData';
 import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/SalaryInfo/SalaryInfo"
-
+import SalaryManagement from "../RoutesComponents/HRWorkComponent/SalaryManagement/SalaryManagement"
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -101,7 +101,7 @@ export const navigationConfig = [
         componentLabelName: "Task and Leave Calender",
         icon: CalendarOutlined,
         routeName: "/task-and-leave-calender",
-        roles: ["user"],
+        roles: ["user", "Execution"],
         component: TaskAndLeaveCalender,
         showInSidebar: true
     },
@@ -145,7 +145,7 @@ export const navigationConfig = [
         component: ClientAssignManament,
         showInSidebar: true
     },
-    
+
     {
         componentLabelName: "Salary Information",
         icon: FileTextOutlined,
@@ -155,13 +155,22 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
+        componentLabelName: "Salary Management",
+        icon: FileTextOutlined,
+        routeName: "/salary-management",
+        roles: ["admin", "HR"],
+        component: SalaryManagement,
+        showInSidebar: true
+    },
+    {
         componentLabelName: "Global Chat",
         icon: MessageOutlined,
         routeName: "/global-chat",
         roles: ["Execution", "user", "admin", "HR", "ContentProvider"],
         component: GlobalChatPage,
         showInSidebar: true
-    },
+    }
+
 ];
 
 // Helper function to filter navigation items based on user role (for sidebar)
