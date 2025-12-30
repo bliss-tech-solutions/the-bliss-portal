@@ -146,14 +146,14 @@ export const navigationConfig = [
         showInSidebar: true
     },
 
-    {
-        componentLabelName: "Salary Information",
-        icon: FileTextOutlined,
-        routeName: "/salary-information",
-        roles: ["user"],
-        component: SalaryInformation,
-        showInSidebar: true
-    },
+    // {
+    //     componentLabelName: "Salary Information",
+    //     icon: FileTextOutlined,
+    //     routeName: "/salary-information",
+    //     roles: ["user"],
+    //     component: SalaryInformation,
+    //     showInSidebar: true
+    // },
     {
         componentLabelName: "Salary Management",
         icon: FileTextOutlined,

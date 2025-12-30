@@ -108,6 +108,7 @@ const ClientsSegregation = () => {
         setSelectedUsersByPosition(updatedSelection);
 
         // Update assignedUsers by combining all selected users from all positions
+        // Allow same user in multiple positions - use userId + position as unique key
         const allSelectedUsers = [];
         Object.keys(updatedSelection).forEach(pos => {
             const users = getUsersForPosition(pos);
@@ -122,8 +123,12 @@ const ClientsSegregation = () => {
             });
         });
 
-        // Remove duplicates
-        const uniqueUsers = Array.from(new Map(allSelectedUsers.map(u => [u.userId, u])).values());
+        // Allow same user in different positions - only remove duplicates if same userId AND same position
+        const uniqueUsers = Array.from(
+            new Map(
+                allSelectedUsers.map(u => [`${u.userId}-${u.position}`, u])
+            ).values()
+        );
 
         setFormData(prev => ({
             ...prev,

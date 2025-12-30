@@ -12,8 +12,7 @@ import {
     Divider,
     Typography,
     Space,
-    Switch,
-    message
+    Switch
 } from "antd";
 import {
     UserOutlined,
@@ -31,6 +30,7 @@ import { selectTheme } from "../../../store/slices/themeSlice";
 import { selectUser, selectUserId, updateUserProfile } from "../../../store/slices/authSlice";
 import { useUpdateUserDetailsMutation } from "../../../store/api";
 import { uploadToCloudinary } from "../../../utils/cloudinary";
+import { useNotification } from "../../../contexts/NotificationContext";
 
 const { Title, Text } = Typography;
 
@@ -47,6 +47,7 @@ const ProfileUpdate = () => {
     const authUser = useSelector((state) => state.auth?.user || {});
     const userId = useSelector(selectUserId) || authUser?._id || authUser?.id;
     const [updateUserDetails] = useUpdateUserDetailsMutation();
+    const notification = useNotification();
 
     // Initialize profile image from getUserDetails API response - profilePhoto field
     // Initialize state with profilePhoto from authUser if available
@@ -88,16 +89,18 @@ const ProfileUpdate = () => {
             console.log('Profile update data:', values);
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 2000));
+            notification.success('Profile updated successfully!');
             setLoading(false);
         } catch (error) {
             console.error('Profile update error:', error);
+            notification.error('Failed to update profile.');
             setLoading(false);
         }
     };
 
     const handlePasswordChange = async (values) => {
         if (!userId) {
-            message.error('User ID not found. Please log in again.');
+            notification.error('User ID not found. Please log in again.');
             return;
         }
 
@@ -114,11 +117,11 @@ const ProfileUpdate = () => {
                 }
             }).unwrap();
 
-            message.success('Password updated successfully!');
+            notification.success('Updated Password');
             passwordForm.resetFields();
         } catch (error) {
             console.error('Password change error:', error);
-            message.error(error?.data?.message || error?.message || 'Failed to update password. Please try again.');
+            notification.error(error?.data?.message || error?.message || 'Failed to update password. Please try again.');
         } finally {
             setPasswordLoading(false);
         }
@@ -129,21 +132,21 @@ const ProfileUpdate = () => {
         const file = info.file.originFileObj || info.file;
 
         if (!file) {
-            message.error('No file selected');
+            notification.error('No file selected');
             return;
         }
 
         // Validate file size (2MB max)
         const maxSize = 2 * 1024 * 1024; // 2MB in bytes
         if (file.size > maxSize) {
-            message.error('Image size must be less than 2MB');
+            notification.error('Image size must be less than 2MB');
             return;
         }
 
         // Validate file type
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         if (!validTypes.includes(file.type)) {
-            message.error('Please upload a valid image file (JPG, PNG, or GIF)');
+            notification.error('Please upload a valid image file (JPG, PNG, or GIF)');
             return;
         }
 
@@ -156,12 +159,12 @@ const ProfileUpdate = () => {
     // Handle actual upload when user clicks "Update" button
     const handleUpdateProfilePicture = async () => {
         if (!userId) {
-            message.error('User ID not found. Please log in again.');
+            notification.error('User ID not found. Please log in again.');
             return;
         }
 
         if (!selectedFile) {
-            message.error('No file selected');
+            notification.error('No file selected');
             return;
         }
 
@@ -193,10 +196,10 @@ const ProfileUpdate = () => {
             setPreviewImage(null);
             setSelectedFile(null);
 
-            message.success('Profile picture updated successfully!');
+            notification.success('Profile picture updated successfully!');
         } catch (error) {
             console.error('Image upload error:', error);
-            message.error(error?.data?.message || error?.message || 'Failed to upload profile picture. Please try again.');
+            notification.error(error?.data?.message || error?.message || 'Failed to upload profile picture. Please try again.');
         } finally {
             setUploadingImage(false);
         }
