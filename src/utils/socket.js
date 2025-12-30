@@ -64,9 +64,16 @@ export const emitTaskAdded = (taskData) => {
 export const onTaskAdded = (callback) => {
     if (socket) {
         const wrappedCallback = (data) => {
-            // Backend format: { taskId, task }
+            // Backend format: { taskId, task, playSound, message }
+            // Pass the full data object so callback can access playSound and message
             const task = data.task || data;
-            callback(task);
+            // Merge task data with metadata (playSound, message) if present
+            const enrichedData = {
+                ...task,
+                playSound: data.playSound,
+                message: data.message
+            };
+            callback(enrichedData);
         };
 
         socket.on('taskAdded', callback);

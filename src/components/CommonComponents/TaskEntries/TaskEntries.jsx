@@ -23,6 +23,7 @@ import {
     onTaskUpdated,
     offTaskUpdated
 } from '../../../utils/socket';
+import { playNotificationSound } from '../../../utils/soundNotification';
 
 /**
  * Common TaskEntries Component
@@ -136,6 +137,8 @@ const TaskEntries = ({
     }, []);
 
     // Real-time task updates via socket
+    // Note: This listener only works when this component/tab is open (mounted)
+    // When the component unmounts (tab closed), the listener is cleaned up
     useEffect(() => {
         // Listen for new tasks added (real-time task fetching)
         const handleTaskAdded = (taskData) => {
@@ -146,13 +149,20 @@ const TaskEntries = ({
 
             if (isForCurrentUser) {
                 console.log('✅ New task received via socket:', taskData);
+                
+                // Play sound notification if playSound flag is true
+                // Sound only plays when this tab/component is open
+                if (taskData.playSound) {
+                    playNotificationSound();
+                }
+
                 // Refetch tasks to get the latest list with the new task
                 refetch();
 
-                // Show success notification
-                if (taskData.taskName) {
-                    showSuccess(`New task assigned: ${taskData.taskName}`);
-                }
+                // Show success notification (use message from backend if available, otherwise default)
+                const notificationMessage = taskData.message || 
+                    (taskData.taskName ? `New task assigned: ${taskData.taskName}` : 'New task assigned');
+                showSuccess(notificationMessage);
             }
         };
 
@@ -430,8 +440,28 @@ const TaskEntries = ({
         }
     };
 
+    // Test function to play notification sound
+    const handleTestSound = () => {
+        playNotificationSound();
+        showSuccess('Test notification sound played!');
+    };
+
     return (
         <div className="task-entries">
+            {/* Test Button for Sound Notification */}
+            {/* <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                    type="primary"
+                    onClick={handleTestSound}
+                    style={{
+                        backgroundColor: 'var(--brand-color)',
+                        borderColor: 'var(--brand-color)'
+                    }}
+                >
+                    🔊 Test Sound Notification
+                </Button>
+            </div> */}
+
             {tasks.length === 0 ? (
                 <EmptyState
                     image="/Images/NoTaskAvaible.png"

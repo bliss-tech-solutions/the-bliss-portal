@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import { emitTaskExtensionResponded, onTaskExtensionUpdated, offTaskExtensionUpdated, onTaskAdded, offTaskAdded, onTaskUpdated, offTaskUpdated } from '../../../../utils/socket';
 import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 import InlineLoader from '../../../CommonComponents/InlineLoader/InlineLoader';
+import { playNotificationSound } from '../../../../utils/soundNotification';
 
 const AllTaskEntries = ({
     searchTerm = '',
@@ -208,6 +209,19 @@ const AllTaskEntries = ({
             if (!taskData) return;
 
             console.log('✅ Task updated via socket:', taskData);
+
+            // Check if task was marked as completed and play notification sound
+            // Only play sound if current user is the assigner (execution role user who created the task)
+            const taskStatus = (taskData.taskStatus || '').toLowerCase();
+            const isTaskCompleted = taskStatus === 'completed';
+            const isCreatedByCurrentUser = taskData.userId === userId;
+
+            // Play sound if task is completed and current user is the assigner
+            if (isTaskCompleted && isCreatedByCurrentUser) {
+                console.log('🔔 Task marked as completed - playing notification sound');
+                playNotificationSound();
+            }
+
             // Refetch tasks to get updated task data
             refetch();
 
