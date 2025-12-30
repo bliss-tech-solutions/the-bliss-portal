@@ -954,13 +954,14 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
+
 }
 
 .slot-booking-card {
     border: 1px dashed rgba(150, 150, 150, 0.551);
     border-radius: 14px;
     padding: 12px 14px;
-    background: white;
+    background: var(--background-color);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -1146,4 +1147,3 @@
         margin-top: 16px;
     }
 }
-

@@ -152,41 +152,55 @@
     border: 1px dashed var(--border-color);
 }
 
-.user-client-item {
-    background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    overflow: hidden;
-    transition: all 0.3s ease;
+/* Collapse Styles for Modal */
+.user-client-collapse {
+    border: none !important;
+    background: transparent !important;
 }
 
-.user-client-item:hover {
-    border-color: var(--brand-color);
-    box-shadow: var(--shadow);
+.user-client-collapse .ant-collapse-item {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    overflow: hidden !important;
 }
 
-.user-client-item .user-header {
+.user-client-collapse .ant-collapse-item-active {
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.user-client-collapse .ant-collapse-header {
+    padding: 0 !important;
+    align-items: center !important;
+    background-color: var(--secondary-bg) !important;
+}
+
+.user-client-collapse .ant-collapse-header .ant-collapse-expand-icon {
+    padding: 14px !important;
+    color: var(--primary-text) !important;
+}
+
+.user-client-collapse .user-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
-    background-color: var(--secondary-bg);
-    border-bottom: 1px solid var(--border-color);
+    padding: 12px 16px 12px 0;
+    width: 100%;
 }
 
-.user-header .user-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--primary-text);
+.user-client-collapse .ant-collapse-content {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
 }
 
-.user-header .user-email {
-    font-size: 12px;
-    color: var(--secondary-text);
+.user-client-collapse .ant-collapse-content-box {
+    padding: 0 !important;
 }
 
-.user-client-item .no-clients {
-    padding: 16px;
+.user-client-collapse .no-clients {
+    padding: 20px;
     text-align: center;
     color: var(--secondary-text);
     font-size: 13px;
@@ -290,6 +304,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.user-client-panel .user-info{
+    color: var(--primary-text) !important;
 }
 
 /* Responsive */

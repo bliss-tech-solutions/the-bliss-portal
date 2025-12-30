@@ -106,6 +106,31 @@ const ContentProviderPanel = () => {
             label: suggestion
         }));
     }, [tasksData, searchTerm]);
+  
+          // Filter clients based on search term
+          const filteredClients = React.useMemo(() => {
+                  if (!searchTerm) return clients;
+                  const term = searchTerm.toLowerCase();
+                  return clients.filter(client =>
+                          client.clientName?.toLowerCase().includes(term)
+                      );
+              }, [clients, searchTerm]);
+
+    // Generate search suggestions for clients
+    const clientSearchOptions = React.useMemo(() => {
+        if (!clients || clients.length === 0) return [];
+        
+        const uniqueNames = [...new Set(clients.map(c => c.clientName).filter(Boolean))];
+        return uniqueNames.map(name => ({
+            value: name,
+            label: (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BsSearch style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />
+                    <span>{name}</span>
+                </div>
+            )
+        }));
+    }, [clients]);
 
     // Date range presets
     const rangePresets = [
@@ -586,12 +611,31 @@ const ContentProviderPanel = () => {
             <div className='ContentProviderPanel-container'>
                 <div className="clients-segregation-header">
                     <h2 className="panel-title">{userFullName} Clients</h2>
+                    <div className="client-search-wrapper">
+                   <AutoComplete
+                       options={clientSearchOptions}
+                       value={searchTerm}
+                       onChange={(value) => setSearchTerm(value)}
+                       onSelect={(value) => setSearchTerm(value)}
+                       style={{ width: '100%' }}
+                       filterOption={(inputValue, option) =>
+                           option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                       }
+                   >
+                       <Input
+                           placeholder="Search client by name..."
+                           prefix={<BsSearch className="search-icon" />}
+                           allowClear
+                           className="client-panel-search"
+                       />
+                   </AutoComplete>
+                     </div>
                 </div>
 
                 <div className="clients-table-container">
                     <Table
                         columns={columns}
-                        dataSource={clients}
+                        dataSource={filteredClients}
                         loading={isLoadingClients}
                         rowKey="_id"
                         pagination={{

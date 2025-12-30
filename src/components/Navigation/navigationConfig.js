@@ -93,7 +93,7 @@ export const navigationConfig = [
         componentLabelName: "Clients & Data",
         icon: AiFillDatabase,
         routeName: "/clients-and-data",
-        roles: ["user"],
+        roles: ["user", "Execution"],
         component: ClientAndData,
         showInSidebar: true
     },
@@ -138,7 +138,7 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
-        componentLabelName: "Client Assign Manament",
+        componentLabelName: "Team Management",
         icon: SiDatabricks,
         routeName: "/client-assign-manament",
         roles: ["Execution"],

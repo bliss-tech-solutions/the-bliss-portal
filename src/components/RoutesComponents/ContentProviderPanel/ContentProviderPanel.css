@@ -26,6 +26,35 @@
     gap: 16px;
 }
 
+#ContentProviderPanel .client-search-wrapper {
+    min-width: 300px;
+}
+
+#ContentProviderPanel .client-panel-search.ant-input-affix-wrapper {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#ContentProviderPanel .client-panel-search.ant-input-affix-wrapper:hover,
+#ContentProviderPanel .client-panel-search.ant-input-affix-wrapper-focused {
+    border-color: var(--brand-color);
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+}
+
+#ContentProviderPanel .client-panel-search .ant-input {
+    background-color: transparent;
+    color: var(--primary-text);
+}
+
+#ContentProviderPanel .client-panel-search .search-icon {
+    color: var(--secondary-text);
+    font-size: 16px;
+    margin-right: 8px;
+}
+
 #ContentProviderPanel .clients-table-container {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);

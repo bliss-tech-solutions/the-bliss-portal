@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './ClientAndData.css';
-import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse } from 'antd';
+import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../../store/slices/authSlice';
@@ -8,7 +8,7 @@ import { getUserName, getUserId } from '../../../../utils/userUtils';
 import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetClientAttachmentsByUserIdQuery } from '../../../../store/api';
 import { useSocket } from '../../../../contexts/SocketContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck } from 'react-icons/bs';
+import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsSearch } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 
@@ -25,6 +25,7 @@ const ClientAndData = () => {
     const [documentHistoryModalVisible, setDocumentHistoryModalVisible] = useState(false);
     const [selectedClientForHistory, setSelectedClientForHistory] = useState(null);
     const [copiedLinkId, setCopiedLinkId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Fetch clients for the logged-in user - NO POLLING, using sockets for real-time updates
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsByUserIdQuery(userId, {
@@ -38,6 +39,32 @@ const ClientAndData = () => {
     const { data: allUsersData } = useGetAllUsersQuery();
 
     const clients = clientsData?.data || [];
+
+    // Generate search suggestions based on client names
+    const searchOptions = useMemo(() => {
+        if (!clients || clients.length === 0) return [];
+
+        // Filter out duplicates and format for AutoComplete
+        const uniqueNames = [...new Set(clients.map(c => c.clientName).filter(Boolean))];
+        return uniqueNames.map(name => ({
+            value: name,
+            label: (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BsSearch style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />
+                    <span>{name}</span>
+                </div>
+            )
+        }));
+    }, [clients]);
+
+    // Filter clients based on search term
+    const filteredClients = useMemo(() => {
+        if (!searchTerm) return clients;
+        const term = searchTerm.toLowerCase();
+        return clients.filter(client =>
+            client.clientName?.toLowerCase().includes(term)
+        );
+    }, [clients, searchTerm]);
 
     // Fetch document history when modal is open
     const { data: documentHistoryData, isLoading: isLoadingDocumentHistory, refetch: refetchDocumentHistory } = useGetClientAttachmentsByUserIdQuery(
@@ -336,12 +363,33 @@ const ClientAndData = () => {
     return (
         <div id="ClientAndData" className={`theme-${theme}`}>
             <div className="client-and-data-container">
-                <h2 className='Capitalize'>{userName} Client & Data</h2>
+                <div className="client-and-data-header-row">
+                    <h2 className='Capitalize'>{userName} Client & Data</h2>
+                    <div className="client-search-wrapper">
+                        <AutoComplete
+                            options={searchOptions}
+                            value={searchTerm}
+                            onChange={(value) => setSearchTerm(value)}
+                            onSelect={(value) => setSearchTerm(value)}
+                            style={{ width: '100%' }}
+                            filterOption={(inputValue, option) =>
+                                option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                            }
+                        >
+                            <Input
+                                placeholder="Search client by name..."
+                                prefix={<BsSearch className="search-icon" />}
+                                allowClear
+                                className="client-panel-search"
+                            />
+                        </AutoComplete>
+                    </div>
+                </div>
 
-                <div className="clients-table-container" style={{ marginTop: '24px' }}>
+                <div className="clients-table-container">
                     <Table
                         columns={columns}
-                        dataSource={clients}
+                        dataSource={filteredClients}
                         loading={isLoadingClients}
                         rowKey="_id"
                         pagination={{

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./ClientAssignManament.css";
-import { Select, Table, Button, Tag, Modal, AutoComplete, Input, Typography, Space, } from 'antd';
+import { Select, Table, Button, Tag, Modal, AutoComplete, Input, Typography, Space, Collapse } from 'antd';
 import { EditOutlined, SearchOutlined } from '@ant-design/icons';
 import { useCreateTeamMutation, useUpdateTeamMutation, useGetAllTeamsQuery, useGetAllClientsQuery } from "../../../../store/api";
 import { useGetAllUsersQuery } from "../../../../store/api";
@@ -639,68 +639,75 @@ const ClientAssignManament = () => {
                                 {searchTerm ? 'No results found for your search' : 'No team members with assigned clients found'}
                             </div>
                         ) : (
-                            getFilteredUserClients().map((userClient, index) => (
-                                <div key={userClient.user.userId || index} className="user-client-item">
-                                    <div className="user-header">
-                                        <div className="user-info">
-                                            <span className="user-name">{userClient.user.name}</span>
-                                            {userClient.user.email && (
-                                                <span className="user-email">({userClient.user.email})</span>
-                                            )}
-                                        </div>
-                                        <Tag color="blue" className="client-count-tag">
-                                            {userClient.clients.length} Client{userClient.clients.length !== 1 ? 's' : ''}
-                                        </Tag>
-                                    </div>
-                                    {userClient.clients.length === 0 ? (
-                                        <div className="no-clients">No clients assigned</div>
-                                    ) : (
-                                        <div className="clients-table-wrapper">
-                                            <Table
-                                                dataSource={userClient.clients}
-                                                rowKey="clientId"
-                                                pagination={false}
-                                                size="small"
-                                                columns={[
-                                                    {
-                                                        title: 'Client Name',
-                                                        dataIndex: 'clientName',
-                                                        key: 'clientName',
-                                                        width: '40%',
-                                                        render: (text) => (
-                                                            <span className="client-name-cell">{text}</span>
-                                                        )
-                                                    },
-                                                    {
-                                                        title: 'City',
-                                                        dataIndex: 'city',
-                                                        key: 'city',
-                                                        width: '30%',
-                                                        render: (text) => (
-                                                            <span className="client-city-cell">{text || '-'}</span>
-                                                        )
-                                                    },
-                                                    {
-                                                        title: 'Status',
-                                                        dataIndex: 'status',
-                                                        key: 'status',
-                                                        width: '30%',
-                                                        render: (status) => (
-                                                            <Tag
-                                                                color={status === 'active' ? 'green' : 'red'}
-                                                                className="status-tag"
-                                                            >
-                                                                {status === 'active' ? 'Active' : 'Inactive'}
-                                                            </Tag>
-                                                        )
-                                                    }
-                                                ]}
-                                                className="user-client-table"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            ))
+                            <Collapse ghost className="user-client-collapse">
+                                {getFilteredUserClients().map((userClient, index) => (
+                                    <Collapse.Panel
+                                        key={userClient.user.userId || index}
+                                        header={
+                                            <div className="user-header">
+                                                <div className="user-info">
+                                                    <span className="user-name">{userClient.user.name}</span>
+                                                    {userClient.user.email && (
+                                                        <span className="user-email">({userClient.user.email})</span>
+                                                    )}
+                                                </div>
+                                                <Tag color="blue" className="client-count-tag">
+                                                    {userClient.clients.length} Client{userClient.clients.length !== 1 ? 's' : ''}
+                                                </Tag>
+                                            </div>
+                                        }
+                                        className="user-client-panel"
+                                    >
+                                        {userClient.clients.length === 0 ? (
+                                            <div className="no-clients">No clients assigned</div>
+                                        ) : (
+                                            <div className="clients-table-wrapper">
+                                                <Table
+                                                    dataSource={userClient.clients}
+                                                    rowKey="clientId"
+                                                    pagination={false}
+                                                    size="small"
+                                                    columns={[
+                                                        {
+                                                            title: 'Client Name',
+                                                            dataIndex: 'clientName',
+                                                            key: 'clientName',
+                                                            width: '40%',
+                                                            render: (text) => (
+                                                                <span className="client-name-cell">{text}</span>
+                                                            )
+                                                        },
+                                                        {
+                                                            title: 'City',
+                                                            dataIndex: 'city',
+                                                            key: 'city',
+                                                            width: '30%',
+                                                            render: (text) => (
+                                                                <span className="client-city-cell">{text || '-'}</span>
+                                                            )
+                                                        },
+                                                        {
+                                                            title: 'Status',
+                                                            dataIndex: 'status',
+                                                            key: 'status',
+                                                            width: '30%',
+                                                            render: (status) => (
+                                                                <Tag
+                                                                    color={status === 'active' ? 'green' : 'red'}
+                                                                    className="status-tag"
+                                                                >
+                                                                    {status === 'active' ? 'Active' : 'Inactive'}
+                                                                </Tag>
+                                                            )
+                                                        }
+                                                    ]}
+                                                    className="user-client-table"
+                                                />
+                                            </div>
+                                        )}
+                                    </Collapse.Panel>
+                                ))}
+                            </Collapse>
                         )}
                     </div>
                 </Modal>
