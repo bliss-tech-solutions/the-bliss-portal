@@ -219,7 +219,7 @@ const AllTaskEntries = ({
             // Play sound if task is completed and current user is the assigner
             if (isTaskCompleted && isCreatedByCurrentUser) {
                 console.log('🔔 Task marked as completed - playing notification sound');
-                playNotificationSound();
+                playNotificationSound('taskCompleted');
             }
 
             // Refetch tasks to get updated task data

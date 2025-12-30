@@ -153,7 +153,7 @@ const TaskEntries = ({
                 // Play sound notification if playSound flag is true
                 // Sound only plays when this tab/component is open
                 if (taskData.playSound) {
-                    playNotificationSound();
+                    playNotificationSound('newTask');
                 }
 
                 // Refetch tasks to get the latest list with the new task
