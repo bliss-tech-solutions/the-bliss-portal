@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Table, Input, Select, Button, Avatar, Space, Spin, Typography, Card } from 'antd';
-import { SearchOutlined, PlusOutlined, SortAscendingOutlined, ExportOutlined, DownOutlined, UserOutlined, EyeOutlined } from '@ant-design/icons';
+import { Table, Input, Select, Button, Avatar, Space, Spin, Typography, Card, Modal, List, Tag } from 'antd';
+import { SearchOutlined, PlusOutlined, SortAscendingOutlined, ExportOutlined, DownOutlined, UserOutlined, EyeOutlined, ProjectOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import {
     BsPeople,
     BsBuilding,
@@ -13,7 +13,7 @@ import {
     BsFileEarmarkSpreadsheet,
     BsArrowDownRight
 } from 'react-icons/bs';
-import { useGetAllUsersQuery, useGetAnalyticsOverviewQuery } from '../../../../store/api';
+import { useGetAllUsersQuery, useGetAnalyticsOverviewQuery, useGetAllClientsQuery } from '../../../../store/api';
 import { useSocket } from '../../../../contexts/SocketContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectShowUserDetails, showUserDetailsView } from '../../../../store/slices/adminDashboardSlice';
@@ -76,13 +76,20 @@ const formatDate = (dateString) => {
 const EmployeesData = () => {
     const dispatch = useDispatch();
     const showUserDetails = useSelector(selectShowUserDetails);
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [searchText, setSearchText] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalFilter, setModalFilter] = useState(['All']);
+    const [modalConfig, setModalConfig] = useState({ title: '', data: [] });
+    const [isComingSoonOpen, setIsComingSoonOpen] = useState(false);
+    const [comingSoonTitle, setComingSoonTitle] = useState('');
     const { socket } = useSocket();
 
     // Fetch all users from API
     const { data: usersData, isLoading, error } = useGetAllUsersQuery();
+
+    // Fetch all clients from API
+    const { data: clientsData, isLoading: isLoadingClients } = useGetAllClientsQuery();
 
     // Fetch analytics overview from API
     const {
@@ -96,7 +103,12 @@ const EmployeesData = () => {
     const employees = useMemo(() => {
         if (!usersData?.data) return [];
 
-        return usersData.data.map((user) => ({
+        // Filter out admin users
+        const nonAdminUsers = usersData.data.filter(user =>
+            (user.position || user.role || '').toLowerCase() !== 'admin'
+        );
+
+        return nonAdminUsers.map((user) => ({
             id: user.userId || user._id,
             name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.userEmail || user.email || 'N/A',
             jobTitle: user.position || user.role || 'N/A',
@@ -135,91 +147,86 @@ const EmployeesData = () => {
 
     // Summary statistics with icons - using API data
     const summaryStats = useMemo(() => {
-        const analytics = analyticsData?.data;
+        const rawUsers = usersData?.data || [];
+        const nonAdminUsers = rawUsers.filter(u => (u.position || u.role || '').toLowerCase() !== 'admin');
+        const clients = clientsData?.data || [];
 
-        if (!analytics) {
-            // Fallback to calculated values if API data not available
-            const totalEmployees = employees.length;
-            const uniqueDepartments = [...new Set(employees.map(emp => emp.department))].length;
-            const activeEmployees = totalEmployees;
+        // Calculate counts
+        const totalEmployeesCount = nonAdminUsers.length;
+        const totalDepartmentsCount = [...new Set(nonAdminUsers.map(u => getDepartmentFromPosition(u.position || u.role)))].length;
+        const totalClientsCount = clients.length;
 
-            return [
-                {
-                    label: 'Total Employees',
-                    value: totalEmployees.toString(),
-                    icon: <BsPeople className="stat-icon" />,
-                    trend: null,
-                    isLoading: isLoadingAnalytics
-                },
-                {
-                    label: 'Active Members',
-                    value: activeEmployees.toString(),
-                    icon: <BsActivity className="stat-icon" />,
-                    trend: '100%',
-                    isLoading: isLoadingAnalytics
-                },
-                {
-                    label: 'Departments',
-                    value: uniqueDepartments.toString(),
-                    icon: <BsBuilding className="stat-icon" />,
-                    trend: null,
-                    isLoading: isLoadingAnalytics
-                },
-                {
-                    label: 'Growth Rate',
-                    value: '0%',
-                    icon: <BsGraphUp className="stat-icon" />,
-                    trend: null,
-                    isLoading: isLoadingAnalytics
-                },
-            ];
-        }
-
-        // Use API data
-        const totalEmployees = analytics.totalEmployees || 0;
-        const activeMembers = analytics.activeMembers?.count || 0;
-        const inactiveMembers = analytics.activeMembers?.inactiveCount || 0;
-        const departmentsCount = analytics.departments?.count || 0;
-        const growthRate = analytics.growthRate?.monthly || 0;
-        const isPositiveGrowth = growthRate >= 0;
-
-        // Calculate active percentage
-        const activePercentage = totalEmployees > 0
-            ? ((activeMembers / totalEmployees) * 100).toFixed(0)
-            : 0;
-
-        return [
+        const stats = [
             {
-                label: 'Total Employees',
-                value: totalEmployees.toString(),
+                label: 'Total Employee',
+                value: totalEmployeesCount.toString(),
                 icon: <BsPeople className="stat-icon" />,
-                trend: null,
-                isLoading: isLoadingAnalytics
+                isLoading: isLoading,
+                data: nonAdminUsers.map(u => ({
+                    name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.userEmail || u.email || 'N/A',
+                    position: u.position || u.role || 'N/A',
+                    category: getDepartmentFromPosition(u.position || u.role)
+                }))
             },
             {
-                label: 'Active Members',
-                value: activeMembers.toString(),
-                icon: <BsActivity className="stat-icon" />,
-                trend: `${activePercentage}%`,
-                isLoading: isLoadingAnalytics
-            },
-            {
-                label: 'Departments',
-                value: departmentsCount.toString(),
+                label: 'Total Department',
+                value: totalDepartmentsCount.toString(),
                 icon: <BsBuilding className="stat-icon" />,
-                trend: null,
-                isLoading: isLoadingAnalytics
+                isLoading: isLoading,
+                data: [...new Set(nonAdminUsers.map(u => getDepartmentFromPosition(u.position || u.role)))].map(dept => ({
+                    name: dept,
+                    position: 'Department'
+                }))
             },
             {
-                label: 'Growth Rate',
-                value: `${Math.abs(growthRate).toFixed(1)}%`,
-                icon: isPositiveGrowth ? <BsGraphUp className="stat-icon" /> : <BsGraphUp className="stat-icon" />,
-                trend: isPositiveGrowth ? `+${growthRate.toFixed(1)}%` : `${growthRate.toFixed(1)}%`,
-                isNegative: !isPositiveGrowth,
-                isLoading: isLoadingAnalytics
+                label: 'Total Client',
+                value: totalClientsCount.toString(),
+                icon: <ProjectOutlined className="stat-icon" />,
+                isLoading: isLoadingClients,
+                data: clients.map(c => ({
+                    name: c.clientName || 'N/A',
+                    position: c.clientEmail || 'Client'
+                }))
             },
         ];
-    }, [analyticsData, employees, isLoadingAnalytics]);
+
+        return stats;
+    }, [usersData, clientsData, isLoading, isLoadingClients]);
+
+    const handleStatClick = (stat) => {
+        setModalConfig({
+            title: stat.label,
+            data: stat.data
+        });
+        setModalFilter(['All']);
+        setIsModalOpen(true);
+    };
+
+    const handleModalFilterChange = (tag, checked) => {
+        const nextSelectedTags = checked
+            ? (tag === 'All' ? ['All'] : [...modalFilter.filter(t => t !== 'All'), tag])
+            : modalFilter.filter((t) => t !== tag);
+
+        const finalTags = nextSelectedTags.length === 0 ? ['All'] : nextSelectedTags;
+        setModalFilter(finalTags);
+    };
+
+    const filteredModalData = useMemo(() => {
+        if (!modalConfig.data) return [];
+        if (modalFilter.includes('All')) return modalConfig.data;
+        return modalConfig.data.filter(item => modalFilter.includes(item.category));
+    }, [modalConfig.data, modalFilter]);
+
+    const modalCategories = useMemo(() => {
+        if (modalConfig.title !== 'Total Employee') return [];
+        const cats = [...new Set(modalConfig.data.map(item => item.category))];
+        return ['All', ...cats];
+    }, [modalConfig.title, modalConfig.data]);
+
+    const handleActionClick = (title) => {
+        setComingSoonTitle(title);
+        setIsComingSoonOpen(true);
+    };
 
     // Get unique departments for filters
     const departments = useMemo(() => {
@@ -300,7 +307,7 @@ const EmployeesData = () => {
                     type="link"
                     icon={<EyeOutlined />}
                     onClick={() => handleViewDetails(record.id)}
-                    className="view-details-button"
+                    className="global-action-btn"
                 >
                     View Details
                 </Button>
@@ -312,20 +319,6 @@ const EmployeesData = () => {
         dispatch(showUserDetailsView(userId));
     };
 
-    const rowSelection = {
-        selectedRowKeys,
-        onChange: (selectedKeys) => {
-            setSelectedRowKeys(selectedKeys);
-        },
-        onSelectAll: (selected, selectedRows, changeRows) => {
-            if (selected) {
-                const allKeys = filteredEmployees.map(emp => emp.id);
-                setSelectedRowKeys(allKeys);
-            } else {
-                setSelectedRowKeys([]);
-            }
-        },
-    };
 
     // Show UserWiseAnalytics if user details view is enabled
     if (showUserDetails) {
@@ -356,8 +349,9 @@ const EmployeesData = () => {
                 {summaryStats.map((stat, index) => (
                     <Card
                         key={index}
-                        className="stat-card"
+                        className="stat-card clickable-card"
                         bordered={false}
+                        onClick={() => handleStatClick(stat)}
                     >
                         <div className="stat-card-content">
                             <div className="stat-icon-wrapper">
@@ -394,6 +388,93 @@ const EmployeesData = () => {
                 ))}
             </div>
 
+            {/* Detail Modal */}
+            <Modal
+                title={modalConfig.title}
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                footer={null}
+                width={600}
+                className="analytics-detail-modal"
+            >
+                {modalConfig.title === 'Total Employee' && (
+                    <div className="modal-filter-section" style={{ marginBottom: 16, paddingBottom: 12, borderBottom: '1px solid var(--border-color)' }}>
+                        <Text type="secondary" style={{ marginRight: 12, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' }}>Filter Categories:</Text>
+                        <Space wrap>
+                            {modalCategories.map(tag => (
+                                <Tag.CheckableTag
+                                    key={tag}
+                                    checked={modalFilter.includes(tag)}
+                                    onChange={(checked) => handleModalFilterChange(tag, checked)}
+                                    style={{
+                                        borderRadius: '16px',
+                                        padding: '2px 12px',
+                                        fontSize: '13px'
+                                    }}
+                                >
+                                    {tag}
+                                </Tag.CheckableTag>
+                            ))}
+                        </Space>
+                    </div>
+                )}
+                <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={filteredModalData}
+                        renderItem={(item) => (
+                            <List.Item>
+                                <List.Item.Meta
+                                    avatar={<Avatar icon={<UserOutlined />} />}
+                                    title={<Text strong>{item.name}</Text>}
+                                    description={
+                                        <Space>
+                                            <Tag color="#EBB236" style={{ color: '#000' }}>{item.position}</Tag>
+                                            {/* {item.category && item.category !== item.position && (
+                                                <Tag color="#2db7f5">{item.category}</Tag>
+                                            )} */}
+                                        </Space>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                </div>
+            </Modal>
+
+            {/* Coming Soon Modal */}
+            <Modal
+                title={null}
+                open={isComingSoonOpen}
+                onCancel={() => setIsComingSoonOpen(false)}
+                footer={null}
+                centered
+                width={400}
+                className="coming-soon-modal"
+            >
+                <div style={{ padding: '20px 0', textAlign: 'center' }}>
+                    <div style={{
+                        fontSize: '48px',
+                        marginBottom: '16px',
+                        color: 'var(--brand-color)'
+                    }}>
+                        <ClockCircleOutlined />
+                    </div>
+                    <Title level={4} style={{ marginBottom: '8px' }}>{comingSoonTitle}</Title>
+                    <Text type="secondary">This feature is currently under development. Stay tuned for updates!</Text>
+                    <div style={{ marginTop: '24px', display: "flex", justifyContent: "center" }}>
+                        <Button
+                            type="primary"
+                            className="global-action-btn"
+                            onClick={() => setIsComingSoonOpen(false)}
+                            style={{ minWidth: '120px' }}
+                        >
+                            Got it
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
             {/* Filter and Action Bar */}
             <Card className="filter-action-card" bordered={false}>
                 <div className="filter-action-content">
@@ -427,21 +508,26 @@ const EmployeesData = () => {
 
                         <Space size="middle">
                             <Button
-                                type="default"
+                                type="primary"
                                 icon={<PlusOutlined />}
-                                className="action-btn"
+                                className="global-action-btn"
+                                onClick={() => handleActionClick('Add Employee')}
                             >
                                 Add Employee
                             </Button>
                             <Button
+                                type="default"
                                 icon={<SortAscendingOutlined />}
-                                className="action-btn secondary"
+                                className="global-action-btn"
+                                onClick={() => handleActionClick('Sort')}
                             >
                                 Sort
                             </Button>
                             <Button
+                                type="default"
                                 icon={<BsDownload />}
-                                className="action-btn secondary"
+                                className="global-action-btn"
+                                onClick={() => handleActionClick('Export')}
                             >
                                 Export
                             </Button>
@@ -481,7 +567,6 @@ const EmployeesData = () => {
                             columns={columns}
                             dataSource={filteredEmployees}
                             rowKey="id"
-                            rowSelection={rowSelection}
                             pagination={{
                                 pageSize: 10,
                                 showSizeChanger: true,

@@ -374,7 +374,7 @@ const UserWiseAnalytics = () => {
                 <Button
                     icon={<ArrowLeftOutlined />}
                     onClick={handleBack}
-                    className="back-button"
+                    className="global-action-btn"
                     size="small"
                 >
                     Back to Employees

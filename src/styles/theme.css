@@ -521,6 +521,9 @@ body {
     color: var(--primary-text);
 }
 
+.global-action-btn .anticon svg {
+    color: white !important;
+}
 /* Global Placeholder Overrides */
 .ant-input::placeholder {
     color: var(--secondary-text) !important;
@@ -656,4 +659,35 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
 .ant-alert {
     background: var(--card-bg) !important;
     border: 1px solid var(--border-color) !important;
+}
+
+/* Global Tooltip & Popover Overrides for Theme Consistency */
+.ant-tooltip-inner {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+}
+
+.ant-tooltip-arrow::before {
+    background-color: var(--card-bg) !important;
+}
+
+.ant-popover-inner {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+}
+
+.ant-popover-title {
+    color: var(--primary-text) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-popover-inner-content {
+    color: var(--primary-text) !important;
+}
+
+.ant-popover-arrow::before {
+    background-color: var(--card-bg) !important;
 }
