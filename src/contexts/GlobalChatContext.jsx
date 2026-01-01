@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useSocket } from './SocketContext';
+import { useSelector } from 'react-redux';
+import { selectUserId } from '../store/slices/authSlice';
 
 const GlobalChatContext = createContext({
     getMessages: () => [],
@@ -25,6 +27,7 @@ const mergeMessages = (existing = [], incoming = []) => {
 
 export const GlobalChatProvider = ({ children }) => {
     const { socket } = useSocket();
+    const userId = useSelector(selectUserId);
     const [messages, setMessages] = useState([]);
     const joinedGlobalRoomRef = useRef(false);
 
@@ -63,6 +66,19 @@ export const GlobalChatProvider = ({ children }) => {
         const handleNewMessage = (incoming) => {
             if (!incoming) return;
 
+            // Play notification sound if message is not from current user
+            if (incoming.senderId !== userId) {
+                try {
+                    const audio = new Audio('/NotificationSoundFile/IOSNotification.mp3');
+                    audio.play().catch((err) => {
+                        // Ignore auto-play errors or user interaction requirements
+                        console.log('Audio play blocked or failed:', err);
+                    });
+                } catch (e) {
+                    console.error('Error playing notification sound:', e);
+                }
+            }
+
             // Normalize archived messages - check boolean archived status
             const isArchived = incoming.archived === true || incoming.isArchived === true;
             const normalizedMessage = {
@@ -84,7 +100,7 @@ export const GlobalChatProvider = ({ children }) => {
 
         const handleMessageArchived = (data) => {
             if (!data || !data.messageId) return;
-            
+
             setMessages((prev) => {
                 // Update the message to show as deleted (works for all users in real-time)
                 return prev.map(msg => {
@@ -109,22 +125,22 @@ export const GlobalChatProvider = ({ children }) => {
             socket.off('globalchat:new', handleNewMessage);
             socket.off('globalchat:archived', handleMessageArchived);
         };
-    }, [socket]);
+    }, [socket, userId]);
 
     const setInitialMessages = useCallback((newMessages) => {
         if (!Array.isArray(newMessages)) return;
-        
+
         // Normalize archived messages before merging - check boolean archived status
         const normalizedMessages = newMessages.map(msg => {
             // Check multiple possible field names and values for archived status
-            const isArchived = msg.archived === true || 
-                             msg.archived === 'true' ||
-                             String(msg.archived) === 'true' ||
-                             msg.isArchived === true || 
-                             msg.isArchived === 'true' ||
-                             String(msg.isArchived) === 'true' ||
-                             msg.status === 'archived';
-            
+            const isArchived = msg.archived === true ||
+                msg.archived === 'true' ||
+                String(msg.archived) === 'true' ||
+                msg.isArchived === true ||
+                msg.isArchived === 'true' ||
+                String(msg.isArchived) === 'true' ||
+                msg.status === 'archived';
+
             // If archived, replace message content with deleted text
             if (isArchived) {
                 return {
@@ -137,7 +153,7 @@ export const GlobalChatProvider = ({ children }) => {
             }
             return msg;
         });
-        
+
         setMessages((prev) => {
             const merged = mergeMessages(prev, normalizedMessages);
             return merged;
