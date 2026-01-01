@@ -98,10 +98,18 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
+        componentLabelName: "Content Provider Panel",
+        icon: UserOutlined,
+        routeName: "/content-provider-panel",
+        roles: ["ContentProvider"],
+        component: ContentProviderPanel,
+        showInSidebar: true
+    },
+    {
         componentLabelName: "Task and Leave Calender",
         icon: CalendarOutlined,
         routeName: "/task-and-leave-calender",
-        roles: ["user", "Execution"],
+        roles: ["user", "Execution","ContentProvider"],
         component: TaskAndLeaveCalender,
         showInSidebar: true
     },
@@ -113,14 +121,7 @@ export const navigationConfig = [
         component: UserDocumentVerification,
         showInSidebar: true
     },
-    {
-        componentLabelName: "Content Provider Panel",
-        icon: UserOutlined,
-        routeName: "/content-provider-panel",
-        roles: ["ContentProvider"],
-        component: ContentProviderPanel,
-        showInSidebar: true
-    },
+    
     {
         componentLabelName: "My Tasks",
         icon: BiTask,
