@@ -109,7 +109,7 @@ export const navigationConfig = [
         componentLabelName: "Task and Leave Calender",
         icon: CalendarOutlined,
         routeName: "/task-and-leave-calender",
-        roles: ["user", "Execution","ContentProvider"],
+        roles: ["user", "Execution", "ContentProvider"],
         component: TaskAndLeaveCalender,
         showInSidebar: true
     },
@@ -121,7 +121,7 @@ export const navigationConfig = [
         component: UserDocumentVerification,
         showInSidebar: true
     },
-    
+
     {
         componentLabelName: "My Tasks",
         icon: BiTask,

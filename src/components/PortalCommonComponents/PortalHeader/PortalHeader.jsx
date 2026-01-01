@@ -19,7 +19,7 @@ const PortalHeader = () => {
     const { user } = useSelector((state) => state.auth);
     const currentHeaderLogo = useSelector(selectCurrentHeaderLogo);
     const theme = useSelector(selectTheme);
-    const { success, info } = useNotification();
+    const { success, info, setTabCount } = useNotification();
     const [greeting, setGreeting] = useState('Good Morning');
     const [currentDate, setCurrentDate] = useState({
         date: '',
@@ -305,6 +305,13 @@ const PortalHeader = () => {
 
     }, [tasksData, userRole]);
 
+    // Update tab title with pending tasks count
+    useEffect(() => {
+        if (setTabCount) {
+            setTabCount(pendingTasksCount);
+        }
+    }, [pendingTasksCount, setTabCount]);
+
     // Filter pending tasks for checkout modal (only for user role)
     const checkoutPendingTasks = useMemo(() => {
         if (userRole !== 'user' || !tasksData?.data || !Array.isArray(tasksData.data)) return [];
@@ -574,12 +581,12 @@ const PortalHeader = () => {
                             Pending Tasks Alert
                         </div>
                         <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: 'var(--text-color)', opacity: 0.85 }}>You have {checkoutPendingTasks.length} pending task(s). Please complete them if possible before checking out.</p>
-                        
-                        <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-                            gap: '12px', 
-                            maxHeight: '200px', 
+
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: '12px',
+                            maxHeight: '200px',
                             overflowY: 'auto',
                             padding: '4px'
                         }}>
@@ -594,9 +601,9 @@ const PortalHeader = () => {
                                     gap: '6px',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                                 }}>
-                                    <div style={{ 
-                                        fontSize: '13px', 
-                                        fontWeight: '600', 
+                                    <div style={{
+                                        fontSize: '13px',
+                                        fontWeight: '600',
                                         color: 'var(--text-color)',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
@@ -604,9 +611,9 @@ const PortalHeader = () => {
                                     }}>
                                         {task.taskName || 'Untitled Task'}
                                     </div>
-                                    <div style={{ 
-                                        fontSize: '11px', 
-                                        color: 'var(--text-color)', 
+                                    <div style={{
+                                        fontSize: '11px',
+                                        color: 'var(--text-color)',
                                         opacity: 0.7,
                                         display: 'flex',
                                         alignItems: 'center',
@@ -615,9 +622,9 @@ const PortalHeader = () => {
                                         <UserOutlined style={{ fontSize: '10px' }} />
                                         <span>{getUserName(task.userId)}</span>
                                     </div>
-                                    <div style={{ 
-                                        fontSize: '11px', 
-                                        color: 'var(--text-color)', 
+                                    <div style={{
+                                        fontSize: '11px',
+                                        color: 'var(--text-color)',
                                         opacity: 0.5,
                                         display: 'flex',
                                         alignItems: 'center',

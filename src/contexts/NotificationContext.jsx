@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { Snackbar, Alert } from '@mui/material';
 
 const NotificationContext = createContext();
@@ -18,6 +18,17 @@ export const NotificationProvider = ({ children }) => {
         type: 'success', // 'success', 'error', 'warning', 'info'
         duration: 4000
     });
+
+    const [tabCount, setTabCount] = useState(0);
+    const originalTitleRef = useRef(document.title);
+
+    useEffect(() => {
+        if (tabCount > 0) {
+            document.title = `(${tabCount}) ${originalTitleRef.current}`;
+        } else {
+            document.title = originalTitleRef.current;
+        }
+    }, [tabCount]);
 
     const showNotification = (message, type = 'success', duration = 4000) => {
         setNotification({
@@ -43,7 +54,7 @@ export const NotificationProvider = ({ children }) => {
     // Theme-aware styles for notifications
     const getNotificationStyles = () => {
         const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-        
+
         return {
             '& .MuiAlert-root': {
                 borderRadius: '8px',
@@ -84,7 +95,7 @@ export const NotificationProvider = ({ children }) => {
     };
 
     return (
-        <NotificationContext.Provider value={{ success, error, warning, info, hideNotification }}>
+        <NotificationContext.Provider value={{ success, error, warning, info, hideNotification, setTabCount }}>
             {children}
             <Snackbar
                 open={notification.open}
