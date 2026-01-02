@@ -9,6 +9,7 @@ import { SiGoogleanalytics } from "react-icons/si";
 import { SiDatabricks } from "react-icons/si";
 import { TfiLayoutAccordionSeparated } from "react-icons/tfi";
 import { AiFillDatabase } from "react-icons/ai";
+import { IoMdClipboard } from "react-icons/io";
 
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
@@ -30,6 +31,7 @@ import ClientAssignManament from '../RoutesComponents/AdminDashboard/ClientAssig
 import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAndData/ClientAndData';
 import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/SalaryInfo/SalaryInfo"
 import SalaryManagement from "../RoutesComponents/HRWorkComponent/SalaryManagement/SalaryManagement"
+import NoteScheduling from '../RoutesComponents/NoteScheduling/NoteScheduling';
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -106,7 +108,7 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
-        componentLabelName: "Task and Leave Calender",
+        componentLabelName: "Leave Calender",
         icon: CalendarOutlined,
         routeName: "/task-and-leave-calender",
         roles: ["user", "Execution", "ContentProvider"],
@@ -163,6 +165,14 @@ export const navigationConfig = [
         component: SalaryManagement,
         showInSidebar: true
     },
+      {
+        componentLabelName: "Task Board",
+        icon: IoMdClipboard,
+        routeName: "/note-scheduling",
+        roles: ["Execution", "admin", "moderator", "user", "HR", "ContentProvider"],
+        component: NoteScheduling,
+        showInSidebar: true
+    },
     {
         componentLabelName: "Global Chat",
         icon: MessageOutlined,
@@ -170,7 +180,8 @@ export const navigationConfig = [
         roles: ["Execution", "user", "admin", "HR", "ContentProvider"],
         component: GlobalChatPage,
         showInSidebar: true
-    }
+    },
+  
 
 ];
 

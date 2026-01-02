@@ -169,7 +169,7 @@ const TaskAndLeaveCalender = () => {
         <div className="task-leave-calendar">
             <Row gutter={[16, 16]}>
                 <Col xs={24} lg={16}>
-                    <Card title={<h2 >Task & Leave Calendar</h2>}>
+                    <Card title={<h2 >Leave Calendar</h2>}>
                         <CalenderModule
                             title=""
                             showActions={false}

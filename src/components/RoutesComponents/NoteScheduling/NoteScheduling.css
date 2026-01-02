@@ -1,0 +1,613 @@
+.note-scheduling-container {
+    /* padding: 32px; */
+    /* background-color: var(--primary-bg); */
+    min-height: calc(100vh - 120px);
+    color: var(--primary-text);
+}
+
+.note-scheduling-header {
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.note-scheduling-title-section h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: var(--primary-text);
+    letter-spacing: -0.02em;
+}
+
+.note-scheduling-description {
+    color: var(--secondary-text);
+    font-size: 14px;
+    max-width: 600px;
+}
+
+/* View Switcher */
+.view-switcher {
+    display: flex;
+    background: var(--tertiary-bg);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.view-btn {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    color: var(--secondary-text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.view-btn.active {
+    background: var(--card-bg);
+    color: var(--primary-text);
+    box-shadow: 0 1px 3px var(--shadow);
+}
+
+.notion-new-btn {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+/* Board Layout */
+.board-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    align-items: flex-start;
+}
+
+.board-column {
+    background-color: transparent;
+    border-radius: 8px;
+}
+
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 0 4px;
+}
+
+.column-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.status-notstarted {
+    background-color: white;
+    color: black;
+}
+
+.status-inprocess {
+    background-color: yellow;
+    color: black;
+}
+
+.status-completed {
+    background-color: green;
+    color: white;
+}
+
+.task-count {
+    color: var(--primary-text);
+    font-weight: 500;
+}
+
+.column-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+}
+
+.task-card {
+    position: relative;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+        border-color: var(--accent-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 4px var(--shadow);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px var(--shadow);
+    border-color: var(--accent-color);
+}
+
+.task-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--primary-text);
+    line-height: 1.4;
+}
+
+.task-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.task-client-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-color);
+    background: rgba(var(--accent-rgb), 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    width: fit-content;
+}
+
+.card-indicators {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.brochure-icon {
+    font-size: 18px;
+    color: #ff4d4f;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.priority-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.priority-high {
+    background-color: rgba(255, 77, 79, 0.12);
+    color: #ff4d4f;
+    border: 1px solid rgba(255, 77, 79, 0.2);
+}
+
+.priority-medium {
+    background-color: rgba(250, 173, 20, 0.12);
+    color: #faad14;
+    border: 1px solid rgba(250, 173, 20, 0.2);
+}
+
+.priority-low {
+    background-color: rgba(82, 196, 26, 0.12);
+    color: #52c41a;
+    border: 1px solid rgba(82, 196, 26, 0.2);
+}
+
+.task-date {
+    font-size: 12px;
+    color: var(--secondary-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.attachment-preview {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.attachment-text {
+    font-size: 13px;
+    color: var(--secondary-text);
+    background-color: var(--tertiary-bg);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    border-left: 4px solid var(--accent-color);
+    line-height: 1.5;
+}
+
+.add-task-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--secondary-text);
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.add-task-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-text);
+}
+
+.icon-btn {
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--secondary-text);
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-text);
+}
+
+/* List View Polish */
+.list-view-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow);
+    margin-top: 16px;
+}
+
+.list-header-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 0.8fr 1fr;
+    padding: 14px 24px;
+    background: var(--secondary-bg);
+    border-bottom: 2px solid var(--border-color);
+    color: var(--secondary-text);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.list-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr 1fr 0.8fr 1fr;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border-color);
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.list-item-row:hover {
+    background-color: var(--hover-bg);
+    transform: scale(1.002);
+}
+
+.list-col {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.col-title {
+    font-weight: 600;
+    color: var(--primary-text);
+    /* overflow: hidden; */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: auto;
+    padding-right: 30px;
+}
+
+.list-add-btn {
+    width: 100%;
+    padding: 12px 24px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--secondary-text);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.list-add-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--primary-text);
+}
+
+/* Drawer & Modal Styling */
+.notion-drawer .ant-drawer-body {
+    padding: 0 !important;
+}
+
+.notion-drawer .field-value .ant-select {
+    width: 100% !important;
+}
+
+.drawer-content {
+    padding: 40px;
+}
+
+.drawer-task-title {
+    font-size: 40px !important;
+    font-weight: 700 !important;
+    margin-bottom: 32px !important;
+    color: var(--primary-text) !important;
+    letter-spacing: -0.03em;
+}
+
+.drawer-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.drawer-field-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.field-label {
+    width: 120px;
+    color: var(--secondary-text);
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.field-value {
+    flex: 1;
+}
+
+.notion-select .ant-select-selector {
+    padding: 0 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--primary-text) !important;
+}
+
+.notion-select.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.drawer-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--secondary-text);
+    margin-bottom: 16px;
+    letter-spacing: 0.1em;
+}
+
+.drawer-attachment-item {
+    margin-bottom: 24px;
+}
+
+.image-attachment img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px var(--shadow);
+}
+
+.text-attachment {
+    background: var(--tertiary-bg);
+    padding: 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.6;
+    border-left: 6px solid var(--accent-color);
+}
+
+.drawer-task-title-input {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+    color: var(--primary-text) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.drawer-task-title-input::placeholder {
+    color: var(--tertiary-text);
+    opacity: 0.3;
+}
+
+.drawer-notes-area {
+    margin-top: 16px;
+}
+
+.drawer-notes-input {
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    color: var(--primary-text) !important;
+    padding: 12px 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: 120px !important;
+}
+
+.drawer-notes-input::placeholder {
+    color: var(--secondary-text);
+    opacity: 0.5;
+}
+
+.drawer-footer {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px 40px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+    margin-left: -40px;
+    margin-right: -40px;
+}
+
+/* Modal Adjustments */
+.notion-modal .ant-modal-content {
+    border-radius: 12px !important;
+    overflow: hidden;
+    background-color: var(--card-bg) !important;
+    padding: 24px 44px !important;
+}
+
+.notion-modal-input.ant-input {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-bottom: 24px !important;
+}
+
+.notion-modal-title {
+    font-size: 36px !important;
+    font-weight: 700 !important;
+    color: var(--primary-text) !important;
+}
+
+.notion-modal-title::placeholder {
+    color: var(--tertiary-text) !important;
+    opacity: 0.4;
+}
+
+.notion-field-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+
+}
+
+
+.notion-field-row {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+        border: 1px solid var(--border-color);
+padding: 10px;
+/* border-radius: 20px; */
+    }
+
+.notion-field-label {
+    width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--secondary-text);
+    font-size: 14px;
+    padding: 4px 0;
+}
+
+.notion-field-label .anticon {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.notion-field-value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.notion-field-value .ant-select-selector {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.notion-field-value .ant-select-selection-item {
+    padding-inline-end: 0 !important;
+}
+
+.notion-modal-body {
+    border-top: 1px solid var(--border-color);
+    padding-top: 24px;
+}
+
+.notion-modal-body .ant-input-textarea {
+    background: transparent !important;
+}
+
+.notion-modal-body textarea {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-size: 16px !important;
+    line-height: 1.6 !important;
+    color: var(--primary-text) !important;
+}
+
+.notion-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.drawer-Content-section{
+    min-height: 300px;
+    height: 300px;
+    overflow: auto;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .board-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .board-container {
+        grid-template-columns: 1fr;
+    }
+
+    .note-scheduling-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+}

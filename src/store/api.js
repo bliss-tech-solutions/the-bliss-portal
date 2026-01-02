@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus', 'DailyWorking'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -708,6 +708,81 @@ export const api = createApi({
                 headers: { 'Content-Type': 'application/json' },
             }),
         }),
+        // Daily Working / Note Scheduling Endpoints
+        createDailyWorkingTask: builder.mutation({
+            query: (body) => ({
+                url: '/api/daily-working/create',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['DailyWorking'],
+        }),
+        getAllDailyWorkingTasks: builder.query({
+            query: () => ({
+                url: '/api/daily-working/all',
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: ['DailyWorking'],
+            async onCacheEntryAdded(arg, { cacheDataLoaded, cacheEntryRemoved, dispatch }) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+                const handleUpdate = () => dispatch(api.util.invalidateTags(['DailyWorking']));
+                try {
+                    await cacheDataLoaded;
+                    socket.on('dailyWorking:created', handleUpdate);
+                    socket.on('dailyWorking:updated', handleUpdate);
+                    socket.on('dailyWorking:deleted', handleUpdate);
+                } catch { }
+                await cacheEntryRemoved;
+                socket.off('dailyWorking:created', handleUpdate);
+                socket.off('dailyWorking:updated', handleUpdate);
+                socket.off('dailyWorking:deleted', handleUpdate);
+            },
+        }),
+        getUserDailyWorkingTasks: builder.query({
+            query: (userId) => ({
+                url: `/api/daily-working/user/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: (result, error, userId) => [{ type: 'DailyWorking', id: userId }],
+            async onCacheEntryAdded(arg, { cacheDataLoaded, cacheEntryRemoved, dispatch }) {
+                const { getSocket } = await import('../utils/socket');
+                const socket = getSocket();
+                if (!socket) return;
+                const handleUpdate = () => dispatch(api.util.invalidateTags([{ type: 'DailyWorking', id: arg }]));
+                try {
+                    await cacheDataLoaded;
+                    socket.on('dailyWorking:created', handleUpdate);
+                    socket.on('dailyWorking:updated', handleUpdate);
+                    socket.on('dailyWorking:deleted', handleUpdate);
+                } catch { }
+                await cacheEntryRemoved;
+                socket.off('dailyWorking:created', handleUpdate);
+                socket.off('dailyWorking:updated', handleUpdate);
+                socket.off('dailyWorking:deleted', handleUpdate);
+            },
+        }),
+        updateDailyWorkingTask: builder.mutation({
+            query: ({ taskId, body }) => ({
+                url: `/api/daily-working/update/${taskId}`,
+                method: 'PATCH',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { taskId }) => ['DailyWorking'],
+        }),
+        deleteDailyWorkingTask: builder.mutation({
+            query: (taskId) => ({
+                url: `/api/daily-working/delete/${taskId}`,
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['DailyWorking'],
+        }),
     }),
 
 })
@@ -777,7 +852,12 @@ export const {
     useDeleteClientAttachmentMutation,
     useArchiveClientAttachmentMutation,
     useGetSalaryCalculationQuery,
-    useGetAllUsersSalaryCalculationQuery
+    useGetAllUsersSalaryCalculationQuery,
+    useCreateDailyWorkingTaskMutation,
+    useGetAllDailyWorkingTasksQuery,
+    useGetUserDailyWorkingTasksQuery,
+    useUpdateDailyWorkingTaskMutation,
+    useDeleteDailyWorkingTaskMutation
 } = api
 
 
