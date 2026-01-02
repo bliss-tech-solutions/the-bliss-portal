@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -136,6 +136,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['CheckInStatus'],
         }),
         checkout: builder.mutation({
             query: (body) => ({
@@ -144,6 +145,7 @@ export const api = createApi({
                 body,
                 headers: { 'Content-Type': 'application/json' },
             }),
+            invalidatesTags: ['CheckInStatus'],
         }),
         checkInStatus: builder.query({
             // Expect backend to return { checkedIn: boolean, timestamp?: string }
@@ -152,6 +154,7 @@ export const api = createApi({
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             }),
+            providesTags: ['CheckInStatus'],
         }),
         checkoutStatus: builder.query({
             // Expect backend to return { checkedOut: boolean, timestamp?: string }

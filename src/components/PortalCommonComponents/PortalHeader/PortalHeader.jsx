@@ -58,6 +58,8 @@ const PortalHeader = () => {
         setTimeout(() => {
             // Dispatch logout action to clear Redux state and localStorage
             dispatch(logout());
+            // Reset RTK Query API state to clear all cached data
+            dispatch(api.util.resetApiState());
 
             // Show success notification using MUI Snackbar
             success('Logged out successfully from Bliss Portal');
