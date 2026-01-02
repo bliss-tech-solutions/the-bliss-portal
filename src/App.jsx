@@ -6,7 +6,6 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { setTheme } from './store/slices/themeSlice'
-import { NotificationProvider } from './contexts/NotificationContext'
 import OfficeClosingReminder from './components/PortalCommonComponents/OfficeClosingReminder/OfficeClosingReminder'
 import CheckInOutReminder from './components/PortalCommonComponents/CheckInOutReminder/CheckInOutReminder'
 import PostCheckoutGuard from './components/PortalCommonComponents/PostCheckoutGuard/PostCheckoutGuard'
@@ -24,7 +23,7 @@ function App() {
   }, [dispatch])
 
   return (
-    <NotificationProvider>
+    <>
       <PageLoader />
       <PortalRoutes />
       <OfficeClosingReminder />
@@ -32,7 +31,7 @@ function App() {
         <CheckInOutReminder />
       )}
       {isAuthenticated && <PostCheckoutGuard />}
-    </NotificationProvider>
+    </>
   )
 }
 

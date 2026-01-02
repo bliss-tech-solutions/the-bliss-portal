@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'UserChat'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -705,6 +705,89 @@ export const api = createApi({
                 headers: { 'Content-Type': 'application/json' },
             }),
         }),
+
+        // --- NEW USER-WISE CHAT ENDPOINTS ---
+        getUserConversations: builder.query({
+            query: (userId) => ({
+                url: `/api/userchat/conversations?userId=${userId}`,
+                method: 'GET',
+            }),
+            providesTags: ['UserChat'],
+        }),
+        getConversationMessages: builder.query({
+            query: ({ conversationId, limit = 50, skip = 0 }) => ({
+                url: `/api/userchat/messages/${conversationId}?limit=${limit}&skip=${skip}`,
+                method: 'GET',
+            }),
+            providesTags: (result, error, { conversationId }) => [{ type: 'UserChat', id: conversationId }],
+        }),
+        sendUserChatMessage: builder.mutation({
+            query: (body) => ({
+                url: '/api/userchat/messages',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { conversationId }) => [
+                'UserChat',
+                { type: 'UserChat', id: conversationId }
+            ],
+        }),
+        createUserConversation: builder.mutation({
+            query: (body) => ({
+                url: '/api/userchat/conversations',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['UserChat'],
+        }),
+        markMessagesRead: builder.mutation({
+            query: ({ conversationId, userId }) => ({
+                url: `/api/userchat/conversations/${conversationId}/read`,
+                method: 'PUT',
+                body: { userId },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { conversationId }) => [
+                { type: 'UserChat', id: conversationId }
+            ],
+        }),
+        searchChats: builder.query({
+            query: ({ query, userId }) => ({
+                url: `/api/userchat/conversations/search?query=${query}&userId=${userId}`,
+                method: 'GET',
+            }),
+        }),
+        deleteConversation: builder.mutation({
+            query: (conversationId) => ({
+                url: `/api/userchat/conversations/${conversationId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['UserChat'],
+        }),
+        addGroupMember: builder.mutation({
+            query: ({ conversationId, userId }) => ({
+                url: `/api/userchat/conversations/${conversationId}/members`,
+                method: 'POST',
+                body: { userId },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { conversationId }) => [
+                { type: 'UserChat', id: conversationId }
+            ],
+        }),
+        removeGroupMember: builder.mutation({
+            query: ({ conversationId, userId }) => ({
+                url: `/api/userchat/conversations/${conversationId}/members`,
+                method: 'DELETE',
+                body: { userId },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: (result, error, { conversationId }) => [
+                { type: 'UserChat', id: conversationId }
+            ],
+        }),
     }),
 
 })
@@ -774,7 +857,17 @@ export const {
     useDeleteClientAttachmentMutation,
     useArchiveClientAttachmentMutation,
     useGetSalaryCalculationQuery,
-    useGetAllUsersSalaryCalculationQuery
+    useGetAllUsersSalaryCalculationQuery,
+    useGetUserConversationsQuery,
+    useGetConversationMessagesQuery,
+    useLazyGetConversationMessagesQuery,
+    useSendUserChatMessageMutation,
+    useCreateUserConversationMutation,
+    useMarkMessagesReadMutation,
+    useLazySearchChatsQuery,
+    useDeleteConversationMutation,
+    useAddGroupMemberMutation,
+    useRemoveGroupMemberMutation,
 } = api
 
 

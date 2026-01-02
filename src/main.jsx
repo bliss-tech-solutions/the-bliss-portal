@@ -11,6 +11,8 @@ import { SocketProvider } from './contexts/SocketContext'
 import { TaskChatProvider } from './contexts/TaskChatContext'
 import { GlobalChatProvider } from './contexts/GlobalChatContext'
 import { LoadingProvider } from './contexts/LoadingContext'
+import { UserChatProvider } from './contexts/UserChatContext'
+import { NotificationProvider } from './contexts/NotificationContext'
 import { ChakraUIProvider } from './components/ui/provider'
 
 createRoot(document.getElementById('root')).render(
@@ -20,15 +22,19 @@ createRoot(document.getElementById('root')).render(
         <ChakraUIProvider>
           <ConfigProvider>
             <AntdApp>
-              <LoadingProvider>
-                <SocketProvider>
-                  <TaskChatProvider>
-                    <GlobalChatProvider>
-                      <App />
-                    </GlobalChatProvider>
-                  </TaskChatProvider>
-                </SocketProvider>
-              </LoadingProvider>
+              <NotificationProvider>
+                <LoadingProvider>
+                  <SocketProvider>
+                    <TaskChatProvider>
+                      <GlobalChatProvider>
+                        <UserChatProvider>
+                          <App />
+                        </UserChatProvider>
+                      </GlobalChatProvider>
+                    </TaskChatProvider>
+                  </SocketProvider>
+                </LoadingProvider>
+              </NotificationProvider>
             </AntdApp>
           </ConfigProvider>
         </ChakraUIProvider>
