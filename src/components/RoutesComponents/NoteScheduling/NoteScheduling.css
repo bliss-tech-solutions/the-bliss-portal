@@ -356,7 +356,7 @@
     width: 100% !important;
 }
 
-.drawer-content {
+.notion-drawer .drawer-content {
     padding: 40px;
 }
 
