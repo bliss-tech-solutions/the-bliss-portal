@@ -10,6 +10,7 @@ import { SiDatabricks } from "react-icons/si";
 import { TfiLayoutAccordionSeparated } from "react-icons/tfi";
 import { AiFillDatabase } from "react-icons/ai";
 import { IoMdClipboard } from "react-icons/io";
+import { BsUpload } from "react-icons/bs";
 
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
@@ -32,6 +33,8 @@ import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAnd
 import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/SalaryInfo/SalaryInfo"
 import SalaryManagement from "../RoutesComponents/HRWorkComponent/SalaryManagement/SalaryManagement"
 import NoteScheduling from '../RoutesComponents/NoteScheduling/NoteScheduling';
+import FileUpload from '../CommonComponents/FileUpload/FileUpload';
+import FileManager from '../PortalCommonComponents/FileManager/FileManager';
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -121,6 +124,22 @@ export const navigationConfig = [
         routeName: "/user-verification-details",
         roles: ["HR"],
         component: UserDocumentVerification,
+        showInSidebar: true
+    },
+    // {
+    //     componentLabelName: "File Upload",
+    //     icon: BsUpload,
+    //     routeName: "/file-upload",
+    //     roles: ["HR"],
+    //     component: FileUpload,
+    //     showInSidebar: true
+    // },
+    {
+        componentLabelName: "File Manager",
+        icon: BsUpload,
+        routeName: "/file-manager",
+        roles: ["HR", "admin", "user", "Execution", "ContentProvider"],
+        component: FileManager,
         showInSidebar: true
     },
 

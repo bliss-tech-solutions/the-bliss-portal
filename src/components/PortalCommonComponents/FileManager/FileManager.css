@@ -1,0 +1,165 @@
+.file-manager {
+  /* padding: 20px; */
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+}
+
+.fm-user {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.fm-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-color);
+  color: var(--button-primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.fm-greeting {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
+.fm-user-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--secondary-text);
+}
+
+.fm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.fm-section-title {
+  margin: 4px 0 8px 2px;
+  color: var(--primary-text);
+}
+
+.fm-categories {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.category-card {
+  min-width: 160px;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.cat-icon {
+  font-size: 22px;
+  color: var(--brand-color);
+  background: rgba(235, 178, 54, 0.06);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.cat-title {
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
+.cat-meta {
+  font-size: 13px;
+  color: var(--secondary-text);
+}
+
+.fm-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fm-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  color: var(--secondary-text);
+}
+
+.fm-folders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.folder-card {
+  padding: 12px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.folder-left {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.folder-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-color);
+  font-size: 20px;
+}
+
+.folder-name {
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
+.folder-meta {
+  font-size: 13px;
+  color: var(--secondary-text);
+}
+
+/* Small screens compact spacing */
+@media (max-width: 600px) {
+  .category-card {
+    min-width: 140px
+  }
+
+  .fm-avatar {
+    width: 44px;
+    height: 44px
+  }
+}
