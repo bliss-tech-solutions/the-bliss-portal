@@ -826,7 +826,7 @@ const TaskEntries = ({
                                                                 size="small"
                                                                 type="default"
                                                                 icon={<BsPlusCircle />}
-                                                                className="user-slot-request-btn"
+                                                                className="global-action-btn"
                                                                 onClick={() => openExtensionModal(selectedTask, slot)}
                                                                 disabled={selectedTask.taskStatus === 'completed' || slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending')}
                                                                 title={slot.extensionHistory?.some(entry => (entry.status || 'pending').toLowerCase() === 'pending') ? 'Awaiting approval from assigner' : undefined}

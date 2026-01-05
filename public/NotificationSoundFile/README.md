@@ -29,3 +29,4 @@ To add the iOS default notification sound (Tri-tone/Note):
 
 The sounds are configured in `/src/utils/soundConfig.js`. You can change which sound is used for different notification types there.
 
+

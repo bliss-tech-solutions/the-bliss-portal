@@ -36,6 +36,12 @@ import './NoteScheduling.css';
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
 
+const statusColors = {
+    'Not Started': '#9b9b9b',
+    'In Process': '#faad14',
+    'Completed': '#52c41a'
+};
+
 const NoteScheduling = () => {
     const theme = useSelector(selectTheme);
     const userId = useSelector(selectUserId);
@@ -282,7 +288,10 @@ const NoteScheduling = () => {
                 <div className="board-column">
                     <div className="column-header">
                         <div className="column-title">
-                            <span className={`status-badge status-${status.toLowerCase().replace(/\s+/g, '')}`}>{status}</span>
+                            <span className={`status-badge status-${status.toLowerCase().replace(/\s+/g, '')}`}>
+                                <Badge color={statusColors[status] || '#9b9b9b'} style={{ marginRight: '8px' }} />
+                                {status}
+                            </span>
                             <span className="task-count">{filteredTasks.length}</span>
                         </div>
                         <Space className="column-actions">
@@ -326,7 +335,10 @@ const NoteScheduling = () => {
                         {task.title}
                     </div>
                     <div className="list-col col-status">
-                        <span className={`status-badge status-${(task.status || 'Not Started').toLowerCase().replace(/\s+/g, '')}`}>{task.status}</span>
+                        <span className={`status-badge status-${(task.status || 'Not Started').toLowerCase().replace(/\s+/g, '')}`}>
+                            <Badge color={statusColors[task.status] || '#9b9b9b'} style={{ marginRight: '8px' }} />
+                            {task.status}
+                        </span>
                     </div>
                     <div className="list-col col-priority">
                         <span className={`priority-tag priority-${(task.priority || 'Medium').toLowerCase()}`}>
@@ -408,7 +420,7 @@ const NoteScheduling = () => {
                                         okText="Yes"
                                         cancelText="No"
                                     >
-                                        <Button icon={<BsTrash />} type="text" danger />
+                                        <Button className='global-action-btn' icon={<BsTrash />} type="text" danger />
                                     </Popconfirm>
                                     <Button icon={<BsThreeDots />} type="text" />
                                 </Space>

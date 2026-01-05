@@ -648,6 +648,14 @@ export const api = createApi({
                 { type: 'Clients', id: 'ATTACHMENTS-LIST' }
             ],
         }),
+        deleteClient: builder.mutation({
+            query: (clientId) => ({
+                url: `/api/clientmanagement/delete/${clientId}`,
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Clients'],
+        }),
         createTeam: builder.mutation({
             query: (body) => ({
                 url: '/api/teammanagement/createTeam',
@@ -783,6 +791,52 @@ export const api = createApi({
             }),
             invalidatesTags: ['DailyWorking'],
         }),
+// Image Upload Endpoint (same format as your working HTML)
+uploadImage: builder.mutation({
+    queryFn: async (formData) => {
+        try {
+            const uploadBaseUrl = import.meta.env.VITE_FILE_UPLOAD_BASE_URL || 'http://192.168.1.46:4000';
+            const url = `${uploadBaseUrl}/api/upload-file`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Upload failed' }));
+                return { error: { status: response.status, data: errorData } };
+            }
+
+            const data = await response.json().catch(() => ({}));
+            return { data };
+        } catch (error) {
+            return { error: { status: 'FETCH_ERROR', error: error.message } };
+        }
+    },
+}),
+
+// Fetch Images Endpoint (same as your HTML fetchImages function)
+fetchImages: builder.query({
+    queryFn: async () => {
+        try {
+            const uploadBaseUrl = import.meta.env.VITE_FILE_UPLOAD_BASE_URL || 'http://192.168.1.46:4000';
+            const url = `${uploadBaseUrl}/api/images`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                return { error: { status: response.status } };
+            }
+
+            const data = await response.json();
+            return { data };
+        } catch (error) {
+            return { error: { status: 'FETCH_ERROR', error: error.message } };
+        }
+    },
+}),
+
     }),
 
 })
@@ -857,7 +911,10 @@ export const {
     useGetAllDailyWorkingTasksQuery,
     useGetUserDailyWorkingTasksQuery,
     useUpdateDailyWorkingTaskMutation,
-    useDeleteDailyWorkingTaskMutation
+    useDeleteDailyWorkingTaskMutation,
+    useDeleteClientMutation,
+    useUploadImageMutation,
+    useFetchImagesQuery
 } = api
 
 

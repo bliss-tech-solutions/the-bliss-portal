@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import './ClientsSegregation.css';
-import { Modal, DatePicker, Table, Switch, Tag, Button, Select, Input, Form, Row, Col, Space, ConfigProvider } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Modal, DatePicker, Table, Switch, Tag, Button, Select, Input, Form, Row, Col, Space, ConfigProvider, Upload, Popconfirm } from 'antd';
+import { EditOutlined, UploadOutlined, FilePdfOutlined, DeleteOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { useCreateClientMutation, useGetAllClientsQuery, useUpdateClientMutation, useGetAllUsersQuery } from "../../../../store/api";
+import { useCreateClientMutation, useGetAllClientsQuery, useUpdateClientMutation, useGetAllUsersQuery, useDeleteClientMutation } from "../../../../store/api";
 import { useNotification } from "../../../../contexts/NotificationContext";
+import { uploadToCloudinary } from "../../../../utils/cloudinary";
 const ClientsSegregation = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
@@ -14,8 +15,11 @@ const ClientsSegregation = () => {
         onboardDate: null,
         status: 'active',
         itsDataReceived: false,
-        assignedUsers: []
+        assignedUsers: [],
+        brochureLink: ''
     });
+
+    const [uploadingBrochure, setUploadingBrochure] = useState(false);
 
     // Debug: Log formData changes
     useEffect(() => {
@@ -25,6 +29,7 @@ const ClientsSegregation = () => {
     const { success, error: showError } = useNotification();
     const [createClient, { isLoading: isCreating }] = useCreateClientMutation();
     const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
+    const [deleteClient, { isLoading: isDeleting }] = useDeleteClientMutation();
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetAllClientsQuery();
     const { data: allUsersData } = useGetAllUsersQuery();
     const [searchTerm, setSearchTerm] = useState('');
@@ -143,6 +148,31 @@ const ClientsSegregation = () => {
         }));
     };
 
+    const handleBrochureUpload = async (info) => {
+        const file = info.file.originFileObj || info.file;
+        if (!file) return;
+
+        // Set 50MB limit (User requested)
+        const isLt50M = file.size / 1024 / 1024 < 50;
+        if (!isLt50M) {
+            showError('File must be smaller than 50MB!');
+            return;
+        }
+
+        setUploadingBrochure(true);
+        try {
+            const result = await uploadToCloudinary(file, 'auto');
+            const secureUrl = result.secure_url;
+            handleInputChange('brochureLink', secureUrl);
+            success('Brochure uploaded successfully!');
+        } catch (err) {
+            console.error('Brochure upload failed:', err);
+            showError('Failed to upload brochure to Cloudinary');
+        } finally {
+            setUploadingBrochure(false);
+        }
+    };
+
     const handleEdit = (client) => {
         setEditingClient(client);
         const assignedUsers = client.assignedUsers || [];
@@ -188,7 +218,8 @@ const ClientsSegregation = () => {
             onboardDate: client.onboardDate ? dayjs(client.onboardDate).format('YYYY-MM-DD') : null,
             status: client.status || 'active',
             itsDataReceived: client.itsDataReceived || false,
-            assignedUsers: assignedUsers
+            assignedUsers: assignedUsers,
+            brochureLink: client.brochureLink || ''
         });
         setIsOpen(true);
     };
@@ -234,6 +265,9 @@ const ClientsSegregation = () => {
                 requestBody.assignedUsers = formData.assignedUsers;
             }
 
+            // Always send brochureLink (even if empty) to allow deletion
+            requestBody.brochureLink = formData.brochureLink || '';
+
             if (editingClient) {
                 // Update existing client
                 const response = await updateClient({
@@ -250,7 +284,8 @@ const ClientsSegregation = () => {
                     onboardDate: null,
                     status: 'active',
                     itsDataReceived: false,
-                    assignedUsers: []
+                    assignedUsers: [],
+                    brochureLink: ''
                 });
                 setSelectedUsersByPosition(getResetSelectedUsers());
                 setEditingClient(null);
@@ -276,7 +311,8 @@ const ClientsSegregation = () => {
                     onboardDate: null,
                     status: 'active',
                     itsDataReceived: false,
-                    assignedUsers: []
+                    assignedUsers: [],
+                    brochureLink: ''
                 });
                 setSelectedUsersByPosition(getResetSelectedUsers());
 
@@ -299,6 +335,17 @@ const ClientsSegregation = () => {
         }
     };
 
+    const handleDelete = async (clientId) => {
+        try {
+            await deleteClient(clientId).unwrap();
+            success('Client deleted successfully!');
+            refetchClients();
+        } catch (err) {
+            console.error('Failed to delete client:', err);
+            showError(err?.data?.message || 'Failed to delete client');
+        }
+    };
+
     const handleClose = () => {
         setIsOpen(false);
         setEditingClient(null);
@@ -310,7 +357,8 @@ const ClientsSegregation = () => {
             onboardDate: null,
             status: 'active',
             itsDataReceived: false,
-            assignedUsers: []
+            assignedUsers: [],
+            brochureLink: ''
         });
     };
 
@@ -446,6 +494,53 @@ const ClientsSegregation = () => {
                                 </Space>
                             </Form.Item>
                         </Col>
+                        <Col xs={24} sm={12}>
+                            <Form.Item label="Company Brochure">
+                                <Upload
+                                    name="brochure"
+                                    showUploadList={false}
+                                    beforeUpload={() => false}
+                                    onChange={handleBrochureUpload}
+                                    disabled={uploadingBrochure}
+                                >
+                                    <Button
+                                        icon={<UploadOutlined />}
+                                        loading={uploadingBrochure}
+                                        className="global-secondary-btn"
+                                    >
+                                        {uploadingBrochure ? 'Uploading...' : 'Upload Brochure'}
+                                    </Button>
+                                </Upload>
+                                {formData.brochureLink && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <Space wrap>
+                                            <Tag color="blue">
+                                                <FilePdfOutlined /> Brochure Attached
+                                            </Tag>
+                                            <Button
+                                                type="link"
+                                                size="small"
+                                                href={formData.brochureLink}
+                                                target="_blank"
+                                                style={{ padding: 0 }}
+                                            >
+                                                View
+                                            </Button>
+                                            <Button
+                                                type="link"
+                                                size="small"
+                                                danger
+                                                icon={<DeleteOutlined />}
+                                                onClick={() => handleInputChange('brochureLink', '')}
+                                                style={{ padding: 0 }}
+                                            >
+                                                Remove
+                                            </Button>
+                                        </Space>
+                                    </div>
+                                )}
+                            </Form.Item>
+                        </Col>
                     </Row>
 
                     <Row gutter={[16, 16]}>
@@ -576,16 +671,46 @@ const ClientsSegregation = () => {
                             {
                                 title: 'Actions',
                                 key: 'actions',
-                                width: '10%',
+                                width: '20%',
                                 render: (_, record) => (
-                                    <Button
-                                        className="global-secondary-btn"
-                                        icon={<EditOutlined />}
-                                        onClick={() => handleEdit(record)}
-                                        size="small"
-                                    >
-                                        Edit
-                                    </Button>
+                                    <Space size="middle">
+                                        <Button
+                                            className="global-secondary-btn"
+                                            icon={<EditOutlined />}
+                                            onClick={() => handleEdit(record)}
+                                            size="small"
+                                        >
+                                            Edit
+                                        </Button>
+                                        {record.brochureLink && (
+                                            <Button
+                                                className="global-secondary-btn"
+                                                icon={<FilePdfOutlined />}
+                                                href={record.brochureLink}
+                                                target="_blank"
+                                                size="small"
+                                                title="View Brochure"
+                                            >
+                                                Brochure
+                                            </Button>
+                                        )}
+                                        <Popconfirm
+                                            title="Delete Client"
+                                            description="Are you sure you want to delete this client?"
+                                            onConfirm={() => handleDelete(record._id)}
+                                            okText="Yes"
+                                            cancelText="No"
+                                            okButtonProps={{ danger: true, className: 'global-action-btn' }}
+                                        >
+                                            <Button
+                                                danger
+                                                type="text"
+                                                icon={<DeleteOutlined />}
+                                                size="small"
+                                                loading={isDeleting}
+                                            />
+                                        </Popconfirm>
+                                    </Space>
                                 )
                             }
                         ]}

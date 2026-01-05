@@ -915,7 +915,7 @@ table tbody tr td .ant-picker-cell-inner {
     overflow-y: auto;
 }
 
-.FlexAdjustContainer{
+.FlexAdjustContainer {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -992,4 +992,47 @@ table tbody tr td .ant-picker-cell-inner {
         align-items: flex-start;
         gap: 8px;
     }
+}
+
+/* Emergency Leave Modal Specifics */
+.emergency-leave-modal .ant-modal-header {
+    background-color: var(--card-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.emergency-leave-modal .ant-modal-title {
+    color: var(--primary-text) !important;
+}
+
+.emergency-leave-modal .ant-modal-body {
+    background-color: var(--primary-bg) !important;
+    color: var(--primary-text) !important;
+}
+
+.emergency-leave-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.emergency-leave-modal .ant-select-selector,
+.emergency-leave-modal .ant-picker {
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--input-bg) !important;
+    color: var(--primary-text) !important;
+    transition: all 0.3s ease !important;
+}
+
+.emergency-leave-modal .ant-select-selector:hover,
+.emergency-leave-modal .ant-picker:hover {
+    border-color: var(--brand-color) !important;
+}
+
+.emergency-leave-modal .ant-picker-range-separator {
+    color: var(--secondary-text) !important;
+}
+
+.emergency-leave-modal .ant-picker-input>input {
+    color: var(--primary-text) !important;
 }
