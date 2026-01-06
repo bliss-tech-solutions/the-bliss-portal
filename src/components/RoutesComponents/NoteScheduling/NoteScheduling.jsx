@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Button, Modal, Input, Select, Tag, Space, Card, Row, Col, Typography, Badge, Drawer, Divider, List, Avatar, message, Popconfirm, Image, Tooltip } from 'antd';
+import { Button, Modal, Input, Select, Tag, Space, Card, Row, Col, Typography, Badge, Drawer, Divider, List, Avatar, message, Popconfirm, Image, Tooltip, Spin } from 'antd';
 // No antd icons needed anymore
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../store/slices/themeSlice';
@@ -28,6 +28,7 @@ import {
     BsType,
     BsLightningCharge,
     BsPaperclip,
+    BsSearch,
 } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import { uploadToCloudinary } from '../../../utils/cloudinary';
@@ -71,7 +72,9 @@ const NoteScheduling = () => {
         referenceData: [],
     });
 
+    const [searchTerm, setSearchTerm] = useState('');
     const [isUploading, setIsUploading] = useState(false);
+    const [isDrawerUploading, setIsDrawerUploading] = useState(false);
 
     // Fetch clients
     const { data: clientsData } = useGetAllClientsQuery();
@@ -129,6 +132,14 @@ const NoteScheduling = () => {
         }, []);
     }, [tasksData]);
 
+    const filteredTasks = useMemo(() => {
+        if (!searchTerm.trim()) return tasks;
+        const term = searchTerm.toLowerCase();
+        return tasks.filter(task =>
+            task.title.toLowerCase().includes(term)
+        );
+    }, [tasks, searchTerm]);
+
     const showModal = () => {
         setIsModalVisible(true);
     };
@@ -154,7 +165,7 @@ const NoteScheduling = () => {
 
     const handleCreateTask = async () => {
         if (!taskForm.title.trim()) {
-            return message.error('Task title is required');
+            return showError('Task title is required');
         }
         try {
             const referenceData = [];
@@ -173,36 +184,36 @@ const NoteScheduling = () => {
                 date: dayjs().format('YYYY-MM-DD'),
                 referenceData
             }).unwrap();
-            message.success('Task created successfully');
+            showSuccess('Task created successfully');
             handleClearDraft();
             setIsModalVisible(false);
         } catch (err) {
-            message.error(err?.data?.message || 'Failed to create task');
+            showError(err?.data?.message || 'Failed to create task');
         }
     };
 
     const handleUpdateStatus = async (taskId, newStatus) => {
         try {
             await updateTask({ taskId, body: { status: newStatus } }).unwrap();
-            message.success('Status updated');
+            showSuccess('Status updated');
         } catch (err) {
-            message.error(err?.data?.message || 'Failed to update status');
+            showError(err?.data?.message || 'Failed to update status');
         }
     };
 
     const handleDeleteTask = async (taskId) => {
         try {
             await deleteTask(taskId).unwrap();
-            message.success('Task deleted');
+            showSuccess('Task deleted');
             if (selectedTask?._id === taskId) closeTaskDetails();
         } catch (err) {
-            message.error('Failed to delete task');
+            showError('Failed to delete task');
         }
     };
 
     const handleSaveUpdate = async () => {
         if (!editForm.title.trim()) {
-            return message.error('Task title is required');
+            return showError('Task title is required');
         }
         try {
             // Find existing text reference or create new one
@@ -225,11 +236,35 @@ const NoteScheduling = () => {
                     referenceData: newReferenceData
                 }
             }).unwrap();
-            message.success('Task updated successfully');
+            showSuccess('Task updated successfully');
             closeTaskDetails();
         } catch (err) {
-            message.error('Failed to update task');
+            showError('Failed to update task');
         }
+    };
+
+    const handleDrawerImageUpload = async (file) => {
+        if (!file) return;
+        setIsDrawerUploading(true);
+        try {
+            const data = await uploadToCloudinary(file);
+            setEditForm(prev => ({
+                ...prev,
+                referenceData: [...prev.referenceData, { type: 'image', content: data?.secure_url }]
+            }));
+            showSuccess('Image attached');
+        } catch (err) {
+            showError('Upload failed');
+        } finally {
+            setIsDrawerUploading(false);
+        }
+    };
+
+    const handleRemoveReference = (index) => {
+        setEditForm(prev => ({
+            ...prev,
+            referenceData: prev.referenceData.filter((_, i) => i !== index)
+        }));
     };
 
     const handleImageUpload = async (file) => {
@@ -323,12 +358,12 @@ const NoteScheduling = () => {
                 <div className="list-col col-priority">Priority</div>
                 <div className="list-col col-date">Date</div>
             </div>
-            {tasks.length === 0 && (
+            {filteredTasks.length === 0 && (
                 <div style={{ padding: '40px', textAlign: 'center', color: 'var(--secondary-text)' }}>
                     No tasks found. Click "New Task" to get started.
                 </div>
             )}
-            {tasks.map(task => (
+            {filteredTasks.map(task => (
                 <div key={task._id} className="list-item-row" onClick={() => handleOpenDrawer(task)}>
                     <div className="list-col col-title">
                         <BsPlus style={{ marginRight: '12px', color: 'var(--secondary-text)' }} />
@@ -367,7 +402,16 @@ const NoteScheduling = () => {
                         </div>
                     </div>
                     <div className="note-scheduling-actions">
-                        <Space size="large">
+                        <Space size="large" align="center">
+                            <Input
+                                placeholder="Search by title..."
+                                prefix={<BsSearch style={{ color: 'var(--secondary-text)' }} />}
+                                className="notion-search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{ width: 250 }}
+                                allowClear
+                            />
                             <div className="view-switcher">
                                 <button
                                     className={`view-btn ${viewMode === 'board' ? 'active' : ''}`}
@@ -394,7 +438,7 @@ const NoteScheduling = () => {
                 ) : viewMode === 'board' ? (
                     <div className="board-container">
                         {['Not Started', 'In Process', 'Completed'].map(status => (
-                            <BoardColumn key={status} status={status} tasks={tasks} />
+                            <BoardColumn key={status} status={status} tasks={filteredTasks} />
                         ))}
                     </div>
                 ) : (
@@ -422,7 +466,7 @@ const NoteScheduling = () => {
                                     >
                                         <Button className='global-action-btn' icon={<BsTrash />} type="text" danger />
                                     </Popconfirm>
-                                    <Button icon={<BsThreeDots />} type="text" />
+                                    {/* <Button icon={<BsThreeDots />} type="text" /> */}
                                 </Space>
                             </div>
 
@@ -473,6 +517,27 @@ const NoteScheduling = () => {
                                         <Text>{dayjs(selectedTask.date || selectedTask.parentDate || selectedTask.createdAt).format('MMMM D, YYYY')}</Text>
                                     </div>
                                 </div>
+                                <div className="drawer-field-row">
+                                    <div className="field-label"><BsImage /> Attach Image</div>
+                                    <div className="field-value">
+                                        <Input
+                                            type="file"
+                                            style={{ display: 'none' }}
+                                            id="drawer-image-upload"
+                                            accept="image/*"
+                                            onChange={(e) => handleDrawerImageUpload(e.target.files[0])}
+                                        />
+                                        <Button
+                                            icon={<BsPlus />}
+                                            onClick={() => document.getElementById('drawer-image-upload').click()}
+                                            loading={isDrawerUploading}
+                                            size="small"
+                                            type="dashed"
+                                        >
+                                            Add Image
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
 
                             <Divider style={{ margin: '24px 0' }} />
@@ -481,13 +546,32 @@ const NoteScheduling = () => {
                                 <div className='drawer-Content-section'>
                                     <div className="drawer-section-title">Reference Data & Notes</div>
                                     <div className="drawer-attachments">
-                                        {editForm.referenceData?.filter(r => r.type === 'image').map((ref, idx) => (
-                                            <div key={idx} className="drawer-attachment-item">
-                                                <div className="image-attachment">
-                                                    <img src={ref.content} alt="Attachment" />
-                                                </div>
-                                            </div>
-                                        ))}
+                                        <Row gutter={[12, 12]}>
+                                            {editForm.referenceData?.filter(r => r.type === 'image').map((ref, idx) => (
+                                                <Col key={idx} span={12}>
+                                                    <div className="drawer-attachment-item">
+                                                        <div className="image-attachment-wrapper">
+                                                            <Image
+                                                                src={ref.content}
+                                                                alt="Attachment"
+                                                                className="drawer-img-preview"
+                                                            />
+                                                            <div className="remove-img-overlay" onClick={() => handleRemoveReference(editForm.referenceData.indexOf(ref))}>
+                                                                <BsTrash />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Col>
+                                            ))}
+                                            {isDrawerUploading && (
+                                                <Col span={12}>
+                                                    <div className="drawer-attachment-item uploading-placeholder">
+                                                        <Spin size="large" />
+                                                        <div style={{ marginTop: '8px', fontSize: '12px' }}>Uploading...</div>
+                                                    </div>
+                                                </Col>
+                                            )}
+                                        </Row>
                                         <div className="drawer-notes-area">
                                             <Input.TextArea
                                                 value={editForm.content}

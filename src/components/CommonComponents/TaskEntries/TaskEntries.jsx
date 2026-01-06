@@ -149,7 +149,7 @@ const TaskEntries = ({
 
             if (isForCurrentUser) {
                 console.log('✅ New task received via socket:', taskData);
-                
+
                 // Play sound notification if playSound flag is true
                 // Sound only plays when this tab/component is open
                 if (taskData.playSound) {
@@ -160,7 +160,7 @@ const TaskEntries = ({
                 refetch();
 
                 // Show success notification (use message from backend if available, otherwise default)
-                const notificationMessage = taskData.message || 
+                const notificationMessage = taskData.message ||
                     (taskData.taskName ? `New task assigned: ${taskData.taskName}` : 'New task assigned');
                 showSuccess(notificationMessage);
             }

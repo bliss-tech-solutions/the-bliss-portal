@@ -32,6 +32,7 @@ import ClientAndData from '../RoutesComponents/UserTaskAssignmentPanel/clientAnd
 import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/SalaryInfo/SalaryInfo"
 import SalaryManagement from "../RoutesComponents/HRWorkComponent/SalaryManagement/SalaryManagement"
 import NoteScheduling from '../RoutesComponents/NoteScheduling/NoteScheduling';
+import UserWiseClientView from '../RoutesComponents/AdminDashboard/UserWiseClientView/UserWiseClientView';
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -165,12 +166,20 @@ export const navigationConfig = [
         component: SalaryManagement,
         showInSidebar: true
     },
-      {
+    {
         componentLabelName: "Task Board",
         icon: IoMdClipboard,
         routeName: "/note-scheduling",
         roles: ["Execution", "admin", "moderator", "user", "HR", "ContentProvider"],
         component: NoteScheduling,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "User Wise Clients",
+        icon: UserOutlined,
+        routeName: "/user-wise-clients",
+        roles: ["admin"],
+        component: UserWiseClientView,
         showInSidebar: true
     },
     {
@@ -181,8 +190,6 @@ export const navigationConfig = [
         component: GlobalChatPage,
         showInSidebar: true
     },
-  
-
 ];
 
 // Helper function to filter navigation items based on user role (for sidebar)

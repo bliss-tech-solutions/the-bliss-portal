@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Spin, Typography, Button, Card, Tabs } from 'antd';
+import { Spin, Typography, Button, Card, Tabs, DatePicker, Empty, Tag } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import {
     BsCheckCircle,
@@ -10,7 +10,7 @@ import {
     BsFileText
 } from 'react-icons/bs';
 import Chart from 'react-apexcharts';
-import { useGetUserWiseAnalyticsQuery } from '../../../../store/api';
+import { useGetUserWiseAnalyticsQuery, useGetAllCheckinsQuery } from '../../../../store/api';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectSelectedUserId, hideUserDetailsView } from '../../../../store/slices/adminDashboardSlice';
 import { useSocket } from '../../../../contexts/SocketContext';
@@ -22,12 +22,14 @@ import './UserWiseAnalytics.css';
 dayjs.extend(relativeTime);
 
 const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const UserWiseAnalytics = () => {
     const dispatch = useDispatch();
     const selectedUserId = useSelector(selectSelectedUserId);
     const { socket } = useSocket();
     const [activeChartTab, setActiveChartTab] = useState('performance');
+    const [attendanceDateRange, setAttendanceDateRange] = useState(null);
 
     const {
         data: userAnalyticsData,
@@ -37,6 +39,8 @@ const UserWiseAnalytics = () => {
     } = useGetUserWiseAnalyticsQuery(selectedUserId, {
         skip: !selectedUserId,
     });
+
+    const { data: allCheckinsResp, isLoading: isCheckinsLoading } = useGetAllCheckinsQuery();
 
     // Real-time updates via socket
     useEffect(() => {
@@ -116,6 +120,19 @@ const UserWiseAnalytics = () => {
             { name: 'Cancelled', value: tasksData.cancelledTasks || 0, color: '#ef4444' },
         ].filter(item => item.value > 0);
     }, [tasksData]);
+
+    const filteredAttendance = useMemo(() => {
+        if (!allCheckinsResp?.data || !selectedUserId) return [];
+        return allCheckinsResp.data
+            .filter(c => c.userId === selectedUserId)
+            .filter(c => {
+                if (!attendanceDateRange || !attendanceDateRange[0] || !attendanceDateRange[1]) return true;
+                const checkDate = dayjs(c.checkInAt || c.checkinAt);
+                return checkDate.isAfter(attendanceDateRange[0].startOf('day')) &&
+                    checkDate.isBefore(attendanceDateRange[1].endOf('day'));
+            })
+            .sort((a, b) => dayjs(b.checkInAt || b.checkinAt).unix() - dayjs(a.checkInAt || a.checkinAt).unix());
+    }, [allCheckinsResp, selectedUserId, attendanceDateRange]);
 
     const getMiniChartOptions = (color) => ({
         chart: {
@@ -379,8 +396,8 @@ const UserWiseAnalytics = () => {
                 >
                     Back to Employees
                 </Button>
-                <br/>
-                <br/>
+                <br />
+                <br />
 
                 <div className="header-info">
                     <Title level={2} className="user-name-title">
@@ -654,6 +671,77 @@ const UserWiseAnalytics = () => {
                             <Text className="empty-text">No task data available</Text>
                         </div>
                     )}
+                </Card>
+
+                {/* Check-in/Check-out History Container */}
+                <Card className="recapitulation-card attendance-history-card" bordered={false}>
+                    <div className="recap-header">
+                        <div className="flex-header">
+                            <Title level={4} className="recap-title23">Attendance History</Title>
+                            <RangePicker
+                                className="attendance-range-picker"
+                                onChange={(val) => setAttendanceDateRange(val)}
+                                value={attendanceDateRange}
+                                size="small"
+                            />
+                        </div>
+                    </div>
+                    <div className="attendance-history-list">
+                        {isCheckinsLoading ? (
+                            <div className="loading-history">
+                                <Spin size="small" />
+                            </div>
+                        ) : filteredAttendance.length > 0 ? (
+                            filteredAttendance.map((item, index) => {
+                                const inDate = dayjs(item.checkInAt || item.checkinAt);
+                                const outDate = (item.checkOutAt || item.checkoutAt) ? dayjs(item.checkOutAt || item.checkoutAt) : null;
+
+                                let duration = '-';
+                                if (outDate && outDate.isValid()) {
+                                    const diffMs = outDate.diff(inDate);
+                                    const hrs = Math.floor(diffMs / 3600000);
+                                    const mins = Math.floor((diffMs % 3600000) / 60000);
+                                    duration = `${hrs}h ${mins}m`;
+                                }
+
+                                return (
+                                    <div key={item._id || index} className="attendance-history-item">
+                                        <div className="attendance-date-box">
+                                            <Text className="att-day">{inDate.format('DD')}</Text>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                <Text className="att-month">{inDate.format('MMM')}</Text>
+                                                {inDate.year() !== dayjs().year() && (
+                                                    <Text style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', marginTop: '-2px' }}>
+                                                        {inDate.year()}
+                                                    </Text>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="attendance-times">
+                                            <div className="time-row">
+                                                <Text type="secondary" size="small">In: </Text>
+                                                <Text strong>{inDate.format('hh:mm A')}</Text>
+                                            </div>
+                                            <div className="time-row">
+                                                <Text type="secondary" size="small">Out: </Text>
+                                                <Text strong>{outDate ? outDate.format('hh:mm A') : 'Pending'}</Text>
+                                            </div>
+                                        </div>
+                                        <div className="attendance-duration">
+                                            <Tag color={duration === '-' ? 'default' : 'geekblue'}>{duration}</Tag>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="empty-attendance">
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description={<Text type="secondary">No attendance records found for this period</Text>}
+                                />
+                            </div>
+                        )}
+                    </div>
                 </Card>
             </div>
         </div>

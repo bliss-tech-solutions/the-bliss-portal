@@ -61,6 +61,37 @@
     font-weight: 600 !important;
 }
 
+/* Search Input */
+.notion-search-input {
+    background-color: var(--tertiary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.notion-search-input:hover,
+.notion-search-input:focus,
+.notion-search-input-focused {
+    border-color: var(--accent-color) !important;
+    background-color: var(--tertiary-bg) !important;
+    box-shadow: none !important;
+}
+
+.notion-search-input .ant-input {
+    background-color: transparent !important;
+    color: var(--primary-text) !important;
+    font-size: 14px !important;
+}
+
+.notion-search-input .ant-input::placeholder {
+    color: var(--secondary-text) !important;
+    opacity: 0.7;
+}
+
+.notion-search-input .ant-input-clear-icon {
+    color: var(--secondary-text) !important;
+}
+
 /* Board Layout */
 .board-container {
     display: grid;
@@ -122,14 +153,14 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    
+
 }
 
 .task-card {
     position: relative;
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
-        border-color: var(--accent-color);
+    border-color: var(--accent-color);
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 1px 4px var(--shadow);
@@ -524,10 +555,10 @@
     display: flex;
     align-items: center;
     min-height: 32px;
-        border: 1px solid var(--border-color);
-padding: 10px;
-/* border-radius: 20px; */
-    }
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    /* border-radius: 20px; */
+}
 
 .notion-field-label {
     width: 160px;
@@ -588,7 +619,7 @@ padding: 10px;
     margin-top: 40px;
 }
 
-.drawer-Content-section{
+.drawer-Content-section {
     min-height: 300px;
     height: 300px;
     overflow: auto;
@@ -610,4 +641,55 @@ padding: 10px;
         flex-direction: column;
         gap: 20px;
     }
+}
+
+/* Drawer Image Management */
+.image-attachment-wrapper {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.drawer-img-preview {
+    width: 100%;
+    height: 120px !important;
+    object-fit: cover !important;
+}
+
+.remove-img-overlay {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 77, 79, 0.8);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.image-attachment-wrapper:hover .remove-img-overlay {
+    opacity: 1;
+}
+
+.remove-img-overlay:hover {
+    background: #ff4d4f;
+    transform: scale(1.1);
+}
+
+.uploading-placeholder {
+    height: 120px;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--tertiary-bg);
 }

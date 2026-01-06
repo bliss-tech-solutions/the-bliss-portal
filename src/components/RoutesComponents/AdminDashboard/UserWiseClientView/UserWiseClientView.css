@@ -1,0 +1,212 @@
+/* UserWiseClientView.css */
+
+.user-wise-client-container {
+    /* padding: 24px; */
+    background-color: var(--primary-bg);
+    min-height: 100vh;
+}
+
+.user-wise-client-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+.user-wise-client-title {
+    color: var(--primary-text);
+    margin: 0 !important;
+    font-weight: 600;
+}
+
+.user-wise-client-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.user-wise-client-table .ant-table {
+    background: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.user-wise-client-table .ant-table-thead>tr>th {
+    background-color: var(--secondary-bg) !important;
+    color: var(--secondary-text) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: 600;
+}
+
+.user-wise-client-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.user-wise-client-table .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Custom Expand Icon Styling */
+.custom-expand-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--primary-text);
+}
+
+.custom-expand-icon:hover {
+    background-color: var(--brand-color);
+    color: #000;
+    border-color: var(--brand-color);
+    transform: scale(1.05);
+}
+
+.custom-expand-icon.expanded {
+    background-color: var(--brand-color);
+    color: #000;
+    border-color: var(--brand-color);
+}
+
+.user-name-cell {
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.user-email-cell {
+    color: var(--secondary-text);
+    font-size: 13px;
+}
+
+.client-nested-table {
+    margin: 8px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.client-nested-table .ant-table-thead>tr>th {
+    background-color: var(--hover-bg) !important;
+    font-size: 13px;
+    padding: 8px 16px !important;
+}
+
+.client-nested-table .ant-table-tbody>tr>td {
+    padding: 8px 16px !important;
+    font-size: 13px;
+}
+
+.status-tag {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 0 8px;
+}
+
+.search-input {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: 6px !important;
+}
+
+.search-input:hover,
+.search-input:focus {
+    border-color: var(--brand-color) !important;
+}
+
+.search-input .ant-input-prefix {
+    color: var(--secondary-text);
+}
+
+.search-input input {
+    background-color: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.empty-clients {
+    padding: 16px;
+    text-align: center;
+    color: var(--secondary-text);
+    font-style: italic;
+    background-color: var(--secondary-bg);
+}
+
+/* Pagination Styling Fixes */
+.user-wise-client-table .ant-pagination-options .ant-select-selector {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.user-wise-client-table .ant-pagination-item {
+    background: transparent !important;
+    border-color: var(--border-color) !important;
+}
+
+.user-wise-client-table .ant-pagination-item a {
+    color: var(--primary-text) !important;
+}
+
+.user-wise-client-table .ant-pagination-item-active {
+    border-color: var(--brand-color) !important;
+    background-color: var(--brand-color) !important;
+}
+
+.user-wise-client-table .ant-pagination-item-active a {
+    color: #000 !important;
+}
+
+.user-wise-client-table .ant-pagination-prev .ant-pagination-item-link,
+.user-wise-client-table .ant-pagination-next .ant-pagination-item-link {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+/* Global dropdown styling for the pagination select */
+.ant-select-dropdown {
+    background-color: #1f1f1f !important;
+    /* Solid dark background */
+    border: 1px solid var(--border-color) !important;
+    backdrop-filter: none !important;
+    /* Remove any blur overlap */
+    -webkit-backdrop-filter: none !important;
+    z-index: 10000 !important;
+    /* Ensure it stays above other elements */
+    box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+.ant-select-item {
+    color: var(--primary-text) !important;
+}
+
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+    background-color: var(--hover-bg) !important;
+}
+
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background-color: var(--secondary-bg) !important;
+    color: var(--brand-color) !important;
+}
+
+@media (max-width: 768px) {
+    .user-wise-client-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .search-input {
+        width: 100% !important;
+    }
+}

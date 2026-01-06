@@ -95,7 +95,7 @@ export const NotificationProvider = ({ children }) => {
     };
 
     return (
-        <NotificationContext.Provider value={{ success, error, warning, info, hideNotification, setTabCount }}>
+        <NotificationContext.Provider value={{ success, error, warning, info, showSuccess: success, showError: error, hideNotification, setTabCount }}>
             {children}
             <Snackbar
                 open={notification.open}
