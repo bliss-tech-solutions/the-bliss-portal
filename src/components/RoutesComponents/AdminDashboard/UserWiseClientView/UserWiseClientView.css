@@ -175,7 +175,7 @@
 
 /* Global dropdown styling for the pagination select */
 .ant-select-dropdown {
-    background-color: #1f1f1f !important;
+    /* background-color: #1f1f1f !important; */
     /* Solid dark background */
     border: 1px solid var(--border-color) !important;
     backdrop-filter: none !important;
