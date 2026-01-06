@@ -34,6 +34,17 @@ const CheckInOutReminder = () => {
     const [reason, setReason] = useState('');
     const [checkInType, setCheckInType] = useState('OFFICE');
 
+    const greeting = useMemo(() => {
+        const now = new Date();
+        const istTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+        const hour = istTime.getHours();
+
+        if (hour >= 5 && hour < 12) return 'Good Morning';
+        if (hour >= 12 && hour < 17) return 'Good Afternoon';
+        if (hour >= 17 && hour < 21) return 'Good Evening';
+        return 'Good Night';
+    }, []);
+
     // Hide check-in/check-out for admin role
     const isAdmin = role?.toLowerCase() === 'admin';
     if (isAdmin) {
@@ -131,7 +142,7 @@ const CheckInOutReminder = () => {
                         <FieldTimeOutlined className="checkin-main-icon" />
                     </div>
                     <div className="checkin-title-group">
-                        <Title level={3} className="checkin-title">Good Morning!</Title>
+                        <Title level={3} className="checkin-title">{greeting}!</Title>
                         <Text className="checkin-subtext">
                             It's time to start your productive day.
                         </Text>
