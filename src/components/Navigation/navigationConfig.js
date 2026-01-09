@@ -110,14 +110,14 @@ export const navigationConfig = [
         component: ContentProviderPanel,
         showInSidebar: true
     },
-    {
-        componentLabelName: "Leave Calender",
-        icon: CalendarOutlined,
-        routeName: "/task-and-leave-calender",
-        roles: ["user", "Execution", "ContentProvider"],
-        component: TaskAndLeaveCalender,
-        showInSidebar: true
-    },
+    // {
+    //     componentLabelName: "Leave Calender",
+    //     icon: CalendarOutlined,
+    //     routeName: "/task-and-leave-calender",
+    //     roles: ["user", "Execution", "ContentProvider"],
+    //     component: TaskAndLeaveCalender,
+    //     showInSidebar: true
+    // },
     {
         componentLabelName: "User Verification Details",
         icon: UserOutlined,
