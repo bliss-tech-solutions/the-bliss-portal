@@ -180,7 +180,7 @@ export const navigationConfig = [
         componentLabelName: "Daily Tasks",
         icon: HiOutlinePencilSquare,
         routeName: "/daily-task-calendar",
-        roles: ["HR", "admin", "Execution", "user"], // Added for HR plus others for common access
+        roles: ["HR", "admin", "Execution", "user","ContentProvider"], // Added for HR plus others for common access
         component: DailyTaskCalendar,
         showInSidebar: true
     },
