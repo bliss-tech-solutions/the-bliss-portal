@@ -28,7 +28,7 @@ import CalenderModule from '../../../PortalCommonComponents/CalenderModule/Calen
 import {
   useAddFestiveNoteMutation,
   useGetFestiveNotesByUserQuery,
-  useUpdateFestiveMutation,
+  // useUpdateFestiveMutation,
   useGetAllLeavesQuery,
   useGetAllUsersQuery,
   useRejectLeaveMutation,
@@ -71,7 +71,7 @@ const FestiveCalender = () => {
   );
 
   const [addFestiveNote] = useAddFestiveNoteMutation();
-  const [updateFestive] = useUpdateFestiveMutation();
+  // const [updateFestive] = useUpdateFestiveMutation();
   const { data: festiveNotesData, refetch } = useGetFestiveNotesByUserQuery(userId, {
     skip: !userId,
   });

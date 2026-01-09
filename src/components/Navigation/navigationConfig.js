@@ -10,6 +10,7 @@ import { SiDatabricks } from "react-icons/si";
 import { TfiLayoutAccordionSeparated } from "react-icons/tfi";
 import { AiFillDatabase } from "react-icons/ai";
 import { IoMdClipboard } from "react-icons/io";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
 
 // Import components
 import AdminDashboard from '../RoutesComponents/AdminDashboard/AdminDashboard';
@@ -21,6 +22,7 @@ import FestiveCalender from '../RoutesComponents/HRWorkComponent/FestiveCalender
 import DocumentGenerator from '../RoutesComponents/HRWorkComponent/DocumentGenerator/DocumentGenerator';
 import TaskAndLeaveCalender from '../RoutesComponents/UserTaskAssignmentPanel/TaskAndLeaveCalender/TaskAndLeaveCalender';
 import GlobalChatPage from '../RoutesComponents/GlobalChatPage/GlobalChatPage';
+import DailyTaskCalendar from '../PortalCommonComponents/DailyTaskCalendar/DailyTaskCalendar';
 
 // Navigation Configuration
 import UserDocumentVerification from '../RoutesComponents/HRWorkComponent/UserDocumentVerification/UserDocumentVerification';
@@ -76,14 +78,14 @@ export const navigationConfig = [
         component: UserAttendanceData,
         showInSidebar: true
     },
-    {
-        componentLabelName: "Festive Calender",
-        icon: FaCalendarAlt,
-        routeName: "/festive-calender",
-        roles: ["HR"],
-        component: FestiveCalender,
-        showInSidebar: true
-    },
+    // {
+    //     componentLabelName: "Festive Calender",
+    //     icon: FaCalendarAlt,
+    //     routeName: "/festive-calender",
+    //     roles: ["HR"],
+    //     component: FestiveCalender,
+    //     showInSidebar: true
+    // },
     {
         componentLabelName: "Document Generator",
         icon: FileTextOutlined,
@@ -175,6 +177,14 @@ export const navigationConfig = [
         showInSidebar: true
     },
     {
+        componentLabelName: "Daily Tasks",
+        icon: HiOutlinePencilSquare,
+        routeName: "/daily-task-calendar",
+        roles: ["HR", "admin", "Execution", "user"], // Added for HR plus others for common access
+        component: DailyTaskCalendar,
+        showInSidebar: true
+    },
+    {
         componentLabelName: "User Wise Clients",
         icon: UserOutlined,
         routeName: "/user-wise-clients",
@@ -190,6 +200,7 @@ export const navigationConfig = [
         component: GlobalChatPage,
         showInSidebar: true
     },
+    
 ];
 
 // Helper function to filter navigation items based on user role (for sidebar)

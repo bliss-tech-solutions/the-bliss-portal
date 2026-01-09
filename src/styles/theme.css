@@ -22,7 +22,6 @@
     --danger-color: #dc3545;
     --info-color: #17a2b8;
     --sidebar-bg: #ffffff;
-
     /* Button Specific Variables */
     --button-border-radius: 4px;
     --button-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -484,6 +483,32 @@ body {
     background-color: var(--brand-color) !important;
 }
 
+/* Global Select Dropdown Overrides */
+.ant-select-dropdown {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+    padding: 4px !important;
+}
+
+.ant-select-item {
+    color: var(--primary-text) !important;
+    border-radius: 4px !important;
+    margin-bottom: 2px !important;
+    border: none !important;
+}
+
+.ant-select-item-option-content {
+    color: var(--primary-text) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.ant-select-item-option-active {
+    background-color: var(--hover-bg) !important;
+}
+
+
 /* Global Modal Overrides - Ensure Theme Consistency */
 .ant-modal-content {
     background-color: var(--card-bg) !important;
@@ -698,4 +723,12 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
 
 .ant-popover-arrow::before {
     background-color: var(--card-bg) !important;
+}
+
+.ant-collapse{
+    border: var(--border-color);
+}
+
+.ant-collapse-header-text, .ant-collapse-content-box {
+    color: var(--primary-text);
 }
