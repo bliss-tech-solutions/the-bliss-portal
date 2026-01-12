@@ -180,7 +180,7 @@ export const navigationConfig = [
         componentLabelName: "Daily Tasks",
         icon: HiOutlinePencilSquare,
         routeName: "/daily-task-calendar",
-        roles: ["HR", "admin", "Execution", "user","ContentProvider"], // Added for HR plus others for common access
+        roles: ["HR", "admin", "Execution", "user", "ContentProvider"], // Added for HR plus others for common access
         component: DailyTaskCalendar,
         showInSidebar: true
     },
@@ -200,7 +200,7 @@ export const navigationConfig = [
         component: GlobalChatPage,
         showInSidebar: true
     },
-    
+
 ];
 
 // Helper function to filter navigation items based on user role (for sidebar)

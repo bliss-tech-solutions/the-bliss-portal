@@ -391,3 +391,16 @@
     color: #eab236;
     font-weight: 500;
 }
+/* Festival Login Image Styling */
+.festival-login-image {
+    width: 100%;
+    height: auto;
+    max-width: 600px;
+    object-fit: contain;
+    transition: filter 0.3s ease;
+}
+
+/* Invert image on dark theme */
+[data-theme="dark"] .festival-login-image {
+    filter: invert(1);
+}

@@ -52,3 +52,16 @@
         transition: all 0.3s ease !important;
     }
 }
+/* Position relative for festival rope decoration */
+.PortalComponentsContainer {
+    position: relative;
+}
+
+/* Bottom rope attached to container bottom */
+.PortalComponentsContainer .festival-rope-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}

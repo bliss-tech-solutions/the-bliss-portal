@@ -10,6 +10,11 @@ import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined,
 import { useCheckoutMutation, useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../store/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { ENABLE_MAKAR_SANKRANTI_THEME } from '../../../config/festivalTheme';
+import KiteIcon from '../../FestivalTheme/MakarSankranti/KiteIcon';
+import SunIcon from '../../FestivalTheme/MakarSankranti/SunIcon';
+import SkyBackground from '../../FestivalTheme/MakarSankranti/SkyBackground';
+import RopeDecoration from '../../FestivalTheme/MakarSankranti/RopeDecoration';
 
 dayjs.extend(relativeTime);
 
@@ -452,7 +457,29 @@ const PortalHeader = () => {
 
     return (
         <>
+            {/* Makar Sankranti Sky Background */}
+            {ENABLE_MAKAR_SANKRANTI_THEME && <SkyBackground />}
+
             <div id="PortalHeader" className="portal-header">
+                {/* Makar Sankranti Festival Decorations */}
+                {ENABLE_MAKAR_SANKRANTI_THEME && (
+                    <>
+                        <div className="festival-rope-decoration festival-rope-top">
+                            <RopeDecoration variant="top" height={80} />
+                        </div>
+
+                        <div className="festival-header-decoration festival-header-kite-1 festival-fade-in">
+                            <KiteIcon size={40} animate={true} delay={0} />
+                        </div>
+                        <div className="festival-header-decoration festival-header-kite-2 festival-fade-in">
+                            <KiteIcon size={35} animate={true} delay={0.5} />
+                        </div>
+                        <div className="festival-header-decoration festival-header-sun festival-fade-in">
+                            <SunIcon size={32} animate={true} />
+                        </div>
+                    </>
+                )}
+
                 <div className="PortalContainer h-100">
                     <div className="h-100">
                         <Row className="h-100">
@@ -480,7 +507,7 @@ const PortalHeader = () => {
                                                         size="small"
                                                         icon={<ExportOutlined />}
                                                         onClick={() => setCheckoutModalOpen(true)}
-                                                        className="portal-checkout-button"
+                                                        className={`portal-checkout-button ${ENABLE_MAKAR_SANKRANTI_THEME ? 'festival-button-kite' : ''}`}
                                                     >
                                                         Check Out
                                                     </Button>
@@ -569,7 +596,19 @@ const PortalHeader = () => {
                 okText="Check Out"
                 confirmLoading={isCheckoutLoading}
                 cancelText="Cancel"
+                className="checkout-modal"
             >
+                {/* Makar Sankranti Festival Decorations */}
+                {ENABLE_MAKAR_SANKRANTI_THEME && (
+                    <>
+                        <div className="festival-modal-decoration festival-modal-kite-top-left festival-fade-in">
+                            <KiteIcon size={30} animate={true} delay={0.2} />
+                        </div>
+                        <div className="festival-modal-decoration festival-modal-kite-top-right festival-fade-in">
+                            <KiteIcon size={28} animate={true} delay={0.4} />
+                        </div>
+                    </>
+                )}
                 {userRole === 'user' && checkoutPendingTasks.length > 0 && (
                     <div className="checkout-pending-warning" style={{
                         marginBottom: '16px',

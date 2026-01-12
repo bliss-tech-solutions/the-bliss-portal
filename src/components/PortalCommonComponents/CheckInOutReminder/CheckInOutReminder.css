@@ -13,6 +13,8 @@
     background: transparent;
     color: var(--primary-text);
     padding: 32px;
+    position: relative;
+    /* For festival decorations positioning */
 }
 
 /* Header Section */

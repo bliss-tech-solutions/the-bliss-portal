@@ -1,0 +1,461 @@
+/* Makar Sankranti Festival Theme Styles */
+
+/* ============================================
+   CSS Variables for Light and Dark Themes
+   ============================================ */
+
+:root {
+    /* Light Theme Festival Colors */
+    --festival-kite-primary: #ff6b6b;
+    --festival-kite-secondary: #4ecdc4;
+    --festival-kite-accent: #ffd93d;
+    --festival-sun-color: #f59e0b;
+    --festival-string-color: #a0a0a0;
+    --festival-decoration-opacity: 0.15;
+}
+
+[data-theme="dark"] {
+    /* Dark Theme Festival Colors */
+    --festival-kite-primary: #ff8787;
+    --festival-kite-secondary: #63e6e6;
+    --festival-kite-accent: #ffe066;
+    --festival-sun-color: #fbbf24;
+    --festival-string-color: #6b7280;
+    --festival-decoration-opacity: 0.1;
+}
+
+/* ============================================
+   Kite Icon Styles
+   ============================================ */
+
+.festival-kite-icon {
+    display: inline-block;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.kite-fill-primary {
+    fill: var(--festival-kite-primary);
+    transition: fill 0.3s ease;
+}
+
+.kite-fill-secondary {
+    fill: var(--festival-kite-secondary);
+    transition: fill 0.3s ease;
+}
+
+.kite-fill-accent {
+    fill: var(--festival-kite-accent);
+    transition: fill 0.3s ease;
+}
+
+.kite-accent-line {
+    stroke: var(--festival-kite-accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+}
+
+.kite-string-path {
+    stroke: var(--festival-string-color);
+    stroke-width: 1;
+    fill: none;
+    stroke-linecap: round;
+}
+
+/* ============================================
+   Sun Icon Styles
+   ============================================ */
+
+.festival-sun-icon {
+    display: inline-block;
+    filter: drop-shadow(0 2px 6px rgba(245, 158, 11, 0.3));
+}
+
+.sun-center {
+    fill: var(--festival-sun-color);
+    transition: fill 0.3s ease;
+}
+
+.sun-ray {
+    stroke: var(--festival-sun-color);
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.sun-inner {
+    fill: var(--festival-sun-color);
+}
+
+/* ============================================
+   String Pattern Styles
+   ============================================ */
+
+.festival-string-pattern {
+    opacity: var(--festival-decoration-opacity);
+}
+
+.string-pattern-wave {
+    stroke: var(--festival-string-color);
+    stroke-width: 2;
+    fill: none;
+}
+
+.pattern-flag {
+    fill: var(--festival-kite-secondary);
+    transition: fill 0.3s ease;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+/* Kite floating animation */
+@keyframes float-kite {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(2deg);
+    }
+}
+
+.festival-kite-float {
+    animation: float-kite 4s ease-in-out infinite;
+}
+
+/* Sun pulse animation */
+@keyframes pulse-sun {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+    }
+}
+
+.festival-sun-pulse {
+    animation: pulse-sun 3s ease-in-out infinite;
+}
+
+/* Fade in decoration animation */
+@keyframes fade-in-decoration {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.festival-fade-in {
+    animation: fade-in-decoration 0.5s ease-out forwards;
+}
+
+/* ============================================
+   Positioning Classes for Decorations
+   ============================================ */
+
+/* Header decorations */
+.festival-header-decoration {
+    position: absolute;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.festival-header-kite-1 {
+    top: 10px;
+    right: 180px;
+}
+
+.festival-header-kite-2 {
+    top: 15px;
+    right: 140px;
+}
+
+.festival-header-sun {
+    top: 22px;
+    left: 20px;
+    opacity: 0.8;
+}
+
+/* Sidebar decorations */
+.festival-sidebar-decoration {
+    position: absolute;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.festival-sidebar-kite {
+    top: 15px;
+    right: 15px;
+}
+
+.festival-sidebar-pattern {
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+/* Modal decorations */
+.festival-modal-decoration {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.festival-modal-kite-top-left {
+    top: 15px;
+    left: 15px;
+    opacity: 0.7;
+    scale: 4;
+}
+
+.festival-modal-kite-top-right {
+    top: 15px;
+    right: 15px;
+    opacity: 0.7;
+}
+
+.festival-modal-kite-bottom {
+    bottom: 20px;
+    right: 20px;
+    opacity: 0.5;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* Hide some decorations on mobile for cleaner look */
+    .festival-header-sun,
+    .festival-modal-kite-bottom {
+        display: none;
+    }
+
+    .festival-header-kite-1 {
+        right: 120px;
+    }
+
+    .festival-header-kite-2 {
+        right: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Further reduce decorations on very small screens */
+    .festival-header-kite-2 {
+        display: none;
+    }
+}
+
+/* ============================================
+   Hover Effects
+   ============================================ */
+
+.festival-kite-icon:hover .kite-body {
+    animation: none;
+    transform: scale(1.1) rotate(5deg);
+    transition: transform 0.3s ease;
+}
+
+.festival-sun-icon:hover {
+    animation: none;
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* ============================================
+   Sky Background Styles
+   ============================================ */
+
+.festival-sky-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.08;
+}
+
+.sky-gradient-start {
+    stop-color: #87CEEB;
+}
+
+.sky-gradient-end {
+    stop-color: #E0F6FF;
+}
+
+[data-theme="dark"] .sky-gradient-start {
+    stop-color: #1a2332;
+}
+
+[data-theme="dark"] .sky-gradient-end {
+    stop-color: #2d3748;
+}
+
+.cloud-shape {
+    fill: #ffffff;
+}
+
+[data-theme="dark"] .cloud-shape {
+    fill: #4a5568;
+}
+
+.sun-beam {
+    stroke: #fbbf24;
+}
+
+/* ============================================
+   Rope Decoration Styles
+   ============================================ */
+
+.festival-rope-decoration {
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.festival-rope-top {
+    top: 0;
+}
+
+.festival-rope-bottom {
+    bottom: 0;
+}
+
+.rope-path {
+    stroke: #8b7355;
+}
+
+[data-theme="dark"] .rope-path {
+    stroke: #5a4a3a;
+}
+
+.rope-path-secondary {
+    stroke: #a68a6a;
+}
+
+[data-theme="dark"] .rope-path-secondary {
+    stroke: #6b5a4a;
+}
+
+.hanging-string {
+    stroke: var(--festival-string-color);
+}
+
+.hanging-flag {
+    fill: var(--festival-kite-secondary);
+    stroke: var(--festival-kite-primary);
+    stroke-width: 0.5;
+}
+
+/* ============================================
+   Button Enhancements with Festival Theme
+   ============================================ */
+
+.festival-button-kite {
+    position: relative;
+    overflow: visible !important;
+}
+
+.festival-button-kite::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--festival-kite-primary);
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    opacity: 0.5;
+    animation: kite-button-pulse 2s ease-in-out infinite;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.festival-button-kite::after {
+    content: '';
+    position: absolute;
+    width: 1.5px;
+    height: 10px;
+    background: var(--festival-string-color);
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%) rotate(25deg);
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+@keyframes kite-button-pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: translateY(-50%) rotate(45deg) scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: translateY(-50%) rotate(45deg) scale(1.1);
+    }
+}
+
+.festival-button-kite:hover::before {
+    animation: kite-button-fly 1.2s ease-in-out infinite;
+    opacity: 0.8;
+}
+
+@keyframes kite-button-fly {
+
+    0%,
+    100% {
+        transform: translateY(-50%) rotate(45deg);
+        right: -6px;
+    }
+
+    50% {
+        transform: translateY(-52%) rotate(35deg);
+        right: -8px;
+    }
+}
+
+/* Creative swirl animation on button hover */
+@keyframes button-kite-swirl {
+    0% {
+        transform: translateY(-50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(-50%) rotate(360deg);
+    }
+}
+
+.festival-button-kite:active::before {
+    animation: button-kite-swirl 0.6s ease-out;
+}
+/* Bottom rope at viewport bottom */
+.festival-rope-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+}

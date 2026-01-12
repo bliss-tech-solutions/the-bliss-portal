@@ -732,3 +732,33 @@ body:has(.ant-dropdown:not(.ant-dropdown-hidden), .ant-select-dropdown:not(.ant-
 .ant-collapse-header-text, .ant-collapse-content-box {
     color: var(--primary-text);
 }
+/* ============================================
+   Makar Sankranti Festival Theme - Global Button Styles
+   ============================================ */
+
+/* Apply festival theme to all global buttons when theme is enabled */
+.global-action-btn.festival-button-kite,
+.global-secondary-btn.festival-button-kite,
+.global-button.festival-button-kite,
+.ant-btn-primary.festival-button-kite {
+    overflow: visible !important;
+}
+
+/* Ensure kite decoration shows on all button variants */
+.ant-btn.festival-button-kite::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #ff6b6b;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .ant-btn.festival-button-kite::before {
+    background: #ff8787;
+}

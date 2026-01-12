@@ -10,6 +10,7 @@ import { useNotification } from "../../contexts/NotificationContext";
 import { useLoading } from "../../contexts/LoadingContext";
 import { SunOutlined, MoonOutlined } from "@ant-design/icons";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { ENABLE_MAKAR_SANKRANTI_THEME } from '../../config/festivalTheme';
 
 const LoginPortal = () => {
     const navigate = useNavigate();
@@ -117,11 +118,19 @@ const LoginPortal = () => {
                     <Col lg={12}>
                         <div className="LoginPortalImage">
                             <div>
-                                <DotLottieReact
-                                    src="/Images/Web Design Blue.lottie"
-                                    loop
-                                    autoplay
-                                />
+                                {ENABLE_MAKAR_SANKRANTI_THEME ? (
+                                    <img
+                                        src="/Images/KiteFestivalLoginPageImage.png"
+                                        alt="Kite Festival"
+                                        className="festival-login-image"
+                                    />
+                                ) : (
+                                    <DotLottieReact
+                                        src="/Images/Web Design Blue.lottie"
+                                        loop
+                                        autoplay
+                                    />
+                                )}
                             </div>
                         </div>
                     </Col>

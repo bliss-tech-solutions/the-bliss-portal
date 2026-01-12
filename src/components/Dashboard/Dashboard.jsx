@@ -10,6 +10,8 @@ import { connectSocket, disconnectSocket } from "../../utils/socket";
 import { selectUserId } from "../../store/slices/authSlice";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useGetAllUsersQuery } from "../../store/api";
+import { ENABLE_MAKAR_SANKRANTI_THEME } from '../../config/festivalTheme';
+import RopeDecoration from '../FestivalTheme/MakarSankranti/RopeDecoration';
 
 const Dashboard = () => {
     const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -19,7 +21,7 @@ const Dashboard = () => {
     const { isLoading: globalLoading, setLoading } = useLoading();
     const loaderStartTimeRef = useRef(null);
     const hideLoaderTimeoutRef = useRef(null);
-    
+
     // Monitor critical API calls that happen on Dashboard load
     // This query is commonly used and can indicate if APIs are loading
     const { isLoading: isLoadingUsers } = useGetAllUsersQuery(undefined, {
@@ -39,7 +41,7 @@ const Dashboard = () => {
     const apiState = useSelector((state) => state.api);
     const queries = apiState?.queries || {};
     const mutations = apiState?.mutations || {};
-    
+
     const hasPendingQueries = Object.keys(queries).some(
         key => queries[key]?.status === 'pending'
     ) || Object.keys(mutations).some(
@@ -74,8 +76,8 @@ const Dashboard = () => {
         if (!areApisLoading) {
             // APIs completed - ensure minimum display time to prevent logo/dashboard merging
             const minDisplayTime = 1200; // Minimum 1.2 seconds to prevent merging
-            const elapsed = loaderStartTimeRef.current 
-                ? Date.now() - loaderStartTimeRef.current 
+            const elapsed = loaderStartTimeRef.current
+                ? Date.now() - loaderStartTimeRef.current
                 : 0;
             const remainingTime = Math.max(0, minDisplayTime - elapsed);
 
@@ -145,6 +147,13 @@ const Dashboard = () => {
                                     <h2>Welcome to Bliss Portal</h2>
                                     <p>Select a menu item from the sidebar to get started.</p>
                                     <p>Current path: {location.pathname}</p>
+                                </div>
+                            )}
+                            
+                            {/* Makar Sankranti Bottom Rope Decoration */}
+                            {ENABLE_MAKAR_SANKRANTI_THEME && (
+                                <div className="festival-rope-decoration festival-rope-bottom">
+                                    <RopeDecoration variant="bottom" height={100} />
                                 </div>
                             )}
                         </div>
