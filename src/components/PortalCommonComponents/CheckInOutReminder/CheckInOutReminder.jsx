@@ -6,8 +6,6 @@ import { useSelector } from 'react-redux';
 import { useCheckInMutation, useCheckInStatusQuery, useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../store/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { ENABLE_MAKAR_SANKRANTI_THEME } from '../../../config/festivalTheme';
-import KiteIcon from '../../FestivalTheme/MakarSankranti/KiteIcon';
 
 dayjs.extend(relativeTime);
 
@@ -139,17 +137,7 @@ const CheckInOutReminder = () => {
             keyboard={false}
         >
             <div className="checkin-reminder-content">
-                {/* Makar Sankranti Festival Decorations */}
-                {ENABLE_MAKAR_SANKRANTI_THEME && (
-                    <>
-                        <div className="festival-modal-decoration festival-modal-kite-top-left festival-fade-in">
-                            <KiteIcon size={30} animate={true} delay={0.1} />
-                        </div>
-                        <div className="festival-modal-decoration festival-modal-kite-top-right festival-fade-in">
-                            <KiteIcon size={28} animate={true} delay={0.3} />
-                        </div>
-                    </>
-                )}
+               
 
                 <div className="checkin-header">
                     <div className="checkin-icon-wrap">
@@ -275,7 +263,7 @@ const CheckInOutReminder = () => {
                         onClick={handleCheckIn}
                         loading={isLoading}
                         disabled={isLoading}
-                        className={`global-button ${ENABLE_MAKAR_SANKRANTI_THEME ? 'festival-button-kite' : ''}`}
+                        className="global-button"
                     >
                         Check In Now
                     </Button>

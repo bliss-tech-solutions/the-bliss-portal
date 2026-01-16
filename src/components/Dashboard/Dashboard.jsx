@@ -10,8 +10,6 @@ import { connectSocket, disconnectSocket } from "../../utils/socket";
 import { selectUserId } from "../../store/slices/authSlice";
 import { useLoading } from "../../contexts/LoadingContext";
 import { useGetAllUsersQuery } from "../../store/api";
-import { ENABLE_MAKAR_SANKRANTI_THEME } from '../../config/festivalTheme';
-import RopeDecoration from '../FestivalTheme/MakarSankranti/RopeDecoration';
 
 const Dashboard = () => {
     const [isSidebarHovered, setIsSidebarHovered] = useState(false);
@@ -149,13 +147,8 @@ const Dashboard = () => {
                                     <p>Current path: {location.pathname}</p>
                                 </div>
                             )}
-                            
-                            {/* Makar Sankranti Bottom Rope Decoration */}
-                            {ENABLE_MAKAR_SANKRANTI_THEME && (
-                                <div className="festival-rope-decoration festival-rope-bottom">
-                                    <RopeDecoration variant="bottom" height={100} />
-                                </div>
-                            )}
+
+                           
                         </div>
                     </Col>
                 </Row>
