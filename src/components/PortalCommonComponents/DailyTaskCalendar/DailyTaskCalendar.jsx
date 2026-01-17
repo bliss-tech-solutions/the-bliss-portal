@@ -738,8 +738,8 @@ const DailyTaskCalendar = ({
         <div className="calendar-header">
           <div className="calendar-header-left">
             <div className="calendar-day-badge">
-              <span className="month">{currentDate.format('MMM')}</span>
-              <span className="day">{currentDate.format('D')}</span>
+              <span className="month">{dayjs().format('MMM')}</span>
+              <span className="day">{dayjs().format('D')}</span>
             </div>
             <div className="calendar-date-display">
               <h2 className="calendar-current-month">
