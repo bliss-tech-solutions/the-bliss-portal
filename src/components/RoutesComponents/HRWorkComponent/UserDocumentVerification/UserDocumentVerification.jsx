@@ -18,7 +18,7 @@ import {
     EditOutlined,
 } from "@ant-design/icons";
 import { uploadToCloudinary } from "../../../../utils/cloudinary";
-import { useCreateUserVerificationDocumentMutation, useGetAllUserVerificationDocumentsQuery, useUpdateUserVerificationDocumentMutation, useIncrementSalaryMutation, useGetSalaryHistoryQuery } from "../../../../store/api";
+import { useCreateUserVerificationDocumentMutation, useGetAllUserVerificationDocumentsQuery, useUpdateUserVerificationDocumentMutation, useIncrementSalaryMutation, useGetSalaryHistoryQuery, useGetUniqueRolesQuery } from "../../../../store/api";
 import { useNotification } from "../../../../contexts/NotificationContext";
 import dayjs from "dayjs";
 import "./UserDocumentVerification.css";
@@ -58,6 +58,16 @@ const UserDocumentVerification = () => {
     const [editForm] = Form.useForm();
     const [updateUserVerificationDocument] = useUpdateUserVerificationDocumentMutation();
     const [isUpdating, setIsUpdating] = useState(false);
+
+    const { data: uniqueRolesResp } = useGetUniqueRolesQuery();
+
+    const roles = useMemo(() => {
+        return (uniqueRolesResp?.data?.roles || []).filter(role => role.toLowerCase() !== 'admin');
+    }, [uniqueRolesResp]);
+
+    const positions = useMemo(() => {
+        return (uniqueRolesResp?.data?.positions || []);
+    }, [uniqueRolesResp]);
 
     // Edit File States
     const [editAadharFileList, setEditAadharFileList] = useState([]);
@@ -369,7 +379,7 @@ const UserDocumentVerification = () => {
                         response: { secure_url: documentUrl }
                     };
                 }
-                return f;
+                return;
             });
 
             setAadharFileList(updatedFileList);
@@ -506,8 +516,8 @@ const UserDocumentVerification = () => {
 
     const handleSubmit = async (values) => {
         // Validate that all documents are uploaded
-        if (!aadharUrl || !salarySlipUrl || !checkPhotoUrl || !offerLetterUrl) {
-            showError('Please upload all required documents before submitting');
+        if (!aadharUrl || !offerLetterUrl) {
+            showError('Please upload all required documents (Adhar Card & Offer Letter) before submitting');
             return;
         }
 
@@ -719,12 +729,9 @@ const UserDocumentVerification = () => {
                                                 className="udv-select"
                                                 suffixIcon={<TeamOutlined />}
                                             >
-                                                <Option value="Engineering">Engineering</Option>
-                                                <Option value="Design">Design</Option>
-                                                <Option value="Marketing">Marketing</Option>
-                                                <Option value="HR">HR</Option>
-                                                <Option value="Finance">Finance</Option>
-                                                <Option value="Sales">Sales</Option>
+                                                {roles.map(role => (
+                                                    <Option key={role} value={role}>{role}</Option>
+                                                ))}
                                             </Select>
                                         </Form.Item>
                                     </Col>
@@ -732,13 +739,17 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Position"
                                             name="position"
-                                            rules={[{ required: true, message: "Please enter position" }]}
+                                            rules={[{ required: true, message: "Please select position" }]}
                                         >
-                                            <Input
-                                                prefix={<FileTextOutlined />}
-                                                placeholder="e.g., Senior Developer"
-                                                className="udv-input"
-                                            />
+                                            <Select
+                                                placeholder="Select Position"
+                                                className="udv-select"
+                                                suffixIcon={<FileTextOutlined />}
+                                            >
+                                                {positions.map(pos => (
+                                                    <Option key={pos} value={pos}>{pos}</Option>
+                                                ))}
+                                            </Select>
                                         </Form.Item>
                                     </Col>
                                     <Col xs={24} sm={12} md={8}>
@@ -880,7 +891,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Account Holder Name"
                                             name={["bankDetails", "accountHolderName"]}
-                                            rules={[{ required: true, message: "Please enter account holder name" }]}
                                         >
                                             <Input
                                                 prefix={<UserOutlined />}
@@ -893,7 +903,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Account Number"
                                             name={["bankDetails", "accountNumber"]}
-                                            rules={[{ required: true, message: "Please enter account number" }]}
                                         >
                                             <Input
                                                 prefix={<BankOutlined />}
@@ -906,7 +915,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Bank Name"
                                             name={["bankDetails", "bankName"]}
-                                            rules={[{ required: true, message: "Please enter bank name" }]}
                                         >
                                             <Input
                                                 prefix={<BankOutlined />}
@@ -919,7 +927,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="IFSC Code"
                                             name={["bankDetails", "ifscCode"]}
-                                            rules={[{ required: true, message: "Please enter IFSC code" }]}
                                         >
                                             <Input
                                                 prefix={<BankOutlined />}
@@ -932,7 +939,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Branch Name"
                                             name={["bankDetails", "branchName"]}
-                                            rules={[{ required: true, message: "Please enter branch name" }]}
                                         >
                                             <Input
                                                 prefix={<BankOutlined />}
@@ -945,7 +951,6 @@ const UserDocumentVerification = () => {
                                         <Form.Item
                                             label="Account Type"
                                             name={["bankDetails", "accountType"]}
-                                            rules={[{ required: true, message: "Please select account type" }]}
                                         >
                                             <Select
                                                 placeholder="Select Account Type"
@@ -1001,7 +1006,6 @@ const UserDocumentVerification = () => {
                                             name="oldSalarySlip"
                                             validateStatus={uploadingSalarySlip ? "validating" : ""}
                                             help={uploadingSalarySlip ? "Uploading..." : ""}
-                                            rules={[{ validator: async () => !uploadingSalarySlip && !salarySlipUrl ? Promise.reject('Upload Salary Slip') : Promise.resolve() }]}
                                         >
                                             <Upload
                                                 name="oldSalarySlip"
@@ -1027,7 +1031,6 @@ const UserDocumentVerification = () => {
                                             name="checkPhoto"
                                             validateStatus={uploadingCheckPhoto ? "validating" : ""}
                                             help={uploadingCheckPhoto ? "Uploading..." : ""}
-                                            rules={[{ validator: async () => !uploadingCheckPhoto && !checkPhotoUrl ? Promise.reject('Upload Check Photo') : Promise.resolve() }]}
                                         >
                                             <Upload
                                                 name="checkPhoto"
@@ -1370,18 +1373,19 @@ const UserDocumentVerification = () => {
                             <Col xs={24} sm={12} md={8}>
                                 <Form.Item label="Department" name="department" rules={[{ required: true }]}>
                                     <Select className="udv-select">
-                                        <Option value="Engineering">Engineering</Option>
-                                        <Option value="Design">Design</Option>
-                                        <Option value="Marketing">Marketing</Option>
-                                        <Option value="HR">HR</Option>
-                                        <Option value="Finance">Finance</Option>
-                                        <Option value="Sales">Sales</Option>
+                                        {roles.map(role => (
+                                            <Option key={role} value={role}>{role}</Option>
+                                        ))}
                                     </Select>
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
                                 <Form.Item label="Position" name="position" rules={[{ required: true }]}>
-                                    <Input prefix={<FileTextOutlined />} className="udv-input" />
+                                    <Select className="udv-select">
+                                        {positions.map(pos => (
+                                            <Option key={pos} value={pos}>{pos}</Option>
+                                        ))}
+                                    </Select>
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
@@ -1449,32 +1453,32 @@ const UserDocumentVerification = () => {
                         <h3 className="udv-section-title"><BankOutlined className="udv-section-icon" /> Bank Details</h3>
                         <Row gutter={[16, 16]}>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Account Holder Name" name={["bankDetails", "accountHolderName"]} rules={[{ required: true }]}>
+                                <Form.Item label="Account Holder Name" name={["bankDetails", "accountHolderName"]}>
                                     <Input prefix={<UserOutlined />} className="udv-input" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Account Number" name={["bankDetails", "accountNumber"]} rules={[{ required: true }]}>
+                                <Form.Item label="Account Number" name={["bankDetails", "accountNumber"]}>
                                     <Input prefix={<BankOutlined />} className="udv-input" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Bank Name" name={["bankDetails", "bankName"]} rules={[{ required: true }]}>
+                                <Form.Item label="Bank Name" name={["bankDetails", "bankName"]}>
                                     <Input prefix={<BankOutlined />} className="udv-input" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="IFSC Code" name={["bankDetails", "ifscCode"]} rules={[{ required: true }]}>
+                                <Form.Item label="IFSC Code" name={["bankDetails", "ifscCode"]}>
                                     <Input prefix={<BankOutlined />} className="udv-input" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Branch Name" name={["bankDetails", "branchName"]} rules={[{ required: true }]}>
+                                <Form.Item label="Branch Name" name={["bankDetails", "branchName"]}>
                                     <Input prefix={<BankOutlined />} className="udv-input" />
                                 </Form.Item>
                             </Col>
                             <Col xs={24} sm={12} md={8}>
-                                <Form.Item label="Account Type" name={["bankDetails", "accountType"]} rules={[{ required: true }]}>
+                                <Form.Item label="Account Type" name={["bankDetails", "accountType"]}>
                                     <Select className="udv-select">
                                         <Option value="savings">Savings</Option>
                                         <Option value="current">Current</Option>

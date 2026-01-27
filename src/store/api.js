@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus', 'DailyWorking'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus', 'DailyWorking', 'RealEstateProjects'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -797,13 +797,34 @@ export const api = createApi({
             }),
             invalidatesTags: ['DailyWorking'],
         }),
+        createRealEstateProject: builder.mutation({
+            query: (body) => ({
+                url: '/api/realEstate/project/create',
+                method: 'POST',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['RealEstateProjects'],
+        }),
+        updateRealEstateProject: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/api/realEstate/project/update/${id}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['RealEstateProjects'],
+        }),
+        getAllRealEstateProjects: builder.query({
+            query: () => '/api/realEstate/project/getAll',
+            providesTags: ['RealEstateProjects'],
+        }),
         // Image Upload Endpoint (same format as your working HTML)
         uploadImage: builder.mutation({
             queryFn: async (formData) => {
                 try {
                     const uploadBaseUrl = import.meta.env.VITE_FILE_UPLOAD_BASE_URL || 'http://192.168.1.46:4000';
                     const url = `${uploadBaseUrl}/api/upload-file`;
-
                     const response = await fetch(url, {
                         method: 'POST',
                         body: formData,
@@ -835,12 +856,17 @@ export const api = createApi({
                         return { error: { status: response.status } };
                     }
 
-                    const data = await response.json();
                     return { data };
                 } catch (error) {
                     return { error: { status: 'FETCH_ERROR', error: error.message } };
                 }
             },
+        }),
+        getUniqueRoles: builder.query({
+            query: () => ({
+                url: '/api/getUniqueRolesAndPositions',
+                method: 'GET',
+            }),
         }),
 
     }),
@@ -921,7 +947,11 @@ export const {
     useDeleteDailyWorkingTaskMutation,
     useDeleteClientMutation,
     useUploadImageMutation,
-    useFetchImagesQuery
+    useFetchImagesQuery,
+    useCreateRealEstateProjectMutation,
+    useUpdateRealEstateProjectMutation,
+    useGetAllRealEstateProjectsQuery,
+    useGetUniqueRolesQuery
 } = api
 
 

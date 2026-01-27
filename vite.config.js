@@ -7,5 +7,8 @@ export default defineConfig({
   server: {
     port: 2711,
     host: true // Allow external connections
+  },
+  optimizeDeps: {
+    include: ['react-quill-new']
   }
 })

@@ -35,6 +35,7 @@ import SalaryInformation from "../RoutesComponents/UserTaskAssignmentPanel/Salar
 import SalaryManagement from "../RoutesComponents/HRWorkComponent/SalaryManagement/SalaryManagement"
 import NoteScheduling from '../RoutesComponents/NoteScheduling/NoteScheduling';
 import UserWiseClientView from '../RoutesComponents/AdminDashboard/UserWiseClientView/UserWiseClientView';
+import RealEstateProjectMain from '../RoutesComponents/AdminDashboard/RealEstateProjectUpload/RealEstateProjectMain';
 export const navigationConfig = [
     // Admin Only Route
     {
@@ -45,6 +46,15 @@ export const navigationConfig = [
         component: AdminDashboard,
         showInSidebar: true
     },
+    {
+        componentLabelName: "User Attendance Data",
+        icon: SiGoogleanalytics,
+        routeName: "/user-attendance-data",
+        roles: ["HR", "admin"],
+        component: UserAttendanceData,
+        showInSidebar: true
+    },
+
     // Profile Settings - Available to all roles (hidden from sidebar, accessed via profile dropdown)
     {
         componentLabelName: "Profile Settings",
@@ -70,14 +80,7 @@ export const navigationConfig = [
         component: UserTaskAssignmentPanel,
         showInSidebar: true
     },
-    {
-        componentLabelName: "User Attendance Data",
-        icon: SlCalender,
-        routeName: "/user-attendance-data",
-        roles: ["HR"],
-        component: UserAttendanceData,
-        showInSidebar: true
-    },
+    //   
     // {
     //     componentLabelName: "Festive Calender",
     //     icon: FaCalendarAlt,
@@ -198,6 +201,14 @@ export const navigationConfig = [
         routeName: "/global-chat",
         roles: ["Execution", "user", "admin", "HR", "ContentProvider"],
         component: GlobalChatPage,
+        showInSidebar: true
+    },
+    {
+        componentLabelName: "Real Estate Projects",
+        icon: FileTextOutlined,
+        routeName: "/real-estate-project-upload",
+        roles: ["admin"],
+        component: RealEstateProjectMain,
         showInSidebar: true
     },
 

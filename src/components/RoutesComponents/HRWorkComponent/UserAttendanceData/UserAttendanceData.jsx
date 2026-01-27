@@ -1,10 +1,10 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
-import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider } from 'antd';
-import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider, Input, Select } from 'antd';
 import './UserAttendanceData.css';
-import { useGetAllUsersQuery, useGetTodayCheckinQuery, useGetAllCheckinsQuery } from '../../../../store/api';
+import { useGetAllUsersQuery, useGetTodayCheckinQuery, useGetAllCheckinsQuery, useGetUniqueRolesQuery } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import dayjs from 'dayjs';
+import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -42,6 +42,8 @@ const initialColumns = [
 ];
 
 const UserAttendanceData = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedPosition, setSelectedPosition] = useState(null);
     const [orderedColumns, setOrderedColumns] = useState(initialColumns);
     const [columnWidths, setColumnWidths] = useState(() => Object.fromEntries(initialColumns.map(c => [c.key, c.width])));
     const dragFromIndexRef = useRef(null);
@@ -54,6 +56,11 @@ const UserAttendanceData = () => {
     const { success, warning, error: showError } = useNotification();
     const { data: usersResp, isLoading } = useGetAllUsersQuery();
     const { data: allCheckinsResp, isLoading: isCheckinsLoading } = useGetAllCheckinsQuery();
+    const { data: uniqueRolesResp } = useGetUniqueRolesQuery();
+
+    const positions = useMemo(() => {
+        return (uniqueRolesResp?.data?.positions || []).filter(pos => pos.toLowerCase() !== 'admin');
+    }, [uniqueRolesResp]);
 
     const dataSource = useMemo(() => {
         const users = usersResp?.data || [];
@@ -61,7 +68,20 @@ const UserAttendanceData = () => {
             .filter(u => {
                 const role = (u.role || '').toLowerCase();
                 const position = (u.position || '').toLowerCase();
-                return role !== 'admin' && position !== 'admin';
+                if (role === 'admin' || position === 'admin') return false;
+
+                // Filter by selected position
+                if (selectedPosition && u.position !== selectedPosition) return false;
+
+                if (!searchTerm) return true;
+                const searchLower = searchTerm.toLowerCase();
+                const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ').toLowerCase();
+                const email = (u.userEmail || u.email || '').toLowerCase();
+                const userId = (u.userId || u._id || '').toString().toLowerCase();
+
+                return fullName.includes(searchLower) ||
+                    email.includes(searchLower) ||
+                    userId.includes(searchLower);
             })
             .map((u, idx) => ({
                 key: u.userId || u._id || idx,
@@ -74,7 +94,7 @@ const UserAttendanceData = () => {
                 details: u,
                 index: idx + 1,
             }));
-    }, [usersResp]);
+    }, [usersResp, searchTerm, selectedPosition]);
 
     const handleCopyUserId = useCallback(async (userId) => {
         if (!userId || userId === '-') {
@@ -233,8 +253,23 @@ const UserAttendanceData = () => {
 
     return (
         <div className="ua-container">
-            <div className="ua-title-bar">
-                <h2>Employee Attendance</h2>
+            <div className="ua-title-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                <h2 style={{ margin: 0 }}>Employee Attendance</h2>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <Select
+                        placeholder="Filter by Department"
+                        style={{ width: 220 }}
+                        allowClear
+                        onChange={setSelectedPosition}
+                        options={positions.map(pos => ({ label: pos, value: pos }))}
+                    />
+                    <Input.Search
+                        placeholder="Search User..."
+                        allowClear
+                        onChange={e => setSearchTerm(e.target.value)}
+                        style={{ width: 260 }}
+                    />
+                </div>
             </div>
             <br />
             <Table

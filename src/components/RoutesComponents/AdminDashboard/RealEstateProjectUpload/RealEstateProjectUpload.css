@@ -1,0 +1,701 @@
+.panel-top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.custom-stepper {
+    min-width: 300px;
+}
+
+.custom-stepper .ant-steps-item-title {
+    font-size: 11px !important;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.preview-btn {
+    border-radius: 8px !important;
+    font-weight: 500;
+    color: var(--secondary-text);
+}
+
+
+
+[data-theme="dark"] .panel-content {
+    /* border: 1px solid var(--border-color); */
+    background: #111111;
+    /* Slightly darker than card-bg for depth */
+}
+
+/* Large Header Input */
+.header-input-section {
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.header-icon-wrapper {
+    background: #FFD43B;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.large-name-item {
+    margin: 0 !important;
+    flex: 1;
+}
+
+.large-name-input {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: var(--primary-text) !important;
+}
+
+/* Grid & Inputs */
+.mini-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary-text);
+    letter-spacing: 0.8px;
+    display: block;
+    padding-bottom: 10px;
+}
+
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.styled-select .ant-select-selector,
+.styled-input,
+.styled-input-number {
+    height: 48px !important;
+    border-radius: 10px !important;
+    border: 1.5px solid var(--border-color) !important;
+    background: var(--input-bg) !important;
+    display: flex;
+    align-items: center;
+    color: var(--primary-text) !important;
+}
+
+[data-theme="dark"] .styled-select .ant-select-selector,
+[data-theme="dark"] .styled-input,
+[data-theme="dark"] .styled-input-number {
+    background-color: #1a1a1a !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .styled-select:hover .ant-select-selector,
+[data-theme="dark"] .styled-input:hover,
+[data-theme="dark"] .styled-input-number:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* Quill Editor */
+.description-section {
+    margin-bottom: 32px;
+}
+
+.quill-wrapper {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 8px;
+    min-height: 180px;
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .quill-wrapper {
+    background: #1a1a1a !important;
+    border-color: #333333 !important;
+}
+
+.ql-container.ql-bubble {
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--primary-text);
+}
+
+.ql-bubble .ql-editor {
+    min-height: 150px;
+}
+
+/* Split Upload Layout */
+.upload-flex-box {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    min-height: 120px;
+}
+
+.media-dragger-compact {
+    flex: 0 0 250px;
+    background: var(--input-bg) !important;
+    border: 1.5px dashed var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.media-dragger-compact:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.dragger-content-compact {
+    text-align: center;
+}
+
+.dragger-icon-small {
+    font-size: 24px;
+    color: var(--secondary-text);
+    margin-bottom: 8px;
+}
+
+.dragger-text-small {
+    font-size: 13px;
+    color: var(--primary-text);
+}
+
+.preview-grid-side {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.preview-card {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: #000;
+}
+
+.preview-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.preview-card:hover .preview-overlay {
+    opacity: 1;
+}
+
+.loading-card {
+    background: var(--tertiary-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.preview-card.uploading img {
+    filter: blur(2px) grayscale(50%);
+}
+
+.card-upload-overlay,
+.card-error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.card-error-overlay {
+    background: rgba(255, 77, 79, 0.2);
+}
+
+.shimmer {
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    animation: shimmer-load 1.2s infinite;
+}
+
+@keyframes shimmer-load {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.delete-icon-btn {
+    color: #ff4d4f !important;
+    background: white !important;
+    border-radius: 50% !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+.empty-preview-state {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-text);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.media-dragger {
+    /* ... keeping some original styles for reference if needed ... */
+    border-radius: 16px !important;
+}
+
+.dragger-icon {
+    font-size: 40px;
+    color: var(--secondary-text);
+    margin-bottom: 12px;
+}
+
+.dragger-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin-bottom: 4px;
+}
+
+.blue-link {
+    color: #2563EB;
+    cursor: pointer;
+}
+
+.dragger-hint {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+/* Footer Actions */
+.panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 24px;
+}
+
+.footer-right {
+    display: flex;
+    gap: 12px;
+}
+
+.cancel-footer-btn {
+    height: 42px !important;
+    border-radius: 8px !important;
+    background: var(--hover-bg) !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+.draft-footer-btn {
+    height: 42px !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    background: var(--input-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.continue-footer-btn {
+    height: 42px !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    padding: 0 32px !important;
+}
+
+.new-project-panel {
+    border: 1px solid var(--border-color);
+    border-radius: 12px !important;
+    padding: 20px;
+}
+
+/* Ant Design Global Overrides for this component */
+.new-project-panel .ant-form-item {
+    margin-bottom: 0px;
+}
+
+.description-section .ql-tooltip {
+    left: 0px !important;
+    z-index: 10000000;
+}
+
+/* Dark Mode Icon & Placeholder Visibility */
+[data-theme="dark"] .ant-input-prefix,
+[data-theme="dark"] .ant-select-arrow {
+    color: var(--secondary-text) !important;
+}
+
+[data-theme="dark"] ::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme="dark"] .mini-label {
+    color: var(--secondary-text) !important;
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .media-dragger {
+    background: #111111 !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .media-dragger-compact {
+    background: #111111 !important;
+    border-color: #333333 !important;
+}
+
+[data-theme="dark"] .preview-grid-side {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: #333333;
+}
+
+/* Publishing Overlay */
+.publishing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-box {
+    background: var(--card-bg);
+    padding: 32px 48px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--secondary-bg);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+[data-theme="dark"] .loader-box {
+    background: #1a1a1a;
+    border-color: #333333;
+}
+
+.ColorSet svg {
+    color: black !important;
+}
+
+/* Small screen responsivness */
+@media (max-width: 768px) {
+    .upload-flex-box {
+        flex-direction: column;
+    }
+
+    .media-dragger-compact {
+        flex: 0 0 auto;
+    }
+
+    .property-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .upload-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .nav-left {
+        gap: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .custom-stepper {
+        min-width: 100%;
+    }
+}
+
+/* Real Estate Main Dashboard Styles */
+.real-estate-main-container {
+    /* padding: 24px; */
+    background: var(--primary-bg);
+    min-height: calc(100vh - 100px);
+}
+
+.dashboard-header-simple {
+    margin-bottom: 32px;
+}
+
+.dashboard-header-simple h2.ant-typography {
+    margin: 0;
+    color: var(--primary-text);
+    font-weight: 700;
+}
+
+/* Custom Tabs Styling */
+.custom-dashboard-tabs .ant-tabs-nav {
+    margin-bottom: 24px !important;
+}
+
+.custom-dashboard-tabs .ant-tabs-nav::before {
+    border-bottom: none !important;
+}
+
+.custom-dashboard-tabs .ant-tabs-ink-bar {
+    display: none !important;
+}
+
+.custom-dashboard-tabs .ant-tabs-tab {
+    padding: 10px 24px !important;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background: transparent;
+    transition: all 0.3s ease;
+    margin-right: 12px !important;
+    color: var(--secondary-text);
+}
+
+.custom-dashboard-tabs .ant-tabs-tab:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color) !important;
+}
+
+.custom-dashboard-tabs .ant-tabs-tab-active {
+    background: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.custom-dashboard-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #000 !important;
+    font-weight: 700;
+}
+
+.custom-dashboard-tabs .ant-tabs-tab-btn>span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-dashboard-tabs .ant-tabs-tab-btn .anticon {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+.status-radio-group {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.status-radio-btn {
+    flex: 1;
+    text-align: center;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--input-bg) !important;
+    color: var(--secondary-text);
+    font-weight: 600;
+}
+
+.status-radio-btn.ant-radio-button-wrapper-checked.active {
+    background: rgba(34, 197, 94, 0.1) !important;
+    border-color: #22c55e !important;
+    color: #22c55e !important;
+}
+
+.status-radio-btn.ant-radio-button-wrapper-checked.inactive {
+    background: rgba(255, 77, 79, 0.1) !important;
+    border-color: #ff4d4f !important;
+    color: #ff4d4f !important;
+}
+
+.status-radio-btn::before {
+    display: none !important;
+}
+
+/* Table Area Styles */
+.tab-pane-content {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.search-bar-container {
+    flex: 1;
+    margin: 0 20px;
+    max-width: 400px;
+}
+
+.table-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-table-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px var(--shadow) !important;
+    overflow: hidden;
+}
+
+/* Custom Table Styles */
+.custom-styled-table .ant-table {
+    background: transparent !important;
+}
+
+.custom-styled-table .ant-table-thead>tr>th {
+    background: var(--secondary-bg) !important;
+    color: var(--secondary-text) !important;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.custom-styled-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px !important;
+}
+
+.custom-styled-table .ant-table-tbody>tr:hover>td {
+    background: var(--hover-bg) !important;
+}
+
+/* Action Buttons in Table */
+.action-icon-btn {
+    border-radius: 8px !important;
+    transition: all 0.3s ease;
+}
+
+.action-icon-btn:hover {
+    background: var(--tertiary-bg) !important;
+    transform: translateY(-2px);
+}
+
+.action-icon-btn.edit:hover {
+    color: var(--accent-color);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Typography Colors */
+[data-theme="dark"] .custom-dashboard-tabs .ant-tabs-tab {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: #333 !important;
+    color: var(--secondary-text);
+}
+
+[data-theme="dark"] .custom-dashboard-tabs .ant-tabs-tab:hover {
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color);
+}
+
+[data-theme="dark"] .custom-dashboard-tabs .ant-tabs-tab-active {
+    background: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+[data-theme="dark"] .custom-dashboard-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #000 !important;
+}
+
+.real-estate-main-container .ant-tabs-tab {
+    margin: 0px !important;
+    margin-left: 10px;
+}
+
+.real-estate-main-container .ant-tabs-nav-list {
+    display: flex;
+    gap: 10px !important;
+}
