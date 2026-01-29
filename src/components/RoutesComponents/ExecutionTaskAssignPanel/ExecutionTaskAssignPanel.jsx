@@ -7,7 +7,7 @@ import { BsUpload, BsClock, BsSearch, BsFilter, BsCardChecklist, BsPersonPlus, B
 import { useSelector } from "react-redux";
 import { selectTheme } from "../../../store/slices/themeSlice";
 import { selectUserId, selectUser } from "../../../store/slices/authSlice";
-import { useAddTaskAssignMutation, useGetAllUsersQuery, useLazyGetTaskAssignByDateQuery } from "../../../store/api";
+import { useAddTaskAssignMutation, useUpdateTaskAssignMutation, useGetAllUsersQuery, useLazyGetTaskAssignByDateQuery } from "../../../store/api";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { emitTaskAdded, onTaskAdded, offTaskAdded, onTaskUpdated, offTaskUpdated } from "../../../utils/socket";
 import AllTaskEntries from "./AllTaskEntries/AllTaskEntries";
@@ -22,6 +22,8 @@ const { TextArea } = Input;
 const ExecutionTaskAssignPanel = () => {
     const [activeTab, setActiveTab] = useState('1');
     const [drawerVisible, setDrawerVisible] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);
     const [selectedReceiverUserId, setSelectedReceiverUserId] = useState(null);
@@ -49,7 +51,9 @@ const ExecutionTaskAssignPanel = () => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
 
-    const [addTaskAssign, { isLoading }] = useAddTaskAssignMutation();
+    const [addTaskAssign, { isLoading: isAddingTask }] = useAddTaskAssignMutation();
+    const [updateTaskAssign, { isLoading: isUpdatingTask }] = useUpdateTaskAssignMutation();
+    const isLoading = isAddingTask || isUpdatingTask;
     const [triggerGetTaskAssignByDate] = useLazyGetTaskAssignByDateQuery();
     const notification = useNotification();
     const showSuccess = notification?.showSuccess || ((msg) => console.log('Success:', msg));
@@ -98,6 +102,71 @@ const ExecutionTaskAssignPanel = () => {
     };
 
     const showDrawer = () => {
+        setIsEditing(false);
+        setEditingTask(null);
+        resetDrawerState();
+        setDrawerVisible(true);
+    };
+
+    const handleEditTask = (task) => {
+        console.log('📝 Editing task:', task);
+        setIsEditing(true);
+        setEditingTask(task);
+
+        // Pre-fill form fields
+        form.setFieldsValue({
+            taskName: task.taskName,
+            clientName: task.clientName,
+            category: task.category?.toLowerCase().replace(/\s+/g, '-'),
+            priority: task.priority,
+            description: task.description,
+            timeSpend: task.timeSpend,
+        });
+
+        // Set local states for assignment and scheduling
+        const position = task.category?.toLowerCase().replace(/\s+/g, '-');
+        setSelectedPosition(position);
+
+        // Filter users for this position
+        const allUsers = allUsersData?.data || [];
+        const currentUserRole = user?.role;
+        const otherRoleUsers = allUsers.filter(u => u.role !== currentUserRole);
+        const usersWithPosition = otherRoleUsers.filter(u =>
+            u.position?.toLowerCase().replace(/\s+/g, '-') === position
+        );
+        setAvailableUsers(usersWithPosition);
+        setSelectedReceiverUserId(task.receiverUserId);
+        form.setFieldsValue({ selectedUser: task.receiverUserId });
+
+        // Pre-fill scheduling
+        if (task.slots && task.slots.length > 0) {
+            const slot = task.slots[0];
+            const slotDate = dayjs(slot.slotDate);
+            const start = dayjs(slot.start);
+            const end = dayjs(slot.end);
+
+            setSelectedSlotDate(slotDate);
+            setSlotStart(start);
+            setSlotEnd(end);
+            setSlotDuration(slot.durationMinutes);
+            form.setFieldsValue({
+                slotStart: start,
+                slotDuration: slot.durationMinutes
+            });
+        }
+
+        // Handle images
+        if (task.taskImages) {
+            setUploadedImageUrls(task.taskImages);
+            setFileList(task.taskImages.map((url, index) => ({
+                uid: `-${index}`,
+                name: url.split('/').pop(),
+                status: 'done',
+                url: url,
+                response: { secure_url: url }
+            })));
+        }
+
         setDrawerVisible(true);
     };
 
@@ -833,15 +902,23 @@ const ExecutionTaskAssignPanel = () => {
             });
 
             // Send to API
-            await addTaskAssign(taskData).unwrap();
-
-            // Emit socket event for real-time update
-            emitTaskAdded(taskData);
-
-            showSuccess('Task added successfully!');
+            if (isEditing && editingTask) {
+                await updateTaskAssign({
+                    taskId: editingTask._id,
+                    body: taskData
+                }).unwrap();
+                showSuccess('Task updated successfully!');
+            } else {
+                await addTaskAssign(taskData).unwrap();
+                // Emit socket event for real-time update
+                emitTaskAdded(taskData);
+                showSuccess('Task added successfully!');
+            }
 
             // After successful submit, close drawer and clear draft
             resetDrawerState();
+            setIsEditing(false);
+            setEditingTask(null);
             setDrawerVisible(false);
         } catch (error) {
             if (error?.status === 409) {
@@ -871,6 +948,7 @@ const ExecutionTaskAssignPanel = () => {
                     <AllTaskEntries
                         {...commonProps}
                         statusFilter="all"
+                        onEditTask={handleEditTask}
                     />
                 );
             case '3':
@@ -878,6 +956,7 @@ const ExecutionTaskAssignPanel = () => {
                     <AllTaskEntries
                         {...commonProps}
                         statusFilter="pending"
+                        onEditTask={handleEditTask}
                     />
                 );
             case '4':
@@ -885,6 +964,7 @@ const ExecutionTaskAssignPanel = () => {
                     <AllTaskEntries
                         {...commonProps}
                         statusFilter="completed"
+                        onEditTask={handleEditTask}
                     />
                 );
             case '5':
@@ -1054,7 +1134,7 @@ const ExecutionTaskAssignPanel = () => {
                 title={
                     <div className="custom-drawer-header">
                         <div className="drawer-title">
-                            <h2>Add New Task</h2>
+                            <h2>{isEditing ? 'Edit Task' : 'Add New Task'}</h2>
                         </div>
                         <div className="drawer-close-btn">
                             <Button
@@ -1503,7 +1583,7 @@ const ExecutionTaskAssignPanel = () => {
                                 loading={isLoading}
                                 style={{ width: '140px' }}
                             >
-                                {isLoading ? 'Adding...' : 'Add Task'}
+                                {isLoading ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Task' : 'Add Task')}
                             </Button>
                         </div>
                     </Form>

@@ -90,7 +90,7 @@ const UserDocumentVerification = () => {
         setEditModalVisible(true);
 
         setEditAadharUrl(document.aadharCardImage || "");
-        setEditSalarySlipUrl(document.oldSalarySlip || "");
+        setEditSalarySlipUrl(document.panCardImage || "");
         setEditCheckPhotoUrl(document.checkPhoto || "");
         setEditOfferLetterUrl(document.offerLetter || "");
 
@@ -98,8 +98,8 @@ const UserDocumentVerification = () => {
             setEditAadharFileList([{ uid: '-1', name: 'Aadhar Card', status: 'done', url: document.aadharCardImage }]);
         } else setEditAadharFileList([]);
 
-        if (document.oldSalarySlip) {
-            setEditSalarySlipFileList([{ uid: '-1', name: 'Salary Slip', status: 'done', url: document.oldSalarySlip }]);
+        if (document.panCardImage) {
+            setEditSalarySlipFileList([{ uid: '-1', name: 'Salary Slip', status: 'done', url: document.panCardImage }]);
         } else setEditSalarySlipFileList([]);
 
         if (document.checkPhoto) {
@@ -114,7 +114,7 @@ const UserDocumentVerification = () => {
             ...document,
             joiningDate: document.joiningDate ? dayjs(document.joiningDate) : null,
             aadharCardImage: document.aadharCardImage,
-            oldSalarySlip: document.oldSalarySlip,
+            panCardImage: document.panCardImage,
             checkPhoto: document.checkPhoto,
             offerLetter: document.offerLetter
         });
@@ -135,7 +135,7 @@ const UserDocumentVerification = () => {
                 blissSalary: Number(values.blissSalary),
                 joiningDate: values.joiningDate ? dayjs(values.joiningDate).format('YYYY-MM-DD') : null,
                 aadharCardImage: editAadharUrl,
-                oldSalarySlip: editSalarySlipUrl,
+                panCardImage: editSalarySlipUrl,
                 checkPhoto: editCheckPhotoUrl,
                 offerLetter: editOfferLetterUrl,
             };
@@ -194,7 +194,7 @@ const UserDocumentVerification = () => {
         if (file.status === 'removed') {
             setEditSalarySlipFileList([]);
             setEditSalarySlipUrl("");
-            editForm.setFieldsValue({ oldSalarySlip: undefined });
+            editForm.setFieldsValue({ panCardImage: undefined });
             return;
         }
         const fileToUpload = file.originFileObj || file;
@@ -211,7 +211,7 @@ const UserDocumentVerification = () => {
                 const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
                 setEditSalarySlipFileList(updatedList);
                 setEditSalarySlipUrl(url);
-                editForm.setFieldsValue({ oldSalarySlip: url });
+                editForm.setFieldsValue({ panCardImage: url });
                 success('Salary slip uploaded');
             }
         } catch (e) {
@@ -400,7 +400,7 @@ const UserDocumentVerification = () => {
         if (file.status === 'removed') {
             setSalarySlipFileList([]);
             setSalarySlipUrl("");
-            form.setFieldsValue({ oldSalarySlip: undefined });
+            form.setFieldsValue({ panCardImage: undefined });
             return;
         }
         const fileToUpload = file.originFileObj || file;
@@ -417,7 +417,7 @@ const UserDocumentVerification = () => {
                 const updatedList = fileList.map(f => f.uid === file.uid ? { ...f, status: 'done', url } : f);
                 setSalarySlipFileList(updatedList);
                 setSalarySlipUrl(url);
-                form.setFieldsValue({ oldSalarySlip: url });
+                form.setFieldsValue({ panCardImage: url });
                 success('Salary slip uploaded successfully');
             }
         } catch (e) {
@@ -546,7 +546,7 @@ const UserDocumentVerification = () => {
                     accountType: values.bankDetails?.accountType,
                 },
                 aadharCardImage: aadharUrl,
-                oldSalarySlip: salarySlipUrl,
+                panCardImage: salarySlipUrl,
                 checkPhoto: checkPhotoUrl,
                 offerLetter: offerLetterUrl,
             };
@@ -586,7 +586,7 @@ const UserDocumentVerification = () => {
         // Clear form validation
         form.setFieldsValue({
             aadharCardImage: undefined,
-            oldSalarySlip: undefined,
+            panCardImage: undefined,
             checkPhoto: undefined,
             offerLetter: undefined
         });
@@ -615,11 +615,11 @@ const UserDocumentVerification = () => {
         //                     AdharCard
         //                 </Button>
         //             )}
-        //             {record.oldSalarySlip && (
+        //             {record.panCardImage && (
         //                 <Button
         //                     size="small"
         //                     icon={<DownloadOutlined />}
-        //                     href={record.oldSalarySlip}
+        //                     href={record.panCardImage}
         //                     target="_blank"
         //                     className="global-secondary-btn"
         //                 >
@@ -1003,12 +1003,12 @@ const UserDocumentVerification = () => {
                                     <Col xs={24} sm={12} md={6}>
                                         <Form.Item
                                             label="old salary slip"
-                                            name="oldSalarySlip"
+                                            name="panCardImage"
                                             validateStatus={uploadingSalarySlip ? "validating" : ""}
                                             help={uploadingSalarySlip ? "Uploading..." : ""}
                                         >
                                             <Upload
-                                                name="oldSalarySlip"
+                                                name="panCardImage"
                                                 listType="picture-card"
                                                 fileList={salarySlipFileList}
                                                 onChange={handleSalarySlipUpload}
@@ -1252,11 +1252,11 @@ const UserDocumentVerification = () => {
                                                         AdharCard
                                                     </Button>
                                                 )}
-                                                {document.oldSalarySlip && (
+                                                {document.panCardImage && (
                                                     <Button
                                                         size="small"
                                                         icon={<DownloadOutlined />}
-                                                        href={document.oldSalarySlip}
+                                                        href={document.panCardImage}
                                                         target="_blank"
                                                         className="global-secondary-btn"
                                                     >
@@ -1521,13 +1521,13 @@ const UserDocumentVerification = () => {
                             </Col>
                             <Col xs={24} sm={12} md={6}>
                                 <Form.Item
-                                    label="old salary slip"
-                                    name="oldSalarySlip"
+                                    label="Pan Card"
+                                    name="panCardImage"
                                     validateStatus={editUploadingSalarySlip ? "validating" : ""}
                                     help={editUploadingSalarySlip ? "Uploading..." : ""}
                                 >
                                     <Upload
-                                        name="oldSalarySlip"
+                                        name="panCardImage"
                                         listType="picture-card"
                                         fileList={editSalarySlipFileList}
                                         onChange={handleEditSalarySlipUpload}

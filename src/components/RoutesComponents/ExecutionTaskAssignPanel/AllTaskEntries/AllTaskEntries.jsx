@@ -34,7 +34,8 @@ const AllTaskEntries = ({
     userFilter = 'all',
     categoryFilter = 'all',
     // When true → show ONLY archived tasks; when false → hide archived tasks
-    showArchivedOnly = false
+    showArchivedOnly = false,
+    onEditTask = () => { }
 }) => {
     const userId = useSelector(selectUserId);
     const user = useSelector(selectUser);
@@ -571,6 +572,7 @@ const AllTaskEntries = ({
                                     </Button>
                                     <Button
                                         icon={<AiOutlineEdit />}
+                                        onClick={() => onEditTask(task)}
                                         className="global-secondary-btn"
                                         style={{ flex: 1 }}
                                     >

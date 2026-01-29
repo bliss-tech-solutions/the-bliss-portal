@@ -245,6 +245,15 @@ export const api = createApi({
             }),
             invalidatesTags: ['Tasks'],
         }),
+        updateTaskAssign: builder.mutation({
+            query: ({ taskId, body }) => ({
+                url: `/api/addtaskassign/${taskId}`,
+                method: 'PUT',
+                body,
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Tasks'],
+        }),
         getSuggestedSlots: builder.query({
             query: ({ receiverUserId, slotDate } = {}) => {
                 const params = new URLSearchParams();
@@ -423,18 +432,14 @@ export const api = createApi({
             providesTags: ['Analytics', 'User'],
         }),
         getAllCheckins: builder.query({
-            query: () => ({
-                url: '/api/checkin/all',
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            }),
-        }),
-        getTodayCheckin: builder.query({
-            query: (userId) => ({
-                url: `/api/checkin/${userId}/today`,
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            }),
+            query: (params) => {
+                const queryString = new URLSearchParams(params).toString();
+                return {
+                    url: `/api/checkin/all${queryString ? `?${queryString}` : ''}`,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            },
         }),
         createUserVerificationDocument: builder.mutation({
             query: (body) => ({
@@ -895,6 +900,7 @@ export const {
     useUpdateUserDataMutation,
     useDeleteUserDataMutation,
     useAddTaskAssignMutation,
+    useUpdateTaskAssignMutation,
     useLazyGetSuggestedSlotsQuery,
     useGetTaskAssignQuery,
     useGetTaskAssignByDateQuery,
@@ -915,7 +921,6 @@ export const {
     useArchiveGlobalChatMessageMutation,
     useGetAllUsersQuery,
     useGetAllCheckinsQuery,
-    useGetTodayCheckinQuery,
     useCreateUserVerificationDocumentMutation,
     useUpdateUserVerificationDocumentMutation,
     useGetAllUserVerificationDocumentsQuery,

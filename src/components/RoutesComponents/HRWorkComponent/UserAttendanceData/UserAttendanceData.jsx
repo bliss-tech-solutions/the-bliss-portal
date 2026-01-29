@@ -1,35 +1,13 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider, Input, Select } from 'antd';
 import './UserAttendanceData.css';
-import { useGetAllUsersQuery, useGetTodayCheckinQuery, useGetAllCheckinsQuery, useGetUniqueRolesQuery } from '../../../../store/api';
+import { useGetAllUsersQuery, useGetAllCheckinsQuery, useGetUniqueRolesQuery } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import dayjs from 'dayjs';
 import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
-
-const TodayTime = ({ userId, type }) => {
-    const { data } = useGetTodayCheckinQuery(userId, { skip: !userId });
-    const rec = data?.data || null;
-    const val = type === 'in' ? (rec?.checkInAt || rec?.checkinAt) : (rec?.checkOutAt || rec?.checkoutAt);
-    if (!val) return '-';
-    const t = new Date(val);
-    return t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-const TodayDur = ({ userId }) => {
-    const { data } = useGetTodayCheckinQuery(userId, { skip: !userId });
-    const rec = data?.data || null;
-    const inVal = rec?.checkInAt || rec?.checkinAt;
-    const outVal = rec?.checkOutAt || rec?.checkoutAt;
-    if (!inVal || !outVal) return '-';
-    const ms = new Date(outVal) - new Date(inVal);
-    if (ms <= 0) return '-';
-    const hrs = Math.floor(ms / 3600000);
-    const mins = Math.floor((ms % 3600000) / 60000);
-    return `${hrs}h ${String(mins).padStart(2, '0')}m`;
-};
 
 const initialColumns = [
     { key: 'userId', title: 'User ID', dataIndex: 'userId', width: 100 },
@@ -55,12 +33,30 @@ const UserAttendanceData = () => {
 
     const { success, warning, error: showError } = useNotification();
     const { data: usersResp, isLoading } = useGetAllUsersQuery();
-    const { data: allCheckinsResp, isLoading: isCheckinsLoading } = useGetAllCheckinsQuery();
+    // Fetch with a high limit to try and get all recent records
+    const { data: allCheckinsResp, isLoading: isCheckinsLoading } = useGetAllCheckinsQuery({ limit: 1000 });
     const { data: uniqueRolesResp } = useGetUniqueRolesQuery();
 
     const positions = useMemo(() => {
         return (uniqueRolesResp?.data?.positions || []).filter(pos => pos.toLowerCase() !== 'admin');
     }, [uniqueRolesResp]);
+
+    const userCheckinMap = useMemo(() => {
+        const map = new Map();
+        const checkinData = allCheckinsResp?.data || [];
+
+        checkinData.forEach(record => {
+            if (record.userId) {
+                if (!map.has(record.userId)) {
+                    map.set(record.userId, []);
+                }
+                map.get(record.userId).push(record);
+            }
+        });
+        return map;
+    }, [allCheckinsResp]);
+
+    const todayDateStr = dayjs().format('YYYY-MM-DD');
 
     const dataSource = useMemo(() => {
         const users = usersResp?.data || [];
@@ -83,18 +79,50 @@ const UserAttendanceData = () => {
                     email.includes(searchLower) ||
                     userId.includes(searchLower);
             })
-            .map((u, idx) => ({
-                key: u.userId || u._id || idx,
-                userId: u.userId || u._id || '-',
-                userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.userEmail || u.email || '-',
-                todayIn: <TodayTime userId={u.userId} type="in" />,
-                leaveTime: <TodayTime userId={u.userId} type="out" />,
-                avgHours: <TodayDur userId={u.userId} />,
-                position: u.position || u.role || '-',
-                details: u,
-                index: idx + 1,
-            }));
-    }, [usersResp, searchTerm, selectedPosition]);
+            .map((u, idx) => {
+                const userId = u.userId || u._id;
+                const userHistory = userCheckinMap.get(userId) || [];
+                // Find today's record
+                const todayRec = userHistory.find(r => r.date === todayDateStr);
+
+                let todayIn = '-';
+                let leaveTime = '-';
+                let avgHours = '-';
+
+                if (todayRec) {
+                    const inTime = todayRec.checkInAt || todayRec.checkinAt;
+                    const outTime = todayRec.checkOutAt || todayRec.checkOutAt;
+
+                    if (inTime) {
+                        todayIn = new Date(inTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+                    if (outTime) {
+                        leaveTime = new Date(outTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    if (inTime && outTime) {
+                        const ms = new Date(outTime) - new Date(inTime);
+                        if (ms > 0) {
+                            const hrs = Math.floor(ms / 3600000);
+                            const mins = Math.floor((ms % 3600000) / 60000);
+                            avgHours = `${hrs}h ${String(mins).padStart(2, '0')}m`;
+                        }
+                    }
+                }
+
+                return {
+                    key: userId || idx,
+                    userId: userId || '-',
+                    userName: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.userEmail || u.email || '-',
+                    todayIn,
+                    leaveTime,
+                    avgHours,
+                    position: u.position || u.role || '-',
+                    details: u,
+                    index: idx + 1,
+                };
+            });
+    }, [usersResp, searchTerm, selectedPosition, userCheckinMap, todayDateStr]);
 
     const handleCopyUserId = useCallback(async (userId) => {
         if (!userId || userId === '-') {
@@ -251,6 +279,14 @@ const UserAttendanceData = () => {
         });
     }, [orderedColumns, columnWidths, onHeaderDragStart, onHeaderDragOver, onHeaderDrop, startResize, handleCopyUserId]);
 
+
+    // Helper to get history for the selected user from the new nested API structure
+    const getSelectedUserHistory = () => {
+        if (!selectedUser) return [];
+        const userId = selectedUser.userId || selectedUser._id;
+        return userCheckinMap.get(userId) || [];
+    };
+
     return (
         <div className="ua-container">
             <div className="ua-title-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -315,8 +351,7 @@ const UserAttendanceData = () => {
                             className="ua-history-table"
                             loading={isCheckinsLoading}
                             dataSource={
-                                (allCheckinsResp?.data || [])
-                                    .filter(c => c.userId === selectedUser.userId)
+                                getSelectedUserHistory()
                                     .filter(c => {
                                         if (!dateRange || !dateRange[0] || !dateRange[1]) return true;
                                         const checkDate = dayjs(c.checkInAt || c.checkinAt);
