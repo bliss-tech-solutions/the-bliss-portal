@@ -7,7 +7,7 @@ import { selectUser, selectUserId } from '../../../store/slices/authSlice';
 import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetTaskAssignQuery, useAddClientAttachmentMutation, useGetClientAttachmentsByUserIdQuery, useDeleteClientAttachmentMutation, useArchiveClientAttachmentMutation } from '../../../store/api';
 import ContentProviderTaskEntries from './TaskEntries/ContentProviderTaskEntries';
 import EmptyState from '../../CommonComponents/EmptyState/EmptyState';
-import { BsFilter, BsSearch, BsUpload, BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsTrash } from 'react-icons/bs';
+import { BsFilter, BsSearch, BsUpload, BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsTrash, BsCalendarCheck } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import { useSocket } from '../../../contexts/SocketContext';
 import { useNotification } from '../../../contexts/NotificationContext';
@@ -26,6 +26,7 @@ const ContentProviderPanel = () => {
     const [priorityFilter, setPriorityFilter] = useState('all');
     const [assignerFilter, setAssignerFilter] = useState('all');
     const [uploadDocModalVisible, setUploadDocModalVisible] = useState(false);
+    const [uploadStatusModalVisible, setUploadStatusModalVisible] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
     const [uploadForm] = Form.useForm();
     const [documentHistoryModalVisible, setDocumentHistoryModalVisible] = useState(false);
@@ -106,20 +107,20 @@ const ContentProviderPanel = () => {
             label: suggestion
         }));
     }, [tasksData, searchTerm]);
-  
-          // Filter clients based on search term
-          const filteredClients = React.useMemo(() => {
-                  if (!searchTerm) return clients;
-                  const term = searchTerm.toLowerCase();
-                  return clients.filter(client =>
-                          client.clientName?.toLowerCase().includes(term)
-                      );
-              }, [clients, searchTerm]);
+
+    // Filter clients based on search term
+    const filteredClients = React.useMemo(() => {
+        if (!searchTerm) return clients;
+        const term = searchTerm.toLowerCase();
+        return clients.filter(client =>
+            client.clientName?.toLowerCase().includes(term)
+        );
+    }, [clients, searchTerm]);
 
     // Generate search suggestions for clients
     const clientSearchOptions = React.useMemo(() => {
         if (!clients || clients.length === 0) return [];
-        
+
         const uniqueNames = [...new Set(clients.map(c => c.clientName).filter(Boolean))];
         return uniqueNames.map(name => ({
             value: name,
@@ -206,6 +207,61 @@ const ContentProviderPanel = () => {
     const handleDocumentHistoryModalClose = () => {
         setDocumentHistoryModalVisible(false);
         setSelectedClientForHistory(null);
+    };
+
+    // --- Content Upload Tracker Logic ---
+
+    // A small sub-component to fetch and display status for ONE client
+    const UploadStatusRow = ({ client, userId, monthOptions }) => {
+        const { data: history, isLoading } = useGetClientAttachmentsByUserIdQuery(
+            { clientId: client._id, userId },
+            { skip: !client._id || !userId }
+        );
+
+        const attachments = history?.data?.attachments || [];
+        const uploadedMonths = attachments
+            .filter(doc => doc.archived === false || doc.archived === undefined)
+            .map(doc => doc.month);
+
+        return (
+            <tr key={client._id}>
+                <td className="tracker-client-name">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <strong>{client.clientName}</strong>
+                        <Tooltip title="Copy Client Name">
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<BsCopy style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(client.clientName);
+                                    showSuccess('Client name copied!');
+                                }}
+                                className="copy-client-btn"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            />
+                        </Tooltip>
+                    </div>
+                </td>
+                {monthOptions.map(month => {
+                    const isUploaded = uploadedMonths.includes(month.shortCode);
+                    return (
+                        <td key={month.value} className="tracker-month-cell">
+                            <Checkbox checked={isUploaded} disabled />
+                        </td>
+                    );
+                })}
+                <td className="tracker-status-summary">
+                    {isLoading ? (
+                        <span className="tracker-loading">Loading...</span>
+                    ) : (
+                        <Tag color={uploadedMonths.length > 0 ? 'green' : 'orange'}>
+                            {uploadedMonths.length} / 12
+                        </Tag>
+                    )}
+                </td>
+            </tr>
+        );
     };
 
     // Fetch document history when modal is open
@@ -611,25 +667,35 @@ const ContentProviderPanel = () => {
             <div className='ContentProviderPanel-container'>
                 <div className="clients-segregation-header">
                     <h2 className="panel-title">{userFullName} Clients</h2>
-                    <div className="client-search-wrapper">
-                   <AutoComplete
-                       options={clientSearchOptions}
-                       value={searchTerm}
-                       onChange={(value) => setSearchTerm(value)}
-                       onSelect={(value) => setSearchTerm(value)}
-                       style={{ width: '100%' }}
-                       filterOption={(inputValue, option) =>
-                           option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                       }
-                   >
-                       <Input
-                           placeholder="Search client by name..."
-                           prefix={<BsSearch className="search-icon" />}
-                           allowClear
-                           className="client-panel-search"
-                       />
-                   </AutoComplete>
-                     </div>
+                    <div className="header-actions-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <Button
+                            icon={<BsCalendarCheck />}
+                            onClick={() => setUploadStatusModalVisible(true)}
+                            className="global-secondary-btn"
+                            style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        >
+                            Upload Tracker
+                        </Button>
+                        <div className="client-search-wrapper">
+                            <AutoComplete
+                                options={clientSearchOptions}
+                                value={searchTerm}
+                                onChange={(value) => setSearchTerm(value)}
+                                onSelect={(value) => setSearchTerm(value)}
+                                style={{ width: '100%' }}
+                                filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                }
+                            >
+                                <Input
+                                    placeholder="Search client by name..."
+                                    prefix={<BsSearch className="search-icon" />}
+                                    allowClear
+                                    className="client-panel-search"
+                                />
+                            </AutoComplete>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="clients-table-container">
@@ -761,10 +827,61 @@ const ContentProviderPanel = () => {
                     )}
                 </Modal>
 
+                {/* Upload Status Tracker Modal */}
+                <Modal
+                    title={<div className="modal-custom-title">Monthly Upload Tracker</div>}
+                    open={uploadStatusModalVisible}
+                    onCancel={() => setUploadStatusModalVisible(false)}
+                    footer={[
+                        <Button
+                            key="close"
+                            className="global-secondary-btn"
+                            onClick={() => setUploadStatusModalVisible(false)}
+                        >
+                            Close
+                        </Button>
+                    ]}
+                    width={1100}
+                    className="upload-tracker-modal"
+                    centered
+                >
+                    <div className="tracker-table-container">
+                        <table className="tracker-table">
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    {monthOptions.map(month => (
+                                        <th key={month.value}>{month.shortCode}</th>
+                                    ))}
+                                    <th>Summary</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {clients.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={monthOptions.length + 2} style={{ textAlign: 'center', padding: '40px' }}>
+                                            No clients assigned to track.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    clients.map(client => (
+                                        <UploadStatusRow
+                                            key={client._id}
+                                            client={client}
+                                            userId={userId}
+                                            monthOptions={monthOptions}
+                                        />
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </Modal>
+
                 {/* Tasks Section */}
 
             </div>
-        </div>
+        </div >
     );
 };
 

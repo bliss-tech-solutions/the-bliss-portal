@@ -632,6 +632,137 @@
     }
 }
 
+
+/* Upload Status Tracker Modal Styles */
+.upload-tracker-modal .ant-modal-content {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+}
+
+.upload-tracker-modal .ant-modal-header {
+    background-color: var(--secondary-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px 24px !important;
+    margin: 0 !important;
+}
+
+.upload-tracker-modal .ant-modal-body {
+    padding: 24px !important;
+}
+
+.tracker-table-container {
+    overflow-x: auto;
+    max-height: 60vh;
+}
+
+.tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tracker-table th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tracker-table th:first-child {
+    text-align: left;
+    padding-left: 16px;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+}
+
+.tracker-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+.tracker-client-name {
+    text-align: left !important;
+    padding-left: 16px !important;
+    background-color: var(--card-bg);
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    white-space: nowrap;
+}
+
+.copy-client-btn:hover {
+    background-color: var(--hover-bg) !important;
+    color: var(--brand-color) !important;
+}
+
+.tracker-month-cell {
+    min-width: 60px;
+}
+
+.tracker-month-cell .ant-checkbox-wrapper {
+    margin: 0;
+}
+
+.tracker-month-cell .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    border-radius: 4px !important;
+}
+
+.tracker-month-cell .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-month-cell .ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-month-cell .ant-checkbox-wrapper:hover .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+}
+
+/* Ensure disabled checkboxes in the tracker still look like the requested design */
+.tracker-month-cell .ant-checkbox-disabled .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    cursor: default !important;
+}
+
+.tracker-month-cell .ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+    background-color: transparent !important;
+}
+
+.tracker-month-cell .ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-status-summary {
+    font-weight: 600;
+}
+
+.tracker-loading {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.upload-tracker-modal .ant-modal-footer {
+    background-color: var(--secondary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+    margin: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     #ContentProviderPanel {
