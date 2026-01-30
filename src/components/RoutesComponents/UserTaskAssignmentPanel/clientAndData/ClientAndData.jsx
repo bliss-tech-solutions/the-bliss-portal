@@ -18,6 +18,7 @@ const ClientAndData = () => {
     const userIdFromState = useSelector(selectUserId);
     const userName = getUserName(user);
     const userId = getUserId(user, userIdFromState);
+    const isContentProvider = user?.role === 'ContentProvider';
 
     const { socket } = useSocket();
     const { showSuccess, showError } = useNotification();
@@ -392,18 +393,20 @@ const ClientAndData = () => {
                                 <div className="document-time">
                                     {dayjs(doc.createdAt).format('hh:mm A')}
                                 </div>
-                                <button
-                                    className="archive-doc-btn"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleDeleteAttachment(doc._id);
-                                    }}
-                                    title="Archive attachment"
-                                    type="button"
-                                >
-                                    <BsTrash />
-                                </button>
+                                {isContentProvider && (
+                                    <button
+                                        className="archive-doc-btn"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleDeleteAttachment(doc._id);
+                                        }}
+                                        title="Archive attachment"
+                                        type="button"
+                                    >
+                                        <BsTrash />
+                                    </button>
+                                )}
                             </div>
 
                             <div className="document-link-section">
@@ -452,7 +455,6 @@ const ClientAndData = () => {
             )
         };
     });
-
     // Table columns - Client Name, Team Members, and Document History, now with Upload Doc
     const columns = [
         {
@@ -565,6 +567,22 @@ const ClientAndData = () => {
         }
     ];
 
+    // Conditionally add 'Upload Doc' column for ContentProviders
+    const tableColumns = isContentProvider
+        ? columns
+        : columns.filter(col => col.key !== 'uploadDoc');
+
+    // Adjust widths if not content provider
+    if (!isContentProvider) {
+        const nameCol = tableColumns.find(c => c.key === 'clientName');
+        const teamCol = tableColumns.find(c => c.key === 'teamMembers');
+        const historyCol = tableColumns.find(c => c.key === 'documentHistory');
+
+        if (nameCol) nameCol.width = '40%';
+        if (teamCol) teamCol.width = '40%';
+        if (historyCol) historyCol.width = '20%';
+    }
+
     return (
         <div id="ClientAndData" className={`theme-${theme}`}>
             {contextHolder}
@@ -604,7 +622,7 @@ const ClientAndData = () => {
 
                 <div className="clients-table-container">
                     <Table
-                        columns={columns}
+                        columns={tableColumns}
                         dataSource={filteredClients}
                         loading={isLoadingClients}
                         rowKey="_id"
