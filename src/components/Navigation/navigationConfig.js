@@ -101,7 +101,7 @@ export const navigationConfig = [
         componentLabelName: "Clients & Data",
         icon: AiFillDatabase,
         routeName: "/clients-and-data",
-        roles: ["user", "Execution"],
+        roles: ["user", "Execution",],
         component: ClientAndData,
         showInSidebar: true
     },

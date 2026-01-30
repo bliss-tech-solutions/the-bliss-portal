@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import './ClientAndData.css';
-import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete } from 'antd';
+import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete, Checkbox, Form, Row, Col } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../../store/slices/authSlice';
 import { getUserName, getUserId } from '../../../../utils/userUtils';
-import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetClientAttachmentsByUserIdQuery } from '../../../../store/api';
+import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetClientAttachmentsByUserIdQuery, useAddClientAttachmentMutation, useArchiveClientAttachmentMutation } from '../../../../store/api';
 import { useSocket } from '../../../../contexts/SocketContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsSearch } from 'react-icons/bs';
+import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsSearch, BsUpload, BsCalendarCheck, BsTrash } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 
@@ -27,6 +27,16 @@ const ClientAndData = () => {
     const [copiedLinkId, setCopiedLinkId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // New state for Upload Tracker and Doc Upload
+    const [uploadDocModalVisible, setUploadDocModalVisible] = useState(false);
+    const [uploadStatusModalVisible, setUploadStatusModalVisible] = useState(false);
+    const [selectedClient, setSelectedClient] = useState(null);
+    const [uploadForm] = Form.useForm();
+    const [modal, contextHolder] = Modal.useModal();
+
+    const [addClientAttachment, { isLoading: isSubmittingAttachment }] = useAddClientAttachmentMutation();
+    const [archiveClientAttachment] = useArchiveClientAttachmentMutation();
+
     // Fetch clients for the logged-in user - NO POLLING, using sockets for real-time updates
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsByUserIdQuery(userId, {
         skip: !userId,
@@ -39,6 +49,22 @@ const ClientAndData = () => {
     const { data: allUsersData } = useGetAllUsersQuery();
 
     const clients = clientsData?.data || [];
+
+    // Month options for the checkbox selection - mapping full names to short codes
+    const monthOptions = [
+        { label: 'Jan', value: 'January', shortCode: 'Jan' },
+        { label: 'Feb', value: 'February', shortCode: 'Feb' },
+        { label: 'Mar', value: 'March', shortCode: 'Mar' },
+        { label: 'Apr', value: 'April', shortCode: 'Apr' },
+        { label: 'May', value: 'May', shortCode: 'May' },
+        { label: 'Jun', value: 'June', shortCode: 'Jun' },
+        { label: 'Jul', value: 'July', shortCode: 'Jul' },
+        { label: 'Aug', value: 'August', shortCode: 'Aug' },
+        { label: 'Sep', value: 'September', shortCode: 'Sep' },
+        { label: 'Oct', value: 'October', shortCode: 'Oct' },
+        { label: 'Nov', value: 'November', shortCode: 'Nov' },
+        { label: 'Dec', value: 'December', shortCode: 'Dec' }
+    ];
 
     // Generate search suggestions based on client names
     const searchOptions = useMemo(() => {
@@ -144,6 +170,102 @@ const ClientAndData = () => {
         setSelectedClientForHistory(null);
     };
 
+    const handleUploadDocClick = (record) => {
+        setSelectedClient(record);
+        setUploadDocModalVisible(true);
+        uploadForm.resetFields();
+    };
+
+    const handleUploadDocModalClose = () => {
+        setUploadDocModalVisible(false);
+        setSelectedClient(null);
+        uploadForm.resetFields();
+    };
+
+    const handleUploadDocSubmit = async (values) => {
+        try {
+            if (!selectedClient?._id) {
+                showError('No client selected');
+                return;
+            }
+
+            // Get the first selected month and convert to short code
+            const selectedMonths = values.months || [];
+            if (selectedMonths.length === 0) {
+                showError('Please select at least one month');
+                return;
+            }
+
+            // Take the first selected month and get its short code
+            const firstMonth = selectedMonths[0];
+            const monthOption = monthOptions.find(opt => opt.value === firstMonth);
+            const monthShortCode = monthOption?.shortCode || firstMonth.substring(0, 3);
+
+            // Get user's full name
+            const userName = user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : user?.email || user?.name || 'Unknown User';
+
+            // Prepare the request body
+            const requestBody = {
+                link: values.link,
+                notes: values.message,
+                month: monthShortCode,
+                uploadedBy: {
+                    userId: userId,
+                    name: userName
+                }
+            };
+
+            // Call the API
+            await addClientAttachment({
+                clientId: selectedClient._id,
+                body: requestBody
+            }).unwrap();
+
+            // Close the modal first for better UX
+            handleUploadDocModalClose();
+
+            showSuccess('Document uploaded successfully!');
+            // Refetch clients to get updated data (socket event will also trigger refetch)
+            refetchClients();
+            // Refetch document history if modal is open
+            if (documentHistoryModalVisible && selectedClientForHistory?._id === selectedClient._id) {
+                refetchDocumentHistory();
+            }
+
+        } catch (error) {
+            console.error('Error uploading document:', error);
+            showError(error?.data?.message || error?.message || 'Failed to upload document');
+        }
+    };
+
+    // Handle archive attachment
+    const handleDeleteAttachment = (attachmentId) => {
+        modal.confirm({
+            title: 'Archive Attachment',
+            content: 'Are you sure you want to archive this attachment?',
+            okText: 'Yes, Archive',
+            okType: 'danger',
+            cancelText: 'No',
+            centered: true,
+            onOk: () => {
+                return archiveClientAttachment({
+                    clientId: selectedClientForHistory?._id,
+                    attachmentId
+                }).unwrap()
+                    .then(() => {
+                        showSuccess('Attachment archived successfully');
+                        refetchDocumentHistory();
+                    })
+                    .catch((error) => {
+                        console.error('Failed to archive attachment:', error);
+                        showError(error?.data?.message || 'Failed to archive attachment');
+                    });
+            }
+        });
+    };
+
     // Handle copy to clipboard
     const handleCopyLink = async (link, docId) => {
         try {
@@ -155,6 +277,59 @@ const ClientAndData = () => {
             console.error('Failed to copy:', error);
             showError('Failed to copy link');
         }
+    };
+
+    // A small sub-component to fetch and display status for ONE client
+    const UploadStatusRow = ({ client, userId, monthOptions }) => {
+        const { data: history, isLoading } = useGetClientAttachmentsByUserIdQuery(
+            { clientId: client._id, userId },
+            { skip: !client._id || !userId }
+        );
+
+        const attachments = history?.data?.attachments || [];
+        const uploadedMonths = attachments
+            .filter(doc => doc.archived === false || doc.archived === undefined)
+            .map(doc => doc.month);
+
+        return (
+            <tr key={client._id}>
+                <td className="tracker-client-name">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <strong>{client.clientName}</strong>
+                        <Tooltip title="Copy Client Name">
+                            <Button
+                                type="text"
+                                size="small"
+                                icon={<BsCopy style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(client.clientName);
+                                    showSuccess('Client name copied!');
+                                }}
+                                className="copy-client-btn"
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            />
+                        </Tooltip>
+                    </div>
+                </td>
+                {monthOptions.map(month => {
+                    const isUploaded = uploadedMonths.includes(month.shortCode);
+                    return (
+                        <td key={month.value} className="tracker-month-cell">
+                            <Checkbox checked={isUploaded} disabled />
+                        </td>
+                    );
+                })}
+                <td className="tracker-status-summary">
+                    {isLoading ? (
+                        <span className="tracker-loading">Loading...</span>
+                    ) : (
+                        <Tag color={uploadedMonths.length > 0 ? 'green' : 'orange'}>
+                            {uploadedMonths.length} / 12
+                        </Tag>
+                    )}
+                </td>
+            </tr>
+        );
     };
 
     // Group documents by month
@@ -194,7 +369,9 @@ const ClientAndData = () => {
 
     const documentsByMonth = useMemo(() => {
         const attachments = documentHistoryData?.data?.attachments || [];
-        return groupDocumentsByMonth(attachments);
+        // Only show documents that are not archived
+        const filteredAttachments = attachments.filter(doc => doc.archived === false || doc.archived === undefined);
+        return groupDocumentsByMonth(filteredAttachments);
     }, [documentHistoryData]);
 
     // Prepare collapse panels for month-wise display with compact card design
@@ -215,6 +392,18 @@ const ClientAndData = () => {
                                 <div className="document-time">
                                     {dayjs(doc.createdAt).format('hh:mm A')}
                                 </div>
+                                <button
+                                    className="archive-doc-btn"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleDeleteAttachment(doc._id);
+                                    }}
+                                    title="Archive attachment"
+                                    type="button"
+                                >
+                                    <BsTrash />
+                                </button>
                             </div>
 
                             <div className="document-link-section">
@@ -264,19 +453,19 @@ const ClientAndData = () => {
         };
     });
 
-    // Table columns - Client Name, Team Members, and Document History (no upload options)
+    // Table columns - Client Name, Team Members, and Document History, now with Upload Doc
     const columns = [
         {
             title: 'Client Name',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: '40%',
+            width: '30%',
             render: (text) => <strong style={{ color: 'var(--primary-text)' }}>{text}</strong>
         },
         {
             title: 'Team Members',
             key: 'teamMembers',
-            width: '40%',
+            width: '30%',
             render: (_, record) => {
                 const assignedUsers = record.assignedUsers || [];
 
@@ -357,32 +546,59 @@ const ClientAndData = () => {
                     History
                 </Button>
             )
+        },
+        {
+            title: 'Upload Doc',
+            key: 'uploadDoc',
+            width: '20%',
+            render: (_, record) => (
+                <Button
+                    className='global-secondary-btn'
+                    type="primary"
+                    icon={<BsUpload />}
+                    onClick={() => handleUploadDocClick(record)}
+                    size="small"
+                >
+                    Upload Doc
+                </Button>
+            )
         }
     ];
 
     return (
         <div id="ClientAndData" className={`theme-${theme}`}>
+            {contextHolder}
             <div className="client-and-data-container">
                 <div className="client-and-data-header-row">
                     <h2 className='Capitalize'>{userName} Client & Data</h2>
-                    <div className="client-search-wrapper">
-                        <AutoComplete
-                            options={searchOptions}
-                            value={searchTerm}
-                            onChange={(value) => setSearchTerm(value)}
-                            onSelect={(value) => setSearchTerm(value)}
-                            style={{ width: '100%' }}
-                            filterOption={(inputValue, option) =>
-                                option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-                            }
+                    <div className='header-actions-right' style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <Button
+                            icon={<BsCalendarCheck />}
+                            onClick={() => setUploadStatusModalVisible(true)}
+                            className="global-secondary-btn"
+                            style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
-                            <Input
-                                placeholder="Search client by name..."
-                                prefix={<BsSearch className="search-icon" />}
-                                allowClear
-                                className="client-panel-search"
-                            />
-                        </AutoComplete>
+                            Upload Tracker
+                        </Button>
+                        <div className="client-search-wrapper">
+                            <AutoComplete
+                                options={searchOptions}
+                                value={searchTerm}
+                                onChange={(value) => setSearchTerm(value)}
+                                onSelect={(value) => setSearchTerm(value)}
+                                style={{ width: '100%' }}
+                                filterOption={(inputValue, option) =>
+                                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                                }
+                            >
+                                <Input
+                                    placeholder="Search client by name..."
+                                    prefix={<BsSearch className="search-icon" />}
+                                    allowClear
+                                    className="client-panel-search"
+                                />
+                            </AutoComplete>
+                        </div>
                     </div>
                 </div>
 
@@ -433,6 +649,138 @@ const ClientAndData = () => {
                             />
                         )}
                     </Modal>
+
+                    {/* Upload Doc Modal */}
+                    <Modal
+                        title={<div className="modal-custom-title">Upload Document</div>}
+                        open={uploadDocModalVisible}
+                        onCancel={handleUploadDocModalClose}
+                        footer={[
+                            <Button
+                                key="cancel"
+                                className="global-secondary-btn"
+                                onClick={handleUploadDocModalClose}
+                            >
+                                Cancel
+                            </Button>,
+                            <Button
+                                key="submit"
+                                className="global-action-btn"
+                                loading={isSubmittingAttachment}
+                                onClick={() => uploadForm.submit()}
+                            >
+                                Submit
+                            </Button>
+                        ]}
+                        destroyOnClose
+                        className="upload-doc-modal"
+                        width={600}
+                        centered
+                        maskClosable={false}
+                    >
+                        <Form
+                            form={uploadForm}
+                            layout="vertical"
+                            onFinish={handleUploadDocSubmit}
+                            className="custom-upload-form"
+                        >
+                            <Form.Item
+                                label={<span className="form-label-text">Enter Link</span>}
+                                name="link"
+                                rules={[{ required: true, message: 'Please enter a link' }]}
+                            >
+                                <Input
+                                    placeholder="Enter document link"
+                                    allowClear
+                                    prefix={<BsLink45Deg className="input-prefix-icon" />}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label={<span className="form-label-text">Enter Message</span>}
+                                name="message"
+                                rules={[{ required: true, message: 'Please enter a message' }]}
+                            >
+                                <Input.TextArea
+                                    rows={4}
+                                    placeholder="Enter your message"
+                                    maxLength={500}
+                                    showCount
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label={<span className="form-label-text">Select Month</span>}
+                                name="months"
+                                rules={[{ required: true, message: 'Please select at least one month' }]}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Checkbox.Group className="month-checkbox-group">
+                                    <Row gutter={[8, 12]}>
+                                        {monthOptions.map((month) => (
+                                            <Col xs={8} sm={6} md={4} key={month.value}>
+                                                <Checkbox value={month.value} className="custom-checkbox">
+                                                    {month.label}
+                                                </Checkbox>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                </Checkbox.Group>
+                            </Form.Item>
+                        </Form>
+                    </Modal>
+
+                    {/* Upload Status Tracker Modal */}
+                    <Modal
+                        title={<div className="modal-custom-title">Monthly Upload Tracker</div>}
+                        open={uploadStatusModalVisible}
+                        onCancel={() => setUploadStatusModalVisible(false)}
+                        footer={[
+                            <Button
+                                key="close"
+                                className="global-secondary-btn"
+                                onClick={() => setUploadStatusModalVisible(false)}
+                            >
+                                Close
+                            </Button>
+                        ]}
+                        width={1100}
+                        className="upload-tracker-modal"
+                        centered
+                    >
+                        <div className="tracker-table-container">
+                            <table className="tracker-table">
+                                <thead>
+                                    <tr>
+                                        <th>Client Name</th>
+                                        {monthOptions.map(month => (
+                                            <th key={month.value}>{month.shortCode}</th>
+                                        ))}
+                                        <th>Summary</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {clients.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={monthOptions.length + 2} style={{ textAlign: 'center', padding: '40px' }}>
+                                                No clients assigned to track.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        clients.map(client => (
+                                            <UploadStatusRow
+                                                key={client._id}
+                                                client={client}
+                                                userId={userId}
+                                                monthOptions={monthOptions}
+                                            />
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Modal>
+
                 </div>
             </div>
         </div>

@@ -370,3 +370,312 @@
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
 }
+
+/* --- Added Styles from ContentProviderPanel.css --- */
+
+/* Upload Doc Modal Styles */
+.upload-doc-modal .ant-modal-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.upload-doc-modal .ant-modal-header {
+    background-color: var(--secondary-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px 24px !important;
+    margin: 0 !important;
+}
+
+.upload-doc-modal .modal-custom-title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: var(--primary-text) !important;
+}
+
+.upload-doc-modal .ant-modal-body {
+    background-color: var(--card-bg) !important;
+    color: var(--primary-text) !important;
+    padding: 24px !important;
+}
+
+.upload-doc-modal .ant-modal-footer {
+    background-color: var(--secondary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+}
+
+.upload-doc-modal .ant-modal-close-x {
+    color: var(--secondary-text) !important;
+}
+
+.custom-upload-form .form-label-text {
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--primary-text) !important;
+}
+
+.custom-upload-form .ant-form-item-label {
+    padding-bottom: 8px !important;
+}
+
+/* Fix Input and Affix Backgrounds */
+.upload-doc-modal .ant-input,
+.upload-doc-modal .ant-input-affix-wrapper,
+.upload-doc-modal .ant-input-affix-wrapper>input.ant-input {
+    background-color: var(--secondary-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+    border-radius: 8px !important;
+}
+
+/* Specific Fix for TextArea with showCount */
+.upload-doc-modal .ant-input-textarea {
+    background-color: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+.upload-doc-modal .ant-input-textarea textarea.ant-input {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 10px 12px !important;
+    min-height: 100px !important;
+}
+
+.upload-doc-modal .ant-input-affix-wrapper {
+    padding: 0 12px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.upload-doc-modal .ant-input-affix-wrapper>input.ant-input {
+    padding: 10px 0 !important;
+    border: none !important;
+    height: 100% !important;
+    box-shadow: none !important;
+}
+
+.upload-doc-modal .ant-input:hover,
+.upload-doc-modal .ant-input-affix-wrapper:hover,
+.upload-doc-modal .ant-input-affix-wrapper-focused,
+.upload-doc-modal .ant-input-textarea:hover,
+.upload-doc-modal .ant-input-textarea-focused {
+    border-color: var(--brand-color) !important;
+    box-shadow: var(--input-focus-shadow) !important;
+}
+
+.upload-doc-modal .ant-input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.upload-doc-modal .input-prefix-icon {
+    color: var(--brand-color) !important;
+    margin-right: 8px !important;
+    font-size: 18px !important;
+}
+
+.upload-doc-modal .ant-input-textarea-show-count::after {
+    color: var(--secondary-text) !important;
+    font-size: 11px !important;
+    margin-top: 4px !important;
+    padding-right: 8px !important;
+    padding-bottom: 4px !important;
+}
+
+/* Month Checkbox Group - Modern Layout */
+.month-checkbox-group {
+    width: 100% !important;
+    margin-top: 8px !important;
+}
+
+.custom-checkbox {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 38px !important;
+    background-color: var(--secondary-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    transition: all var(--transition-fast) ease !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    color: var(--primary-text) !important;
+    margin: 0 !important;
+}
+
+.custom-checkbox:hover {
+    border-color: var(--brand-color) !important;
+    background-color: var(--hover-bg) !important;
+}
+
+.custom-checkbox .ant-checkbox {
+    display: none !important;
+}
+
+.custom-checkbox.ant-checkbox-wrapper-checked {
+    background-color: rgba(235, 178, 54, 0.15) !important;
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    font-weight: 600 !important;
+}
+
+.custom-checkbox span:last-child {
+    padding: 0 !important;
+}
+
+/* Archive Button */
+.archive-doc-btn {
+    background: none;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+.archive-doc-btn:hover {
+    background-color: rgba(255, 77, 79, 0.1);
+    color: #ff7875;
+}
+
+/* Upload Status Tracker Modal Styles */
+.upload-tracker-modal .ant-modal-content {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+}
+
+.upload-tracker-modal .ant-modal-header {
+    background-color: var(--secondary-bg) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px 24px !important;
+    margin: 0 !important;
+}
+
+.upload-tracker-modal .ant-modal-body {
+    padding: 24px !important;
+}
+
+.tracker-table-container {
+    overflow-x: auto;
+    max-height: 60vh;
+}
+
+.tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tracker-table th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tracker-table th:first-child {
+    text-align: left;
+    padding-left: 16px;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+}
+
+.tracker-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+.tracker-client-name {
+    text-align: left !important;
+    padding-left: 16px !important;
+    background-color: var(--card-bg);
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    white-space: nowrap;
+}
+
+.tracker-month-cell {
+    min-width: 60px;
+}
+
+.tracker-month-cell .ant-checkbox-wrapper {
+    margin: 0;
+}
+
+.tracker-month-cell .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    border-radius: 4px !important;
+}
+
+.tracker-month-cell .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-month-cell .ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-month-cell .ant-checkbox-wrapper:hover .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-month-cell .ant-checkbox-disabled .ant-checkbox-inner {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    cursor: default !important;
+}
+
+.tracker-month-cell .ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+    background-color: transparent !important;
+}
+
+.tracker-month-cell .ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: var(--brand-color) !important;
+}
+
+.tracker-status-summary {
+    font-weight: 600;
+}
+
+.tracker-loading {
+    font-size: 12px;
+    color: var(--secondary-text);
+}
+
+.upload-tracker-modal .ant-modal-footer {
+    background-color: var(--secondary-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+    padding: 12px 24px !important;
+    margin: 0 !important;
+}
