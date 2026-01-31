@@ -12,6 +12,9 @@ const OfficeClosingReminder = () => {
     const lastShownDateRef = useRef(null);
 
     // Check if current time matches office closing time (7:05 PM = 19:05)
+    // Temporarily hidden as per user request
+    return null;
+
     const checkClosingTime = () => {
         const now = new Date();
         const hours = now.getHours();
