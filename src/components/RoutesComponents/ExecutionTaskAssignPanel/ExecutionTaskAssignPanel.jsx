@@ -34,6 +34,7 @@ const ExecutionTaskAssignPanel = () => {
     const [selectedDateRange, setSelectedDateRange] = useState(null);
     const [taskFilterUser, setTaskFilterUser] = useState('all');
     const [taskFilterCategory, setTaskFilterCategory] = useState('all');
+    const [taskFilterStatus, setTaskFilterStatus] = useState('all');
     const [uploadingImages, setUploadingImages] = useState(false);
     const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
     const [slotStart, setSlotStart] = useState(null);
@@ -187,6 +188,7 @@ const ExecutionTaskAssignPanel = () => {
         setSelectedDateRange(null);
         setTaskFilterUser('all');
         setTaskFilterCategory('all');
+        setTaskFilterStatus('all');
     };
 
     const TASK_DRAFT_STORAGE_KEY = 'executionTaskAssignDraft';
@@ -947,11 +949,12 @@ const ExecutionTaskAssignPanel = () => {
                 return (
                     <AllTaskEntries
                         {...commonProps}
-                        statusFilter="all"
+                        statusFilter={taskFilterStatus === 'deleted' ? 'all' : taskFilterStatus}
+                        showArchivedOnly={taskFilterStatus === 'deleted'}
                         onEditTask={handleEditTask}
                     />
                 );
-            case '3':
+            case '2':
                 return (
                     <AllTaskEntries
                         {...commonProps}
@@ -959,7 +962,7 @@ const ExecutionTaskAssignPanel = () => {
                         onEditTask={handleEditTask}
                     />
                 );
-            case '4':
+            case '3':
                 return (
                     <AllTaskEntries
                         {...commonProps}
@@ -967,7 +970,7 @@ const ExecutionTaskAssignPanel = () => {
                         onEditTask={handleEditTask}
                     />
                 );
-            case '5':
+            case '4':
                 // Deleted tab → show ONLY archived tasks
                 return (
                     <AllTaskEntries
@@ -1024,16 +1027,16 @@ const ExecutionTaskAssignPanel = () => {
                                         key: '1',
                                         label: 'All Tasks'
                                     },
-                                    // {
-                                    //     key: '3',
-                                    //     label: 'In Progress'
-                                    // },
                                     {
-                                        key: '4',
+                                        key: '2',
+                                        label: 'Pending'
+                                    },
+                                    {
+                                        key: '3',
                                         label: 'Completed'
                                     },
                                     {
-                                        key: '5',
+                                        key: '4',
                                         label: 'Deleted'
                                     }
                                 ]}
@@ -1109,6 +1112,19 @@ const ExecutionTaskAssignPanel = () => {
                                             {position.label}
                                         </Select.Option>
                                     ))}
+                                </Select>
+                            </Col>
+                            <Col xs={24} sm={24} md={12} lg={6}>
+                                <Select
+                                    value={taskFilterStatus}
+                                    onChange={setTaskFilterStatus}
+                                    placeholder="Filter by status"
+                                    style={{ width: '100%' }}
+                                >
+                                    <Select.Option value="all">All type</Select.Option>
+                                    <Select.Option value="pending">Pending</Select.Option>
+                                    <Select.Option value="completed">Completed</Select.Option>
+                                    <Select.Option value="deleted">Deleted</Select.Option>
                                 </Select>
                             </Col>
                             <Col xs={24} sm={24} md={12} lg={6}>
