@@ -16,7 +16,11 @@ const ClientsSegregation = () => {
         status: 'active',
         itsDataReceived: false,
         assignedUsers: [],
-        brochureLink: ''
+        brochureLink: '',
+        deliverableConfigs: [
+            { label: 'Reels', type: 'reels', targetCount: 3 },
+            { label: 'Combos', type: 'combos', targetCount: 1 }
+        ]
     });
 
     const [uploadingBrochure, setUploadingBrochure] = useState(false);
@@ -219,7 +223,11 @@ const ClientsSegregation = () => {
             status: client.status || 'active',
             itsDataReceived: client.itsDataReceived || false,
             assignedUsers: assignedUsers,
-            brochureLink: client.brochureLink || ''
+            brochureLink: client.brochureLink || '',
+            deliverableConfigs: client.deliverableConfigs?.length > 0 ? client.deliverableConfigs : [
+                { label: 'Reels', type: 'reels', targetCount: 3 },
+                { label: 'Combos', type: 'combos', targetCount: 1 }
+            ]
         });
         setIsOpen(true);
     };
@@ -268,6 +276,11 @@ const ClientsSegregation = () => {
             // Always send brochureLink (even if empty) to allow deletion
             requestBody.brochureLink = formData.brochureLink || '';
 
+            requestBody.deliverableConfigs = formData.deliverableConfigs.map(config => ({
+                ...config,
+                targetCount: Number(config.targetCount)
+            }));
+
             if (editingClient) {
                 // Update existing client
                 const response = await updateClient({
@@ -285,7 +298,11 @@ const ClientsSegregation = () => {
                     status: 'active',
                     itsDataReceived: false,
                     assignedUsers: [],
-                    brochureLink: ''
+                    brochureLink: '',
+                    deliverableConfigs: [
+                        { label: 'Reels', type: 'reels', targetCount: 3 },
+                        { label: 'Combos', type: 'combos', targetCount: 1 }
+                    ]
                 });
                 setSelectedUsersByPosition(getResetSelectedUsers());
                 setEditingClient(null);
@@ -312,7 +329,11 @@ const ClientsSegregation = () => {
                     status: 'active',
                     itsDataReceived: false,
                     assignedUsers: [],
-                    brochureLink: ''
+                    brochureLink: '',
+                    deliverableConfigs: [
+                        { label: 'Reels', type: 'reels', targetCount: 3 },
+                        { label: 'Combos', type: 'combos', targetCount: 1 }
+                    ]
                 });
                 setSelectedUsersByPosition(getResetSelectedUsers());
 
@@ -358,7 +379,39 @@ const ClientsSegregation = () => {
             status: 'active',
             itsDataReceived: false,
             assignedUsers: [],
-            brochureLink: ''
+            brochureLink: '',
+            deliverableConfigs: [
+                { label: 'Reels', type: 'reels', targetCount: 3 },
+                { label: 'Combos', type: 'combos', targetCount: 1 }
+            ]
+        });
+    };
+
+    const addDeliverableConfig = () => {
+        setFormData(prev => ({
+            ...prev,
+            deliverableConfigs: [...prev.deliverableConfigs, { label: '', type: '', targetCount: 0 }]
+        }));
+    };
+
+    const removeDeliverableConfig = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            deliverableConfigs: prev.deliverableConfigs.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleDeliverableConfigChange = (index, field, value) => {
+        setFormData(prev => {
+            const newConfigs = [...prev.deliverableConfigs];
+            newConfigs[index] = { ...newConfigs[index], [field]: value };
+
+            // Auto-generate type from label if field is label
+            if (field === 'label') {
+                newConfigs[index].type = value.toLowerCase().replace(/\s+/g, '_');
+            }
+
+            return { ...prev, deliverableConfigs: newConfigs };
         });
     };
 
@@ -542,6 +595,59 @@ const ClientsSegregation = () => {
                             </Form.Item>
                         </Col>
                     </Row>
+
+                    <div style={{ marginBottom: 24, padding: '16px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'var(--secondary-bg)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Deliverable Configurations</h3>
+                            <Button type="primary" size="small" onClick={addDeliverableConfig}>Add Category</Button>
+                        </div>
+                        {formData.deliverableConfigs.map((config, index) => (
+                            <Row gutter={[16, 16]} key={index} style={{ marginBottom: 8, alignItems: 'flex-end' }}>
+                                <Col xs={9}>
+                                    <Form.Item label={index === 0 ? "Label" : ""} required style={{ marginBottom: 0 }}>
+                                        <Input
+                                            placeholder="e.g. Drone Shots"
+                                            value={config.label}
+                                            onChange={(e) => handleDeliverableConfigChange(index, 'label', e.target.value)}
+                                            className="theme-input"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={7}>
+                                    <Form.Item label={index === 0 ? "Type ID" : ""} required style={{ marginBottom: 0 }}>
+                                        <Input
+                                            placeholder="e.g. drone"
+                                            value={config.type}
+                                            onChange={(e) => handleDeliverableConfigChange(index, 'type', e.target.value)}
+                                            className="theme-input"
+                                            disabled={config.label !== '' && config.type === config.label.toLowerCase().replace(/\s+/g, '_')}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={5}>
+                                    <Form.Item label={index === 0 ? "Target" : ""} required style={{ marginBottom: 0 }}>
+                                        <Input
+                                            type="number"
+                                            min={0}
+                                            placeholder="Target"
+                                            value={config.targetCount}
+                                            onChange={(e) => handleDeliverableConfigChange(index, 'targetCount', e.target.value)}
+                                            className="theme-input"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={3}>
+                                    <Button
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => removeDeliverableConfig(index)}
+                                        disabled={formData.deliverableConfigs.length <= 1}
+                                        style={{ marginBottom: 0 }}
+                                    />
+                                </Col>
+                            </Row>
+                        ))}
+                    </div>
 
                     <Row gutter={[16, 16]}>
                         <Col xs={24}>

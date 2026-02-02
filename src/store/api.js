@@ -441,6 +441,16 @@ export const api = createApi({
                 };
             },
         }),
+        getCheckinAnalysis: builder.query({
+            query: (params) => {
+                const queryString = new URLSearchParams(params).toString();
+                return {
+                    url: `/api/checkin/analysis${queryString ? `?${queryString}` : ''}`,
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                };
+            },
+        }),
         createUserVerificationDocument: builder.mutation({
             query: (body) => ({
                 url: '/api/userverificationdocuments/create',
@@ -578,6 +588,28 @@ export const api = createApi({
             }),
             invalidatesTags: ['Clients'],
         }),
+        getDeliverablesSummary: builder.query({
+            query: (userId) => {
+                let url = `/api/clientmanagement/deliverables/summary`;
+                if (userId) {
+                    url += `?userId=${userId}`;
+                }
+                return {
+                    url,
+                    method: 'GET',
+                };
+            },
+            providesTags: ['Clients'],
+        }),
+        tickDeliverable: builder.mutation({
+            query: ({ clientId, type, index = null, status = null }) => ({
+                url: `/api/clientmanagement/${clientId}/deliverables/update`,
+                method: 'PATCH',
+                body: { type, index, status },
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            invalidatesTags: ['Clients'],
+        }),
         addClientAttachment: builder.mutation({
             query: ({ clientId, body }) => ({
                 url: `/api/clientmanagement/${clientId}/attachments`,
@@ -589,6 +621,28 @@ export const api = createApi({
                 { type: 'Clients', id: 'LIST' },
                 { type: 'Clients', id: 'ATTACHMENTS-LIST' },
                 { type: 'Clients', id: `ATTACHMENTS-${clientId}-${body?.uploadedBy?.userId}` }
+            ],
+        }),
+        getClientAttachments: builder.query({
+            query: (clientId) => ({
+                url: `/api/clientmanagement/${clientId}/attachments`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: (result, error, clientId) => [
+                { type: 'Clients', id: `ATTACHMENTS-${clientId}` },
+                { type: 'Clients', id: 'ATTACHMENTS-LIST' }
+            ],
+        }),
+        getUploadTracker: builder.query({
+            query: (userId) => ({
+                url: `/api/clientmanagement/tracker/${userId}`,
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            }),
+            providesTags: (result, error, userId) => [
+                { type: 'Clients', id: `TRACKER-${userId}` },
+                { type: 'Clients', id: 'TRACKER-LIST' }
             ],
         }),
         getClientAttachmentsByUserId: builder.query({
@@ -847,7 +901,6 @@ export const api = createApi({
                 }
             },
         }),
-
         // Fetch Images Endpoint (same as your HTML fetchImages function)
         fetchImages: builder.query({
             queryFn: async () => {
@@ -860,7 +913,7 @@ export const api = createApi({
                     if (!response.ok) {
                         return { error: { status: response.status } };
                     }
-
+                    const data = await response.json().catch(() => ({}));
                     return { data };
                 } catch (error) {
                     return { error: { status: 'FETCH_ERROR', error: error.message } };
@@ -873,90 +926,93 @@ export const api = createApi({
                 method: 'GET',
             }),
         }),
-
     }),
-
-})
+});
 
 export const {
-    useCreateLeaveMutation,
-    useGetUserLeavesQuery,
-    useGetAllLeavesQuery,
-    useRejectLeaveMutation,
-    useAddFestiveNoteMutation,
-    useUpdateFestiveMutation,
-    useDeleteFestiveNoteMutation,
-    useGetFestiveNotesByUserQuery,
-    useCheckInMutation,
-    useCheckoutMutation,
-    useCheckInStatusQuery,
-    useCheckoutStatusQuery,
-    useLazyCheckoutStatusQuery,
-    useAddUserDetailsMutation,
-    useGenerateUserCredentialMutation,
-    useSignInUserMutation,
-    useGetUserDataQuery,
-    useAddUserDataMutation,
-    useUpdateUserDataMutation,
-    useDeleteUserDataMutation,
-    useAddTaskAssignMutation,
-    useUpdateTaskAssignMutation,
-    useLazyGetSuggestedSlotsQuery,
-    useGetTaskAssignQuery,
-    useGetTaskAssignByDateQuery,
-    useLazyGetTaskAssignByDateQuery,
-    useArchiveTaskMutation,
-    useUpdateTaskStatusMutation,
-    useRequestTaskExtensionMutation,
-    useRespondTaskExtensionMutation,
-    useAddTaskChatMutation,
-    useGetTaskChatMessagesQuery,
-    useLazyGetTaskChatMessagesQuery,
-    useGetUserChatMessagesQuery,
-    useAddGlobalChatMutation,
-    useGetGlobalChatMessagesQuery,
-    useLazyGetGlobalChatMessagesQuery,
-    useGetRecentGlobalChatMessagesQuery,
-    useLazyGetRecentGlobalChatMessagesQuery,
-    useArchiveGlobalChatMessageMutation,
-    useGetAllUsersQuery,
-    useGetAllCheckinsQuery,
-    useCreateUserVerificationDocumentMutation,
-    useUpdateUserVerificationDocumentMutation,
-    useGetAllUserVerificationDocumentsQuery,
-    useCheckCreateAccountSignInQuery,
-    useLazyCheckCreateAccountSignInQuery,
-    useSignInCreateAccountMutation,
-    useCreateClientMutation,
-    useGetAllClientsQuery,
-    useUpdateClientMutation,
-    useGetClientsByUserIdQuery,
-    useAddClientAttachmentMutation,
-    useGetClientAttachmentsByUserIdQuery,
-    useCreateTeamMutation,
-    useGetAllTeamsQuery,
-    useUpdateTeamMutation,
-    useGetAnalyticsOverviewQuery,
-    useGetUserWiseAnalyticsQuery,
-    useUpdateUserDetailsMutation,
-    useIncrementSalaryMutation,
-    useGetSalaryHistoryQuery,
-    useDeleteClientAttachmentMutation,
-    useArchiveClientAttachmentMutation,
-    useGetSalaryCalculationQuery,
-    useGetAllUsersSalaryCalculationQuery,
-    useCreateDailyWorkingTaskMutation,
-    useGetAllDailyWorkingTasksQuery,
-    useGetUserDailyWorkingTasksQuery,
-    useUpdateDailyWorkingTaskMutation,
-    useDeleteDailyWorkingTaskMutation,
-    useDeleteClientMutation,
-    useUploadImageMutation,
-    useFetchImagesQuery,
-    useCreateRealEstateProjectMutation,
-    useUpdateRealEstateProjectMutation,
-    useGetAllRealEstateProjectsQuery,
-    useGetUniqueRolesQuery
-} = api
+        useCreateLeaveMutation,
+        useGetUserLeavesQuery,
+        useGetAllLeavesQuery,
+        useRejectLeaveMutation,
+        useAddFestiveNoteMutation,
+        useUpdateFestiveMutation,
+        useDeleteFestiveNoteMutation,
+        useGetFestiveNotesByUserQuery,
+        useCheckInMutation,
+        useCheckoutMutation,
+        useCheckInStatusQuery,
+        useCheckoutStatusQuery,
+        useLazyCheckoutStatusQuery,
+        useAddUserDetailsMutation,
+        useGenerateUserCredentialMutation,
+        useSignInUserMutation,
+        useGetUserDataQuery,
+        useAddUserDataMutation,
+        useUpdateUserDataMutation,
+        useDeleteUserDataMutation,
+        useAddTaskAssignMutation,
+        useUpdateTaskAssignMutation,
+        useLazyGetSuggestedSlotsQuery,
+        useGetTaskAssignQuery,
+        useGetTaskAssignByDateQuery,
+        useLazyGetTaskAssignByDateQuery,
+        useArchiveTaskMutation,
+        useUpdateTaskStatusMutation,
+        useRequestTaskExtensionMutation,
+        useRespondTaskExtensionMutation,
+        useAddTaskChatMutation,
+        useGetTaskChatMessagesQuery,
+        useLazyGetTaskChatMessagesQuery,
+        useGetUserChatMessagesQuery,
+        useAddGlobalChatMutation,
+        useGetGlobalChatMessagesQuery,
+        useLazyGetGlobalChatMessagesQuery,
+        useGetRecentGlobalChatMessagesQuery,
+        useLazyGetRecentGlobalChatMessagesQuery,
+        useArchiveGlobalChatMessageMutation,
+        useGetAllUsersQuery,
+        useGetAllCheckinsQuery,
+        useCreateUserVerificationDocumentMutation,
+        useUpdateUserVerificationDocumentMutation,
+        useGetAllUserVerificationDocumentsQuery,
+        useCheckCreateAccountSignInQuery,
+        useLazyCheckCreateAccountSignInQuery,
+        useSignInCreateAccountMutation,
+        useCreateClientMutation,
+        useGetAllClientsQuery,
+        useUpdateClientMutation,
+        useGetClientsByUserIdQuery,
+        useAddClientAttachmentMutation,
+        useGetDeliverablesSummaryQuery,
+        useGetUploadTrackerQuery,
+        useTickDeliverableMutation,
+        useGetClientAttachmentsByUserIdQuery,
+        useGetClientAttachmentsQuery,
+        useCreateTeamMutation,
+        useGetAllTeamsQuery,
+        useUpdateTeamMutation,
+        useGetAnalyticsOverviewQuery,
+        useGetUserWiseAnalyticsQuery,
+        useUpdateUserDetailsMutation,
+        useIncrementSalaryMutation,
+        useGetSalaryHistoryQuery,
+        useDeleteClientAttachmentMutation,
+        useArchiveClientAttachmentMutation,
+        useGetSalaryCalculationQuery,
+        useGetAllUsersSalaryCalculationQuery,
+        useCreateDailyWorkingTaskMutation,
+        useGetAllDailyWorkingTasksQuery,
+        useGetUserDailyWorkingTasksQuery,
+        useUpdateDailyWorkingTaskMutation,
+        useDeleteDailyWorkingTaskMutation,
+        useDeleteClientMutation,
+        useUploadImageMutation,
+        useFetchImagesQuery,
+        useCreateRealEstateProjectMutation,
+        useUpdateRealEstateProjectMutation,
+        useGetAllRealEstateProjectsQuery,
+        useGetUniqueRolesQuery,
+        useLazyGetCheckinAnalysisQuery
+    } = api
 
 

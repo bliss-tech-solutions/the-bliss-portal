@@ -1,10 +1,11 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
-import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider, Input, Select } from 'antd';
+import { Table, Button, Space, Drawer, DatePicker, Tag, Typography, Divider, Input, Select, Dropdown } from 'antd';
 import './UserAttendanceData.css';
-import { useGetAllUsersQuery, useGetAllCheckinsQuery, useGetUniqueRolesQuery } from '../../../../store/api';
+import { useGetAllUsersQuery, useGetAllCheckinsQuery, useGetUniqueRolesQuery, useLazyGetCheckinAnalysisQuery } from '../../../../store/api';
 import { useNotification } from '../../../../contexts/NotificationContext';
 import dayjs from 'dayjs';
-import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined, ClockCircleOutlined, LogoutOutlined, InfoCircleOutlined, CopyOutlined, DownloadOutlined } from '@ant-design/icons';
+import * as XLSX from 'xlsx';
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -30,6 +31,8 @@ const UserAttendanceData = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [dateRange, setDateRange] = useState(null);
+
+    const [downloadRange, setDownloadRange] = useState(null);
 
     const { success, warning, error: showError } = useNotification();
     const { data: usersResp, isLoading } = useGetAllUsersQuery();
@@ -151,6 +154,95 @@ const UserAttendanceData = () => {
             }
         }
     }, [success, warning, showError]);
+
+    const [triggerAnalysis] = useLazyGetCheckinAnalysisQuery();
+
+    const handleDownloadAttendance = useCallback(async () => {
+        if (!downloadRange || !downloadRange[0] || !downloadRange[1]) {
+            warning('Please select a date range first');
+            return;
+        }
+
+        try {
+            const startDate = downloadRange[0].format('YYYY-MM-DD');
+            const endDate = downloadRange[1].format('YYYY-MM-DD');
+
+            // Fetch data from API
+            const response = await triggerAnalysis({
+                startDate,
+                endDate
+            }).unwrap();
+
+            if (!response.success || !response.data) {
+                showError('Failed to fetch attendance analysis data');
+                return;
+            }
+
+            // Map API response to Excel format
+            const excelData = response.data.map(item => {
+                const summary = item.summary || {};
+
+                // Find user details from existing users list for name/position if needed
+                // The API response seems to have userId but might not have name/position directly in the top level
+                // We'll try to find it in our local users list
+                const userDetails = usersResp?.data?.find(u =>
+                    (u.userId === item.userId || u._id === item.userId)
+                );
+
+                const userName = userDetails
+                    ? [userDetails.firstName, userDetails.lastName].filter(Boolean).join(' ')
+                    : item.userId;
+
+                const position = userDetails?.position || userDetails?.role || '-';
+
+                // Format working hours
+                const totalHours = Math.floor(summary.totalWorkingHours || 0);
+                const totalMins = Math.round(((summary.totalWorkingHours || 0) % 1) * 60);
+                const workingHoursStr = `${totalHours}h ${totalMins}m`;
+
+                return {
+                    'UserName': userName,
+                    'UserId': item.userId,
+                    'Working Hours': workingHoursStr,
+                    'Position': position,
+                    'Total Full Days': summary.fullDays || 0,
+                    'Total Half Days': summary.halfDays || 0,
+                    'Total Days Present': summary.totalDaysPresent || 0
+                };
+            });
+
+            // Sort by Total Half Days descending
+            excelData.sort((a, b) => b['Total Half Days'] - a['Total Half Days']);
+
+            // Create worksheet
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 25 }, // UserName
+                { wch: 20 }, // UserId
+                { wch: 15 }, // Working Hours
+                { wch: 20 }, // Position
+                { wch: 15 }, // Total Full Days
+                { wch: 15 }, // Total Half Days
+                { wch: 18 }  // Total Days Present
+            ];
+
+            // Create workbook
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Attendance Data');
+
+            // Generate filename based on range
+            const fileName = `Attendance_${startDate}_to_${endDate}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(workbook, fileName);
+            success(`Attendance data downloaded successfully!`);
+        } catch (error) {
+            console.error('Error downloading attendance:', error);
+            showError('Failed to download attendance data. Please try again.');
+        }
+    }, [downloadRange, triggerAnalysis, usersResp, success, warning, showError]);
 
     const onHeaderDragStart = useCallback((index) => () => {
         dragFromIndexRef.current = index;
@@ -292,6 +384,7 @@ const UserAttendanceData = () => {
             <div className="ua-title-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 <h2 style={{ margin: 0 }}>Employee Attendance</h2>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+
                     <Select
                         placeholder="Filter by Department"
                         style={{ width: 220 }}
@@ -305,6 +398,26 @@ const UserAttendanceData = () => {
                         onChange={e => setSearchTerm(e.target.value)}
                         style={{ width: 260 }}
                     />
+                    <RangePicker
+                        value={downloadRange}
+                        onChange={(dates) => setDownloadRange(dates)}
+                        placeholder={['Start Date', 'End Date']}
+                        style={{ width: 240 }}
+                    />
+                    <Button
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        onClick={handleDownloadAttendance}
+                        disabled={!downloadRange}
+                        style={{
+                            backgroundColor: !downloadRange ? '#d9d9d9' : '#28a745',
+                            borderColor: !downloadRange ? '#d9d9d9' : '#28a745',
+                            cursor: !downloadRange ? 'not-allowed' : 'pointer'
+                        }}
+                        title={!downloadRange ? "Select a date range to download" : "Download Attendance Report"}
+                    >
+                        Download Excel
+                    </Button>
                 </div>
             </div>
             <br />

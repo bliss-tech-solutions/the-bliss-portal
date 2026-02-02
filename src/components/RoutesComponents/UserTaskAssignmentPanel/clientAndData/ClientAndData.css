@@ -679,3 +679,114 @@
     padding: 12px 24px !important;
     margin: 0 !important;
 }
+
+/* Monthly Deliverables Styles */
+.deliverables-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.deliverable-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.deliverable-label {
+    font-size: 12px;
+    color: var(--secondary-text);
+    min-width: 45px;
+}
+
+.deliverable-checkbox.ant-checkbox-wrapper {
+    margin: 0;
+}
+
+/* Enhanced visibility for deliverable checkboxes */
+.deliverable-checkbox .ant-checkbox-inner {
+    border-radius: 50% !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-color: var(--card-bg) !important;
+    border: 2px solid rgba(235, 178, 54, 0.4) !important;
+    transition: all 0.2s ease;
+}
+
+.deliverable-checkbox:hover .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+    box-shadow: 0 0 0 2px rgba(235, 178, 54, 0.1);
+}
+
+.deliverable-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: #EBB236 !important;
+    border-color: #EBB236 !important;
+}
+
+.deliverable-checkbox .ant-checkbox-inner::after {
+    display: table !important;
+}
+
+.deliverable-checkbox .ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: #000000 !important;
+    opacity: 1 !important;
+    transform: rotate(45deg) scale(1) translate(-50%, -50%) !important;
+    width: 6px !important;
+    height: 10px !important;
+    left: 21% !important;
+    top: 45% !important;
+    border-width: 0 2px 2px 0 !important;
+}
+
+.deliverable-checkbox.ant-checkbox-wrapper-disabled .ant-checkbox-inner {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Work Summary Section Styles */
+.work-summary-section {
+    margin-bottom: 32px;
+}
+
+.work-summary-header {
+    margin-bottom: 20px;
+}
+
+.work-summary-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+.work-summary-table-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.work-summary-table .ant-table {
+    background-color: transparent;
+}
+
+.work-summary-table .ant-table-thead>tr>th {
+    background-color: var(--secondary-bg);
+    color: var(--primary-text);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: 600;
+}
+
+.work-summary-table .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+.work-summary-table .ant-table-tbody>tr:hover>td {
+    background-color: var(--hover-bg);
+}
+
+.work-summary-table .ant-pagination {
+    background-color: var(--secondary-bg);
+    padding: 16px;
+    margin: 0;
+}

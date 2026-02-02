@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import './ClientAndData.css';
-import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete, Checkbox, Form, Row, Col } from 'antd';
+import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete, Switch, Checkbox, Form, Row, Col, Space, DatePicker } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../../store/slices/authSlice';
 import { getUserName, getUserId } from '../../../../utils/userUtils';
-import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetClientAttachmentsByUserIdQuery, useAddClientAttachmentMutation, useArchiveClientAttachmentMutation } from '../../../../store/api';
+import { useGetClientsByUserIdQuery, useGetAllUsersQuery, useGetClientAttachmentsByUserIdQuery, useGetClientAttachmentsQuery, useAddClientAttachmentMutation, useArchiveClientAttachmentMutation, useTickDeliverableMutation, useGetDeliverablesSummaryQuery, useGetUploadTrackerQuery } from '../../../../store/api';
 import { useSocket } from '../../../../contexts/SocketContext';
 import { useNotification } from '../../../../contexts/NotificationContext';
-import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsSearch, BsUpload, BsCalendarCheck, BsTrash } from 'react-icons/bs';
+import { BsFileEarmarkText, BsLink45Deg, BsCopy, BsCheck, BsSearch, BsUpload, BsCalendarCheck, BsTrash, BsCheckCircle, BsCircle, BsDownload } from 'react-icons/bs';
 import dayjs from 'dayjs';
 import EmptyState from '../../../CommonComponents/EmptyState/EmptyState';
 
@@ -19,6 +20,10 @@ const ClientAndData = () => {
     const userName = getUserName(user);
     const userId = getUserId(user, userIdFromState);
     const isContentProvider = user?.role === 'ContentProvider';
+    const isVideoEditor = user?.role === 'user' && user?.position === 'Video Editor';
+    const isGraphicsDesigner = user?.role === 'user' && user?.position === 'Graphics Designer';
+    const isAdmin = user?.role === 'Admin';
+    const isExecution = user?.role === 'Execution';
 
     const { socket } = useSocket();
     const { showSuccess, showError } = useNotification();
@@ -31,12 +36,19 @@ const ClientAndData = () => {
     // New state for Upload Tracker and Doc Upload
     const [uploadDocModalVisible, setUploadDocModalVisible] = useState(false);
     const [uploadStatusModalVisible, setUploadStatusModalVisible] = useState(false);
+    const [deliverablesModalVisible, setDeliverablesModalVisible] = useState(false);
+    const [trackerSearchTerm, setTrackerSearchTerm] = useState('');
     const [selectedClient, setSelectedClient] = useState(null);
+    const [activeDeliverableClientId, setActiveDeliverableClientId] = useState(null);
     const [uploadForm] = Form.useForm();
     const [modal, contextHolder] = Modal.useModal();
+    const [dateRange, setDateRange] = useState([null, null]);
+
+    const { RangePicker } = DatePicker;
 
     const [addClientAttachment, { isLoading: isSubmittingAttachment }] = useAddClientAttachmentMutation();
     const [archiveClientAttachment] = useArchiveClientAttachmentMutation();
+    const [tickDeliverable] = useTickDeliverableMutation();
 
     // Fetch clients for the logged-in user - NO POLLING, using sockets for real-time updates
     const { data: clientsData, isLoading: isLoadingClients, refetch: refetchClients } = useGetClientsByUserIdQuery(userId, {
@@ -50,6 +62,23 @@ const ClientAndData = () => {
     const { data: allUsersData } = useGetAllUsersQuery();
 
     const clients = clientsData?.data || [];
+
+    // Fetch deliverables summary for Execution role
+    const { data: deliverablesSummaryData, isLoading: isLoadingSummary, refetch: refetchSummary } = useGetDeliverablesSummaryQuery(userId, {
+        skip: !isExecution,
+        refetchOnMountOrArgChange: true,
+    });
+
+    const deliverablesSummary = deliverablesSummaryData?.data || [];
+    const summaryMonth = deliverablesSummaryData?.month || dayjs().format('MMM YYYY');
+
+    // Fetch all tracker data for the logged-in user in one call when modal is open
+    const { data: trackerData, isLoading: isLoadingTracker, refetch: refetchTracker } = useGetUploadTrackerQuery(userId, {
+        skip: !userId || !uploadStatusModalVisible,
+        refetchOnMountOrArgChange: true,
+    });
+
+    const trackerList = trackerData?.data || [];
 
     // Month options for the checkbox selection - mapping full names to short codes
     const monthOptions = [
@@ -84,26 +113,119 @@ const ClientAndData = () => {
         }));
     }, [clients]);
 
-    // Filter clients based on search term
-    const filteredClients = useMemo(() => {
-        if (!searchTerm) return clients;
-        const term = searchTerm.toLowerCase();
-        return clients.filter(client =>
-            client.clientName?.toLowerCase().includes(term)
-        );
-    }, [clients, searchTerm]);
+    // Unified data source based on role - always use clients which has full monthlyDeliverables
+    const tableData = useMemo(() => {
+        return clients;
+    }, [clients]);
 
-    // Fetch document history when modal is open
-    const { data: documentHistoryData, isLoading: isLoadingDocumentHistory, refetch: refetchDocumentHistory } = useGetClientAttachmentsByUserIdQuery(
-        {
-            clientId: selectedClientForHistory?._id,
-            userId: userId
-        },
-        {
-            skip: !selectedClientForHistory?._id || !userId || !documentHistoryModalVisible,
-            refetchOnMountOrArgChange: true,
+    // Filter clients based on search term
+    const filteredTableData = useMemo(() => {
+        if (!searchTerm) return tableData;
+        const term = searchTerm.toLowerCase();
+        return tableData.filter(item =>
+            (item.clientName || '').toLowerCase().includes(term)
+        );
+    }, [tableData, searchTerm]);
+
+    // Sorted and Filtered tracker list
+    const filteredTrackerList = useMemo(() => {
+        let result = [...trackerList];
+
+        // Apply Search Filter if exists
+        if (trackerSearchTerm) {
+            const term = trackerSearchTerm.toLowerCase();
+            result = result.filter(client =>
+                client.clientName?.toLowerCase().includes(term)
+            );
         }
-    );
+
+        return result;
+    }, [trackerList, trackerSearchTerm]);
+
+    const handleExportExcel = async () => {
+        try {
+            const [start, end] = dateRange;
+            let url = `${import.meta.env.VITE_API_BASE_URL || ''}/api/clientmanagement/deliverables/export`;
+
+            const params = new URLSearchParams();
+            if (start) params.append('startDate', start.format('YYYY-MM-DD'));
+            if (end) params.append('endDate', end.format('YYYY-MM-DD'));
+            if (userId) params.append('userId', userId);
+            params.append('format', 'json'); // Request JSON format for client-side processing
+
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch export data');
+
+            const result = await response.json();
+            const exportData = result.data || result; // Handle both { data: [] } and [] formats
+
+            if (!exportData || !Array.isArray(exportData) || exportData.length === 0) {
+                showError('No data available for the selected range');
+                return;
+            }
+
+            // The backend is already returning the data with the correct column names:
+            // "Client Name", "City", "Onboard Date", "Reels", "Combos", etc.
+            // We can directly use this for the Excel sheet.
+            
+            // Create XLSX worksheet directly from the API response
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Deliverables Summary");
+
+            // Format columns width for readability
+            const colWidths = [
+                { wch: 30 }, // Client Name
+                ...allDeliverableConfigs.map(() => ({ wch: 15 })) // Dynamic category columns
+            ];
+            ws['!cols'] = colWidths;
+
+            // Trigger download
+            XLSX.writeFile(wb, `Deliverables_${dayjs().format('YYYY-MM-DD')}.xlsx`);
+            showSuccess('Excel file generated successfully');
+        } catch (error) {
+            console.error('Export Error:', error);
+            showError('Failed to generate Excel file: ' + error.message);
+        }
+    };
+
+    // Unified list of all deliverable types across all clients to generate columns
+    const allDeliverableConfigs = useMemo(() => {
+        const typeMap = new Map();
+        clients.forEach(client => {
+            (client.deliverableConfigs || []).forEach(config => {
+                if (!typeMap.has(config.type)) {
+                    typeMap.set(config.type, config.label);
+                }
+            });
+        });
+
+        // Priority order for common types if needed, otherwise alphabetical or default
+        const result = Array.from(typeMap.entries()).map(([type, label]) => ({ type, label }));
+
+        // Ensure Reels and Combos come first if they exist
+        return result.sort((a, b) => {
+            if (a.type === 'reels') return -1;
+            if (b.type === 'reels') return 1;
+            if (a.type === 'combos') return -1;
+            if (b.type === 'combos') return 1;
+            return a.label.localeCompare(b.label);
+        });
+    }, [clients]);
+
+    // Function to check if a user can edit a specific deliverable type
+    const canEditDeliverable = (type) => {
+        if (isAdmin) return true;
+        if (type === 'reels' && isVideoEditor) return true;
+        if (type === 'combos' && isGraphicsDesigner) return true;
+        // Allow execution users to edit other custom categories?
+        if (!['reels', 'combos'].includes(type) && (isExecution || isVideoEditor || isGraphicsDesigner)) return true;
+        return false;
+    };
 
     // Real-time client updates via socket
     useEffect(() => {
@@ -112,6 +234,7 @@ const ClientAndData = () => {
         const handleClientUpdate = () => {
             console.log('✅ Client data changed - refetching...');
             refetchClients();
+            if (uploadStatusModalVisible) refetchTracker();
         };
 
         socket.on('client:created', handleClientUpdate);
@@ -119,6 +242,16 @@ const ClientAndData = () => {
         socket.on('client:deleted', handleClientUpdate);
         socket.on('client:attachment:added', handleClientUpdate);
         socket.on('client:change', handleClientUpdate);
+        socket.on('client:deliverable:updated', () => {
+            console.log('✅ Deliverable updated - refetching...');
+            handleClientUpdate();
+            if (isExecution) refetchSummary();
+        });
+        socket.on('client:summary:updated', () => {
+            console.log('✅ Client summary updated - refetching...');
+            handleClientUpdate();
+            if (isExecution) refetchSummary();
+        });
 
         return () => {
             socket.off('client:created', handleClientUpdate);
@@ -126,12 +259,35 @@ const ClientAndData = () => {
             socket.off('client:deleted', handleClientUpdate);
             socket.off('client:attachment:added', handleClientUpdate);
             socket.off('client:change', handleClientUpdate);
+            socket.off('client:deliverable:updated');
         };
-    }, [socket, userId, refetchClients]);
+    }, [socket, userId, refetchClients, isExecution, refetchSummary]);
+
+    // For fetching document history
+    const { data: userAttachmentsData, isLoading: isLoadingUserAttachments, refetch: refetchUserAttachments } = useGetClientAttachmentsByUserIdQuery(
+        { clientId: selectedClientForHistory?._id || selectedClientForHistory?.clientId, userId },
+        { skip: !selectedClientForHistory || !documentHistoryModalVisible || isExecution || isAdmin }
+    );
+
+    // New hook to fetch ALL attachments for a client (for Execution/Admin roles)
+    const { data: allAttachmentsData, isLoading: isLoadingAllAttachments, refetch: refetchAllAttachments } = useGetClientAttachmentsQuery(
+        selectedClientForHistory?._id || selectedClientForHistory?.clientId,
+        { skip: !selectedClientForHistory || !documentHistoryModalVisible || (!isExecution && !isAdmin) }
+    );
+
+    // Decide which data to use based on role (Execution and Admin see all)
+    const historyData = (isExecution || isAdmin) ? allAttachmentsData : userAttachmentsData;
+    const isLoadingDocumentHistory = (isExecution || isAdmin) ? isLoadingAllAttachments : isLoadingUserAttachments;
+
+    const refetchDocumentHistory = () => {
+        if (isExecution || isAdmin) refetchAllAttachments();
+        else refetchUserAttachments();
+    };
 
     // Real-time document history updates via socket
     useEffect(() => {
-        if (!socket || !selectedClientForHistory?._id || !documentHistoryModalVisible) return;
+        const clientHistoryId = selectedClientForHistory?._id || selectedClientForHistory?.clientId;
+        if (!socket || !clientHistoryId || !documentHistoryModalVisible) return;
 
         const handleDocumentUpdate = () => {
             console.log('✅ Document history changed - refetching...');
@@ -147,7 +303,7 @@ const ClientAndData = () => {
             socket.off('client:attachment:updated', handleDocumentUpdate);
             socket.off('client:attachment:deleted', handleDocumentUpdate);
         };
-    }, [socket, selectedClientForHistory?._id, documentHistoryModalVisible, refetchDocumentHistory]);
+    }, [socket, selectedClientForHistory?._id, selectedClientForHistory?.clientId, documentHistoryModalVisible, refetchUserAttachments, refetchAllAttachments, isExecution]);
 
     // Helper function to get user name for team members
     const getTeamMemberName = (assignedUser) => {
@@ -185,7 +341,8 @@ const ClientAndData = () => {
 
     const handleUploadDocSubmit = async (values) => {
         try {
-            if (!selectedClient?._id) {
+            const currentSelectedClientId = selectedClient?._id || selectedClient?.clientId;
+            if (!currentSelectedClientId) {
                 showError('No client selected');
                 return;
             }
@@ -220,7 +377,7 @@ const ClientAndData = () => {
 
             // Call the API
             await addClientAttachment({
-                clientId: selectedClient._id,
+                clientId: currentSelectedClientId,
                 body: requestBody
             }).unwrap();
 
@@ -231,7 +388,8 @@ const ClientAndData = () => {
             // Refetch clients to get updated data (socket event will also trigger refetch)
             refetchClients();
             // Refetch document history if modal is open
-            if (documentHistoryModalVisible && selectedClientForHistory?._id === selectedClient._id) {
+            const currentHistoryId = selectedClientForHistory?._id || selectedClientForHistory?.clientId;
+            if (documentHistoryModalVisible && currentHistoryId === currentSelectedClientId) {
                 refetchDocumentHistory();
             }
 
@@ -251,8 +409,9 @@ const ClientAndData = () => {
             cancelText: 'No',
             centered: true,
             onOk: () => {
+                const clientHistoryId = selectedClientForHistory?._id || selectedClientForHistory?.clientId;
                 return archiveClientAttachment({
-                    clientId: selectedClientForHistory?._id,
+                    clientId: clientHistoryId,
                     attachmentId
                 }).unwrap()
                     .then(() => {
@@ -280,58 +439,35 @@ const ClientAndData = () => {
         }
     };
 
-    // A small sub-component to fetch and display status for ONE client
-    const UploadStatusRow = ({ client, userId, monthOptions }) => {
-        const { data: history, isLoading } = useGetClientAttachmentsByUserIdQuery(
-            { clientId: client._id, userId },
-            { skip: !client._id || !userId }
-        );
-
-        const attachments = history?.data?.attachments || [];
-        const uploadedMonths = attachments
-            .filter(doc => doc.archived === false || doc.archived === undefined)
-            .map(doc => doc.month);
-
-        return (
-            <tr key={client._id}>
-                <td className="tracker-client-name">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <strong>{client.clientName}</strong>
-                        <Tooltip title="Copy Client Name">
-                            <Button
-                                type="text"
-                                size="small"
-                                icon={<BsCopy style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />}
-                                onClick={() => {
-                                    navigator.clipboard.writeText(client.clientName);
-                                    showSuccess('Client name copied!');
-                                }}
-                                className="copy-client-btn"
-                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            />
-                        </Tooltip>
-                    </div>
-                </td>
-                {monthOptions.map(month => {
-                    const isUploaded = uploadedMonths.includes(month.shortCode);
-                    return (
-                        <td key={month.value} className="tracker-month-cell">
-                            <Checkbox checked={isUploaded} disabled />
-                        </td>
-                    );
-                })}
-                <td className="tracker-status-summary">
-                    {isLoading ? (
-                        <span className="tracker-loading">Loading...</span>
-                    ) : (
-                        <Tag color={uploadedMonths.length > 0 ? 'green' : 'orange'}>
-                            {uploadedMonths.length} / 12
-                        </Tag>
-                    )}
-                </td>
-            </tr>
-        );
+    const handleDeliverableTick = async (clientId, type, index = null, status = null) => {
+        console.log(`🚀 Toggling deliverable:`, { clientId, type, index, status });
+        try {
+            const response = await tickDeliverable({ clientId, type, index, status }).unwrap();
+            console.log(`✅ Deliverable update success:`, response);
+            showSuccess(`Deliverable updated!`);
+            // Explicitly refetch to ensure UI updates even if tags take a moment
+            refetchClients();
+        } catch (error) {
+            console.error('❌ Error ticking deliverable:', error);
+            showError(error?.data?.message || 'Failed to update deliverable');
+        }
     };
+
+    const handleUpdateWorkClick = (record) => {
+        setActiveDeliverableClientId(record._id || record.clientId);
+        setDeliverablesModalVisible(true);
+    };
+
+    const handleDeliverablesModalClose = () => {
+        setDeliverablesModalVisible(false);
+        setActiveDeliverableClientId(null);
+    };
+
+    // Derived active client from live data
+    const activeDeliverableClient = useMemo(() => {
+        return clients.find(c => (c._id || c.clientId) === activeDeliverableClientId) || null;
+    }, [clients, activeDeliverableClientId]);
+
 
     // Group documents by month
     const groupDocumentsByMonth = (attachments) => {
@@ -369,11 +505,22 @@ const ClientAndData = () => {
     };
 
     const documentsByMonth = useMemo(() => {
-        const attachments = documentHistoryData?.data?.attachments || [];
+        // Handle different possible response structures
+        let attachments = [];
+        if (historyData?.data) {
+            if (Array.isArray(historyData.data)) {
+                attachments = historyData.data;
+            } else if (historyData.data.attachments && Array.isArray(historyData.data.attachments)) {
+                attachments = historyData.data.attachments;
+            }
+        } else if (Array.isArray(historyData)) {
+            attachments = historyData;
+        }
+
         // Only show documents that are not archived
         const filteredAttachments = attachments.filter(doc => doc.archived === false || doc.archived === undefined);
         return groupDocumentsByMonth(filteredAttachments);
-    }, [documentHistoryData]);
+    }, [historyData]);
 
     // Prepare collapse panels for month-wise display with compact card design
     const collapsePanels = Object.keys(documentsByMonth).map(month => {
@@ -461,15 +608,43 @@ const ClientAndData = () => {
             title: 'Client Name',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: '30%',
-            render: (text) => <strong style={{ color: 'var(--primary-text)' }}>{text}</strong>
+            ...(isExecution ? { width: 200, fixed: 'left' } : {}),
+            render: (text, record) => (
+                <div>
+                    <div style={{ fontWeight: 600, color: 'var(--primary-text)' }}>{text}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--secondary-text)' }}>{record.city || ''}</div>
+                </div>
+            )
+        },
+        {
+            title: 'Deliverables',
+            key: 'deliverables',
+            width: '20%',
+            // No fixed width for user role
+            render: (_, record) => (
+                <Button
+                    className="global-secondary-btn"
+                    size="small"
+                    onClick={() => handleUpdateWorkClick(record)}
+                >
+                   Complete Work
+                </Button>
+            )
         },
         {
             title: 'Team Members',
             key: 'teamMembers',
-            width: '30%',
+            width: '15%',
+            // Flexible width
             render: (_, record) => {
-                const assignedUsers = record.assignedUsers || [];
+                // Try to get assignedUsers from record, or fallback to finding the client in the main list
+                let assignedUsers = record.assignedUsers || [];
+                if (assignedUsers.length === 0) {
+                    const clientInData = clients.find(c => (c._id || c.clientId) === (record._id || record.clientId));
+                    if (clientInData) {
+                        assignedUsers = clientInData.assignedUsers || [];
+                    }
+                }
 
                 if (assignedUsers.length === 0) {
                     return <span style={{ color: 'var(--secondary-text)' }}>-</span>;
@@ -536,7 +711,8 @@ const ClientAndData = () => {
         {
             title: 'Document History',
             key: 'documentHistory',
-            width: '20%',
+            width: '15%',
+            // Flexible right aligned column
             render: (_, record) => (
                 <Button
                     type="default"
@@ -552,7 +728,7 @@ const ClientAndData = () => {
         {
             title: 'Upload Doc',
             key: 'uploadDoc',
-            width: '20%',
+            width: '15%',
             render: (_, record) => (
                 <Button
                     className='global-secondary-btn'
@@ -564,32 +740,153 @@ const ClientAndData = () => {
                     Upload Doc
                 </Button>
             )
+        },
+        ...allDeliverableConfigs.map(config => ({
+            title: config.label,
+            key: config.type,
+            width: ['reels', 'combos'].includes(config.type) ? '15%' : 150,
+            render: (_, record) => {
+                const currentMonth = dayjs().format('MMM YYYY');
+                const monthlyDeliverables = record.monthlyDeliverables || [];
+                const currentMonthData = monthlyDeliverables.find(md => md.month === currentMonth) ||
+                    monthlyDeliverables[monthlyDeliverables.length - 1] ||
+                    { categories: [] };
+
+                const category = (currentMonthData.categories || []).find(c => c.type === config.type) || { items: [] };
+                const clientConfig = (record.deliverableConfigs || []).find(c => c.type === config.type);
+                const total = clientConfig?.targetCount || 0;
+                const items = category.items || [];
+                const completed = items.filter(i => i.status === true).length;
+
+                if (total === 0) return <span style={{ color: 'var(--secondary-text)', fontSize: '11px' }}>-</span>;
+
+                const percentage = (completed / total) * 100;
+                const canEdit = canEditDeliverable(config.type);
+
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Space size={4}>
+                                {Array.from({ length: total }).map((_, idx) => {
+                                    const isDone = Boolean(items[idx]?.status);
+                                    return (
+                                        <span
+                                            key={idx}
+                                            style={{
+                                                fontSize: '14px',
+                                                color: isDone ? '#52c41a' : '#8c8c8c',
+                                                cursor: canEdit ? 'pointer' : 'default',
+                                                display: 'flex',
+                                                alignItems: 'center'
+                                            }}
+                                            onClick={() => {
+                                                if (canEdit) {
+                                                    handleDeliverableTick(record._id || record.clientId, config.type, idx, !isDone);
+                                                }
+                                            }}
+                                        >
+                                            {isDone ? <BsCheckCircle /> : <BsCircle />}
+                                        </span>
+                                    );
+                                })}
+                            </Space>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary-text)' }}>
+                                {completed}/{total}
+                            </span>
+                        </div>
+                        <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${percentage}%`, height: '100%', backgroundColor: percentage === 100 ? '#52c41a' : '#EBB236', transition: 'width 0.3s ease' }} />
+                        </div>
+                    </div>
+                );
+            }
+        })),
+        {
+            title: 'Overall Progress',
+            key: 'overallProgress',
+            width: '10%',
+            render: (_, record) => {
+                const currentMonth = dayjs().format('MMM YYYY');
+                const monthlyDeliverables = record.monthlyDeliverables || [];
+                const currentMonthData = monthlyDeliverables.find(md => md.month === currentMonth) ||
+                    monthlyDeliverables[monthlyDeliverables.length - 1] ||
+                    { categories: [] };
+
+                const categories = currentMonthData.categories || [];
+                const configs = record.deliverableConfigs || [];
+
+                let completedItems = 0;
+                let totalItems = 0;
+
+                configs.forEach(cfg => {
+                    const cat = categories.find(c => c.type === cfg.type) || { items: [] };
+                    totalItems += cfg.targetCount || 0;
+                    completedItems += (cat.items || []).filter(i => i.status === true).length;
+                });
+
+                if (totalItems === 0) return <span style={{ color: 'var(--secondary-text)', fontSize: '11px' }}>-</span>;
+
+                const percentageComplete = Math.round((completedItems / totalItems) * 100);
+
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--primary-text)' }}>
+                                {completedItems}/{totalItems}
+                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: percentageComplete === 100 ? '#52c41a' : '#EBB236' }}>
+                                {percentageComplete}%
+                            </span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ width: `${percentageComplete}%`, height: '100%', backgroundColor: percentageComplete === 100 ? '#52c41a' : '#EBB236', transition: 'width 0.3s ease' }} />
+                        </div>
+                    </div>
+                );
+            }
         }
     ];
 
-    // Conditionally add 'Upload Doc' column for ContentProviders
-    const tableColumns = isContentProvider
-        ? columns
-        : columns.filter(col => col.key !== 'uploadDoc');
+    // Conditionally hide columns based on roles
+    const tableColumns = columns.filter(col => {
+        // 'Upload Doc' only for ContentProvider
+        if (col.key === 'uploadDoc') return isContentProvider;
 
-    // Adjust widths if not content provider
-    if (!isContentProvider) {
-        const nameCol = tableColumns.find(c => c.key === 'clientName');
-        const teamCol = tableColumns.find(c => c.key === 'teamMembers');
-        const historyCol = tableColumns.find(c => c.key === 'documentHistory');
+        // 'Deliverables' (Update Work button) is hidden for Execution
+        if (col.key === 'deliverables') return !isExecution;
 
-        if (nameCol) nameCol.width = '40%';
-        if (teamCol) teamCol.width = '40%';
-        if (historyCol) historyCol.width = '20%';
-    }
+        // Summary metrics (Dynamic Types + Overall Progress) are ONLY for Execution
+        if ([...allDeliverableConfigs.map(c => c.type), 'overallProgress', 'reels', 'combos'].includes(col.key)) {
+            return isExecution || isAdmin;
+        }
+
+        return true;
+    });
 
     return (
         <div id="ClientAndData" className={`theme-${theme}`}>
             {contextHolder}
             <div className="client-and-data-container">
+
                 <div className="client-and-data-header-row">
                     <h2 className='Capitalize'>{userName} Client & Data</h2>
                     <div className='header-actions-right' style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        {isExecution && (
+                            <>
+                                <RangePicker
+                                    onChange={(dates) => setDateRange(dates || [null, null])}
+                                    style={{ height: '42px', borderRadius: '8px' }}
+                                />
+                                <Button
+                                    icon={<BsDownload />}
+                                    onClick={handleExportExcel}
+                                    className="global-primary-btn"
+                                    style={{ height: '42px', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
+                                    Download Excel
+                                </Button>
+                            </>
+                        )}
                         <Button
                             icon={<BsCalendarCheck />}
                             onClick={() => setUploadStatusModalVisible(true)}
@@ -620,18 +917,20 @@ const ClientAndData = () => {
                     </div>
                 </div>
 
+                {/* Original Clients Table */}
                 <div className="clients-table-container">
                     <Table
                         columns={tableColumns}
-                        dataSource={filteredClients}
-                        loading={isLoadingClients}
-                        rowKey="_id"
+                        dataSource={filteredTableData}
+                        loading={isLoadingClients || isLoadingSummary}
+                        rowKey={(record) => record._id || record.clientId}
                         pagination={{
                             pageSize: 10,
                             showSizeChanger: true,
                             showTotal: (total) => `Total ${total} clients`
                         }}
                         className="clients-table"
+                        {...(isExecution ? { scroll: { x: 1400 } } : {})}
                     />
 
                     {/* Document History Modal */}
@@ -766,6 +1065,18 @@ const ClientAndData = () => {
                         className="upload-tracker-modal"
                         centered
                     >
+                        <div className="tracker-modal-header-actions" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                            <div className="tracker-search-wrapper" style={{ width: '300px' }}>
+                                <Input
+                                    placeholder="Search client in tracker..."
+                                    prefix={<BsSearch className="search-icon" />}
+                                    allowClear
+                                    value={trackerSearchTerm}
+                                    onChange={(e) => setTrackerSearchTerm(e.target.value)}
+                                    className="client-panel-search"
+                                />
+                            </div>
+                        </div>
                         <div className="tracker-table-container">
                             <table className="tracker-table">
                                 <thead>
@@ -778,21 +1089,59 @@ const ClientAndData = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {clients.length === 0 ? (
+                                    {isLoadingTracker ? (
                                         <tr>
                                             <td colSpan={monthOptions.length + 2} style={{ textAlign: 'center', padding: '40px' }}>
-                                                No clients assigned to track.
+                                                Loading tracker data...
+                                            </td>
+                                        </tr>
+                                    ) : filteredTrackerList.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={monthOptions.length + 2} style={{ textAlign: 'center', padding: '40px' }}>
+                                                {trackerSearchTerm ? 'No matching clients found.' : 'No clients assigned to track.'}
                                             </td>
                                         </tr>
                                     ) : (
-                                        clients.map(client => (
-                                            <UploadStatusRow
-                                                key={client._id}
-                                                client={client}
-                                                userId={userId}
-                                                monthOptions={monthOptions}
-                                            />
-                                        ))
+                                        filteredTrackerList.map(client => {
+                                            const monthlyStatus = client.monthlyStatus || {};
+                                            const uploadedCount = Object.values(monthlyStatus).filter(status => status).length;
+
+                                            return (
+                                                <tr key={client._id || client.clientId}>
+                                                    <td className="tracker-client-name">
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <strong>{client.clientName}</strong>
+                                                            <Tooltip title="Copy Client Name">
+                                                                <Button
+                                                                    type="text"
+                                                                    size="small"
+                                                                    icon={<BsCopy style={{ fontSize: '12px', color: 'var(--secondary-text)' }} />}
+                                                                    onClick={() => {
+                                                                        navigator.clipboard.writeText(client.clientName);
+                                                                        showSuccess('Client name copied!');
+                                                                    }}
+                                                                    className="copy-client-btn"
+                                                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                />
+                                                            </Tooltip>
+                                                        </div>
+                                                    </td>
+                                                    {monthOptions.map(month => {
+                                                        const isUploaded = monthlyStatus[month.shortCode] || false;
+                                                        return (
+                                                            <td key={month.value} className="tracker-month-cell">
+                                                                <Checkbox checked={isUploaded} disabled />
+                                                            </td>
+                                                        );
+                                                    })}
+                                                    <td className="tracker-status-summary">
+                                                        <Tag color={uploadedCount > 0 ? 'green' : 'orange'}>
+                                                            {uploadedCount} / 12
+                                                        </Tag>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>
@@ -800,8 +1149,91 @@ const ClientAndData = () => {
                     </Modal>
 
                 </div>
+
+                {/* Deliverables Update Modal */}
+                <Modal
+                    title={`Update Work - ${activeDeliverableClient?.clientName || ''}`}
+                    open={deliverablesModalVisible}
+                    onCancel={handleDeliverablesModalClose}
+                    footer={null}
+                    width={800}
+                    className="upload-tracker-modal" // Reusing tracker modal styles for consistency
+                >
+                    {activeDeliverableClient && (() => {
+                        const currentMonth = dayjs().format('MMM YYYY');
+                        const monthlyDeliverables = activeDeliverableClient.monthlyDeliverables || [];
+                        const currentMonthData = monthlyDeliverables.find(md => md.month === currentMonth) ||
+                            monthlyDeliverables[monthlyDeliverables.length - 1] ||
+                            { categories: [] };
+
+                        const configs = activeDeliverableClient.deliverableConfigs || [];
+                        const categories = currentMonthData.categories || [];
+
+                        return (
+                            <div className="tracker-table-container">
+                                <table className="tracker-table">
+                                    <thead>
+                                        <tr>
+                                            <th style={{ width: '30%' }}>Category</th>
+                                            <th style={{ width: '20%', textAlign: 'center' }}>Progress</th>
+                                            <th style={{ textAlign: 'center' }}>Checkboxes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {configs.map((config, idx) => {
+                                            const category = categories.find(c => c.type === config.type) || { items: [] };
+                                            const total = config.targetCount || 0;
+                                            const items = category.items || [];
+                                            const completed = items.filter(item => item.status === true).length;
+
+                                            // Determine permissions based on type
+                                            const canEdit = isAdmin ||
+                                                (config.type === 'reels' && isVideoEditor) ||
+                                                (config.type === 'combos' && isGraphicsDesigner) ||
+                                                (!['reels', 'combos'].includes(config.type));
+
+                                            return (
+                                                <tr key={config.type || idx}>
+                                                    <td className="tracker-client-name">
+                                                        <strong>{config.label || config.type}</strong>
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <Tag color={completed === total && total > 0 ? 'green' : 'blue'}>
+                                                            {completed} / {total}
+                                                        </Tag>
+                                                    </td>
+                                                    <td style={{ textAlign: 'center' }}>
+                                                        <Space size={8} wrap justify="center">
+                                                            {Array.from({ length: total }).map((_, i) => (
+                                                                <Checkbox
+                                                                    key={i}
+                                                                    checked={Boolean(items[i]?.status)}
+                                                                    disabled={!canEdit}
+                                                                    onChange={(e) => handleDeliverableTick(activeDeliverableClient._id, config.type, i, e.target.checked)}
+                                                                    className="deliverable-checkbox"
+                                                                />
+                                                            ))}
+                                                        </Space>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                        {configs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={3} style={{ textAlign: 'center', padding: '20px', color: 'var(--secondary-text)' }}>
+                                                    No deliverables configured for this client.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        );
+                    })()}
+                </Modal>
+
             </div>
-        </div>
+        </div >
     );
 };
 
