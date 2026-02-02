@@ -1230,13 +1230,12 @@ const ExecutionTaskAssignPanel = () => {
                                             <Select
                                                 placeholder="Select position"
                                                 onChange={handlePositionChange}
-                                            >
-                                                {getAvailablePositions().map((position) => (
-                                                    <Select.Option key={position.value} value={position.value}>
-                                                        {position.label}
-                                                    </Select.Option>
-                                                ))}
-                                            </Select>
+                                                showSearch
+                                                options={getAvailablePositions()}
+                                                filterOption={(input, option) =>
+                                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                }
+                                            />
                                         </Form.Item>
                                     </Col>
                                     <Col xs={24} sm={24} md={12} lg={12}>
@@ -1249,13 +1248,12 @@ const ExecutionTaskAssignPanel = () => {
                                                 placeholder={selectedPosition ? "Select user" : "First select a position"}
                                                 disabled={!selectedPosition || availableUsers.length === 0}
                                                 onChange={handleUserSelection}
-                                            >
-                                                {getUsersForPosition().map((user) => (
-                                                    <Select.Option key={user.value} value={user.value}>
-                                                        {user.label}
-                                                    </Select.Option>
-                                                ))}
-                                            </Select>
+                                                showSearch
+                                                options={getUsersForPosition()}
+                                                filterOption={(input, option) =>
+                                                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                                                }
+                                            />
                                         </Form.Item>
                                     </Col>
                                 </Row>
