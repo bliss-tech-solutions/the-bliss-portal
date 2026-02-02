@@ -291,12 +291,18 @@ const AllTaskEntries = ({
         }
 
         // Apply date filter (dummy for now)
+        // Apply date filter (assigned date)
         if (selectedDateRange && selectedDateRange[0] && selectedDateRange[1]) {
-            const taskDate = new Date(task.createdAt);
-            const startDate = selectedDateRange[0].toDate();
-            const endDate = selectedDateRange[1].toDate();
+            const startDate = dayjs(selectedDateRange[0]).startOf('day');
+            const endDate = dayjs(selectedDateRange[1]).endOf('day');
 
-            if (taskDate < startDate || taskDate > endDate) return false;
+            const hasMatchingSlot = task.slots?.some(slot => {
+                const slotDate = dayjs(slot.slotDate || slot.start);
+                return (slotDate.isSame(startDate) || slotDate.isAfter(startDate)) &&
+                    (slotDate.isSame(endDate) || slotDate.isBefore(endDate));
+            });
+
+            if (!hasMatchingSlot) return false;
         }
 
         // User filter
