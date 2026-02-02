@@ -31,6 +31,7 @@ const ContentProviderPanel = () => {
     const [uploadForm] = Form.useForm();
     const [documentHistoryModalVisible, setDocumentHistoryModalVisible] = useState(false);
     const [selectedClientForHistory, setSelectedClientForHistory] = useState(null);
+    const [trackerSearchTerm, setTrackerSearchTerm] = useState('');
     const [copiedLinkId, setCopiedLinkId] = useState(null);
     const [modal, contextHolder] = Modal.useModal();
 
@@ -116,6 +117,24 @@ const ContentProviderPanel = () => {
             client.clientName?.toLowerCase().includes(term)
         );
     }, [clients, searchTerm]);
+
+    // Sorted and Filtered clients for the Upload Tracker Modal
+    const sortedAndFilteredTrackerClients = React.useMemo(() => {
+        let result = [...clients];
+
+        // Apply Alphabetical Sort by default
+        result.sort((a, b) => (a.clientName || '').localeCompare(b.clientName || ''));
+
+        // Apply Search Filter if exists
+        if (trackerSearchTerm) {
+            const term = trackerSearchTerm.toLowerCase();
+            result = result.filter(client =>
+                client.clientName?.toLowerCase().includes(term)
+            );
+        }
+
+        return result;
+    }, [clients, trackerSearchTerm]);
 
     // Generate search suggestions for clients
     const clientSearchOptions = React.useMemo(() => {
@@ -845,6 +864,18 @@ const ContentProviderPanel = () => {
                     className="upload-tracker-modal"
                     centered
                 >
+                    <div className="tracker-modal-header-actions" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div className="tracker-search-wrapper" style={{ width: '300px' }}>
+                            <Input
+                                placeholder="Search client in tracker..."
+                                prefix={<BsSearch className="search-icon" />}
+                                allowClear
+                                value={trackerSearchTerm}
+                                onChange={(e) => setTrackerSearchTerm(e.target.value)}
+                                className="client-panel-search"
+                            />
+                        </div>
+                    </div>
                     <div className="tracker-table-container">
                         <table className="tracker-table">
                             <thead>
@@ -857,14 +888,14 @@ const ContentProviderPanel = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {clients.length === 0 ? (
+                                {sortedAndFilteredTrackerClients.length === 0 ? (
                                     <tr>
                                         <td colSpan={monthOptions.length + 2} style={{ textAlign: 'center', padding: '40px' }}>
-                                            No clients assigned to track.
+                                            {trackerSearchTerm ? 'No matching clients found.' : 'No clients assigned to track.'}
                                         </td>
                                     </tr>
                                 ) : (
-                                    clients.map(client => (
+                                    sortedAndFilteredTrackerClients.map(client => (
                                         <UploadStatusRow
                                             key={client._id}
                                             client={client}

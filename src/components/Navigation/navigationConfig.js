@@ -142,7 +142,7 @@ export const navigationConfig = [
         componentLabelName: "Clients Segregation",
         icon: TfiLayoutAccordionSeparated,
         routeName: "/clients-segregation",
-        roles: ["Execution"],
+        roles: ["Execution","ContentProvider"],
         component: ClientsSegregation,
         showInSidebar: true
     },
