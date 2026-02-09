@@ -133,26 +133,28 @@ const TaskChat = ({
         }
     }, [taskChatMessages]);
 
-    // Close emoji picker when clicking outside (but not when typing in input)
+    // Close emoji picker when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
+            // Only close if picker is open and click is outside both picker and button
             if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
-                // Don't close if clicking on the input field or emoji button
-                const isInputField = event.target.closest('.comment-input-wrapper');
+                // Check if clicking the emoji button itself (let toggleEmojiPicker handle that)
                 const isEmojiButton = event.target.closest('.emoji-button');
 
-                if (!isInputField && !isEmojiButton) {
+                // If not clicking emoji button, close the picker
+                if (!isEmojiButton) {
                     setShowEmojiPicker(false);
                 }
             }
         };
 
         if (showEmojiPicker) {
-            document.addEventListener('mousedown', handleClickOutside);
+            // Use 'mousedown' to catch clicks before other handlers
+            document.addEventListener('mousedown', handleClickOutside, true);
         }
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside, true);
         };
     }, [showEmojiPicker]);
 

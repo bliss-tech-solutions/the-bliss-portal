@@ -98,12 +98,17 @@
 }
 
 .sent .message-bubble {
-    background: var(--brand-color);
+    background: linear-gradient(135deg, var(--brand-color) 0%, rgba(235, 178, 54, 0.9) 100%);
     color: white;
-    /* Always white on brand color */
     border-radius: 18px 18px 4px 18px;
     border: none;
-    box-shadow: 0 2px 8px rgba(235, 178, 54, 0.2);
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.sent .message-bubble:hover {
+    box-shadow: 0 6px 16px rgba(235, 178, 54, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
 }
 
 .sent .message-time {
@@ -127,10 +132,17 @@
 
 .received .message-bubble {
     background: var(--secondary-bg);
-    /* Theme aware */
     color: var(--primary-text);
     border-radius: 18px 18px 18px 4px;
     border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+}
+
+.received .message-bubble:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    border-color: rgba(235, 178, 54, 0.3);
 }
 
 .received .message-time {
@@ -169,11 +181,12 @@
 }
 
 .message-bubble {
-    padding: 8px 14px;
+    padding: 10px 16px;
     position: relative;
-    font-size: 13px;
-    line-height: 1.4;
+    font-size: 14px;
+    line-height: 1.5;
     word-wrap: break-word;
+    backdrop-filter: blur(8px);
 }
 
 .message-text {
@@ -204,32 +217,41 @@
     margin-top: 16px;
     position: relative;
     background: var(--card-bg);
-    /* Ensure solid background behind input */
+    z-index: 1;
 }
 
 .comment-input-wrapper .ant-input-affix-wrapper {
     background-color: var(--input-bg);
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
     border-radius: 24px;
-    /* Rounded pill shape input */
-    padding: 8px 16px;
-    transition: all 0.2s ease;
+    padding: 10px 18px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.comment-input-wrapper .ant-input-affix-wrapper:hover,
+.comment-input-wrapper .ant-input-affix-wrapper:hover {
+    border-color: var(--brand-color);
+    box-shadow: 0 4px 12px rgba(235, 178, 54, 0.15);
+    transform: translateY(-1px);
+}
+
 .comment-input-wrapper .ant-input-affix-wrapper-focused {
     border-color: var(--brand-color);
-    box-shadow: 0 0 0 3px rgba(235, 178, 54, 0.1);
+    box-shadow: 0 0 0 4px rgba(235, 178, 54, 0.12), 0 4px 16px rgba(235, 178, 54, 0.2);
+    transform: translateY(-1px);
 }
 
 .comment-input-wrapper .ant-input {
     background-color: transparent;
     color: var(--primary-text);
-    font-size: 13px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
 }
 
 .comment-input-wrapper .ant-input::placeholder {
     color: var(--secondary-text);
+    opacity: 0.7;
 }
 
 /* Tools */
@@ -244,8 +266,82 @@
 
 .emoji-button,
 .attach-button {
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    color: var(--secondary-text) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 18px !important;
+}
+
+.emoji-button:hover,
+.attach-button:hover {
+    background: rgba(235, 178, 54, 0.1) !important;
+    color: var(--brand-color) !important;
+    transform: scale(1.1);
+}
+
+.emoji-button:active,
+.attach-button:active {
+    transform: scale(0.95);
+}
+
+.comment-input-wrapper .ant-input-suffix svg {
+    color: var(--brand-color);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 18px;
+}
+
+.comment-input-wrapper .ant-input-suffix svg:hover {
+    transform: scale(1.15) rotate(-10deg);
+    color: rgba(235, 178, 54, 1);
+    filter: drop-shadow(0 2px 4px rgba(235, 178, 54, 0.3));
+}
+
+.comment-input-wrapper .ant-input-suffix svg:active {
+    transform: scale(0.95);
+}
+
+/* Emoji Picker Container */
+.emoji-picker-container {
+    position: relative;
+}
+
+/* Emoji Picker Popup */
+.emoji-picker-popup {
+    position: absolute;
+    bottom: 110%;
+    left: 0;
+    z-index: 1000;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+.emoji-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--card-bg);
+    border-radius: 12px 12px 0 0;
+}
+
+.emoji-picker-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.emoji-picker-close {
+    width: 24px !important;
+    height: 24px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -254,28 +350,9 @@
     transition: all 0.2s ease !important;
 }
 
-.emoji-button:hover,
-.attach-button:hover {
+.emoji-picker-close:hover {
     background: var(--hover-bg) !important;
     color: var(--primary-text) !important;
-}
-
-.comment-input-wrapper .ant-input-suffix svg {
-    color: var(--brand-color);
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.comment-input-wrapper .ant-input-suffix svg:hover {
-    transform: scale(1.1);
-}
-
-/* Emoji Picker Popup */
-.emoji-picker-popup {
-    bottom: 110%;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--border-color);
 }
 
 /* Attach Menu */
