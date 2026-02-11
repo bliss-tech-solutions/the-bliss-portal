@@ -7,7 +7,7 @@ import { selectCurrentHeaderLogo, toggleTheme, selectTheme } from "../../../stor
 import { logout } from "../../../store/slices/authSlice";
 import { useNotification } from "../../../contexts/NotificationContext";
 import { SunOutlined, MoonOutlined, BellOutlined, UserOutlined, SettingOutlined, LogoutOutlined, CalendarOutlined, ClockCircleOutlined, LoadingOutlined, ExportOutlined, WarningOutlined } from "@ant-design/icons";
-import { useCheckoutMutation, useGetTaskAssignQuery, useGetAllUsersQuery } from '../../../store/api';
+import { useCheckoutMutation, useGetTaskAssignQuery, useGetAllUsersQuery, useCheckInStatusQuery } from '../../../store/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
@@ -31,6 +31,9 @@ const PortalHeader = () => {
     const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
     const [checkoutReason, setCheckoutReason] = useState('');
     const [checkout, { isLoading: isCheckoutLoading }] = useCheckoutMutation();
+    const { data: checkInStatus } = useCheckInStatusQuery({ userId }, {
+        skip: !userId
+    });
 
     // Fetch user tasks for notifications (only for user role)
     const userRole = user?.role?.toLowerCase();
@@ -452,11 +455,11 @@ const PortalHeader = () => {
 
     return (
         <>
-          
+
 
             <div id="PortalHeader" className="portal-header">
                 {/* Makar Sankranti Festival Decorations */}
-              
+
 
                 <div className="PortalContainer h-100">
                     <div className="h-100">
@@ -479,17 +482,21 @@ const PortalHeader = () => {
                                             </div>
                                         </div>
                                         {user?.role?.toLowerCase() !== 'admin' && user?.position?.toLowerCase() !== 'admin' && (
-                                            <div>
-                                                <div>
-                                                    <Button
-                                                        size="small"
-                                                        icon={<ExportOutlined />}
-                                                        onClick={() => setCheckoutModalOpen(true)}
-                                                        className={`portal-checkout-button  }`}
-                                                    >
-                                                        Check Out
-                                                    </Button>
-                                                </div>
+                                            <div className="portal-attendance-actions">
+                                                <Button
+                                                    size="small"
+                                                    icon={<ExportOutlined />}
+                                                    onClick={() => setCheckoutModalOpen(true)}
+                                                    className="portal-checkout-button"
+                                                >
+                                                    Check Out
+                                                </Button>
+                                                {checkInStatus?.checkedIn && (checkInStatus?.timestamp || checkInStatus?.checkInAt) && (
+                                                    <div className="portal-checkin-time">
+                                                        <ClockCircleOutlined />
+                                                        <span>In: {dayjs(checkInStatus.timestamp || checkInStatus.checkInAt).format('hh:mm A')}</span>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -576,7 +583,7 @@ const PortalHeader = () => {
                 cancelText="Cancel"
                 className="checkout-modal"
             >
-               
+
                 {userRole === 'user' && checkoutPendingTasks.length > 0 && (
                     <div className="checkout-pending-warning" style={{
                         marginBottom: '16px',
