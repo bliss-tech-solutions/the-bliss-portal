@@ -1,0 +1,844 @@
+#AdminDashboardNew.dashboard-container {
+    /* padding: 24px; */
+    background-color: var(--primary-bg);
+    min-height: 100vh;
+    transition: all var(--transition-medium) ease;
+}
+
+#AdminDashboardNew .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+#AdminDashboardNew .header-left {
+    display: flex;
+    flex-direction: column;
+}
+
+#AdminDashboardNew .welcome-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-text);
+    margin: 0;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#AdminDashboardNew .wave {
+    display: inline-block;
+    animation: wave-animation 2.5s infinite;
+    transform-origin: 70% 70%;
+}
+
+@keyframes wave-animation {
+    0% {
+        transform: rotate(0.0deg)
+    }
+
+    10% {
+        transform: rotate(14.0deg)
+    }
+
+    20% {
+        transform: rotate(-8.0deg)
+    }
+
+    30% {
+        transform: rotate(14.0deg)
+    }
+
+    40% {
+        transform: rotate(-4.0deg)
+    }
+
+    50% {
+        transform: rotate(10.0deg)
+    }
+
+    60% {
+        transform: rotate(0.0deg)
+    }
+
+    100% {
+        transform: rotate(0.0deg)
+    }
+}
+
+#AdminDashboardNew .sub-text {
+    color: var(--secondary-text);
+    font-size: 15px;
+    margin: 4px 0 0 0;
+    font-weight: 500;
+}
+
+#AdminDashboardNew .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#AdminDashboardNew .date-picker-wrapper {
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+#AdminDashboardNew .theme-range-picker {
+    height: 44px;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--card-bg) !important;
+    padding: 0 16px !important;
+    transition: all var(--transition-fast) ease !important;
+}
+
+#AdminDashboardNew .theme-range-picker:hover {
+    border-color: var(--brand-color) !important;
+}
+
+#AdminDashboardNew .theme-range-picker input {
+    color: var(--primary-text) !important;
+    font-weight: 500 !important;
+}
+
+#AdminDashboardNew .theme-range-picker .ant-picker-range-separator {
+    color: var(--secondary-text) !important;
+}
+
+#AdminDashboardNew .add-new-btn {
+    height: 44px !important;
+    padding: 0 24px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    background: var(--button-primary) !important;
+    border: none !important;
+    transition: all var(--transition-fast) ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+#AdminDashboardNew .add-new-btn:hover {
+    background: var(--button-primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+#AdminDashboardNew .refresh-btn {
+    height: 44px !important;
+    padding: 0 20px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--primary-text) !important;
+    transition: all var(--transition-fast) ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+#AdminDashboardNew .refresh-btn:hover {
+    border-color: var(--brand-color) !important;
+    color: var(--brand-color) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+/* Dashboard Main Grid Layout */
+#AdminDashboardNew .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+#AdminDashboardNew .section-left {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Stats Cards Grid - 3 Columns for specific stats */
+#AdminDashboardNew .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+/* Functional Stat Card Styles */
+#AdminDashboardNew .stat-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    text-align: left;
+    gap: 0px;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: all var(--transition-medium) ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+}
+
+#AdminDashboardNew .stat-card:hover {
+    border-color: var(--brand-color);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(235, 178, 54, 0.15);
+}
+
+#AdminDashboardNew .card-top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+#AdminDashboardNew .stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all var(--transition-medium) ease;
+}
+
+#AdminDashboardNew .employees-icon,
+#AdminDashboardNew .clients-icon,
+#AdminDashboardNew .attendance-icon {
+    background-color: rgba(235, 178, 54, 0.1);
+    color: var(--brand-color);
+}
+
+#AdminDashboardNew .stat-card:hover .stat-icon-wrapper {
+    background-color: var(--brand-color);
+    color: white;
+    transform: scale(1.1);
+}
+
+#AdminDashboardNew .stat-info {
+    width: 100%;
+    margin: 7px 0;
+}
+
+#AdminDashboardNew .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-text);
+    margin: 0;
+    line-height: 1.2;
+}
+
+#AdminDashboardNew .stat-label {
+    font-size: 13px;
+    color: var(--secondary-text);
+    margin: 4px 0 0 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#AdminDashboardNew .stat-sub-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#AdminDashboardNew .sub-item.completed {
+    color: #52c41a;
+}
+
+#AdminDashboardNew .sub-item.pending {
+    color: #faad14;
+}
+
+#AdminDashboardNew .sub-separator {
+    color: var(--secondary-text);
+    opacity: 0.5;
+}
+
+#AdminDashboardNew .stat-trend {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+#AdminDashboardNew .card-footer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    color: var(--secondary-text);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition-fast) ease;
+}
+
+#AdminDashboardNew .stat-card:hover .card-footer {
+    color: var(--brand-color);
+}
+
+#AdminDashboardNew .card-footer span {
+    cursor: pointer;
+}
+
+#AdminDashboardNew .stat-trend.positive {
+    background-color: rgba(235, 178, 54, 0.1);
+    color: var(--brand-color);
+}
+
+#AdminDashboardNew .stat-trend.neutral {
+    background-color: var(--tertiary-bg);
+    color: var(--secondary-text);
+}
+
+/* Blank Card Placeholder Styles */
+#AdminDashboardNew .blank-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: all var(--transition-medium) ease;
+    overflow: hidden;
+    position: relative;
+    min-height: 120px;
+}
+
+#AdminDashboardNew .blank-card:hover {
+    border-color: var(--brand-color);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px var(--shadow);
+}
+
+#AdminDashboardNew .analysis-area-card {
+    min-height: 480px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#AdminDashboardNew .analysis-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#AdminDashboardNew .analysis-card-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+#AdminDashboardNew .analysis-card-header p {
+    font-size: 13px;
+    color: var(--secondary-text);
+    margin: 4px 0 0 0;
+}
+
+#AdminDashboardNew .chart-role-select {
+    width: 200px;
+}
+
+#AdminDashboardNew .chart-role-select .ant-select-selector {
+    background-color: var(--tertiary-bg) !important;
+    border-color: var(--border-color) !important;
+    border-radius: 8px !important;
+    color: var(--primary-text) !important;
+}
+
+#AdminDashboardNew .analysis-card-body {
+    flex: 1;
+    position: relative;
+}
+
+#AdminDashboardNew .chart-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+#AdminDashboardNew .sidebar-card-placeholder {
+    min-height: calc(100vh - 200px);
+    position: sticky;
+    top: 24px;
+}
+
+/* Card Skeleton Decoration */
+#AdminDashboardNew .card-skeleton-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(235, 178, 54, 0.03) 50%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 2.5s infinite linear;
+}
+
+@keyframes skeleton-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Dark Mode Specific Adjustments */
+[data-theme="dark"] #AdminDashboardNew .date-picker-wrapper {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 1400px) {
+    #AdminDashboardNew .dashboard-grid {
+        grid-template-columns: 1fr 320px;
+    }
+}
+
+@media (max-width: 1200px) {
+    #AdminDashboardNew .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    #AdminDashboardNew .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #AdminDashboardNew .sidebar-card-placeholder {
+        min-height: 400px;
+        position: static;
+    }
+
+    #AdminDashboardNew .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #AdminDashboardNew .header-right {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #AdminDashboardNew .date-picker-wrapper,
+    #AdminDashboardNew .add-new-btn {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 600px) {
+    #AdminDashboardNew .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #AdminDashboardNew .welcome-text {
+        font-size: 22px;
+    }
+}
+
+/* Modal Styles */
+.dashboard-modal .ant-modal-content {
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.dashboard-modal .ant-modal-header {
+    margin-bottom: 20px;
+}
+
+.dashboard-modal .ant-table-thead>tr>th {
+    background: var(--tertiary-bg);
+    color: var(--primary-text);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-modal .ant-table-tbody>tr>td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--primary-text);
+}
+
+.dashboard-modal .ant-table-tbody>tr:hover>td {
+    background: var(--tertiary-bg) !important;
+}
+
+/* Tasks & Deliverables Modal Styles */
+.tasks-modal-section {
+    margin-bottom: 24px;
+}
+
+.tasks-modal-title {
+    margin-bottom: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.tasks-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.task-stat-item {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all var(--transition-medium) ease;
+}
+
+.task-stat-item:hover {
+    border-color: var(--brand-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.task-stat-item .label {
+    font-size: 11px;
+    color: var(--secondary-text);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.task-stat-item .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-text);
+    line-height: 1;
+}
+
+.task-stat-item .value.completed {
+    color: #52c41a;
+}
+
+.task-stat-item .value.in-progress {
+    color: #1890ff;
+}
+
+.task-stat-item .value.pending {
+    color: #faad14;
+}
+
+.deliverables-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.deliverable-card {
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+}
+
+.deliverable-card.reels {
+    background: rgba(250, 173, 20, 0.05);
+    border-color: rgba(250, 173, 20, 0.2);
+}
+
+.deliverable-card.combos {
+    background: rgba(24, 144, 255, 0.05);
+    border-color: rgba(24, 144, 255, 0.2);
+}
+
+.deliverable-card.clients {
+    background: rgba(82, 196, 26, 0.05);
+    border-color: rgba(82, 196, 26, 0.2);
+}
+
+.deliverable-card h4 {
+    margin-bottom: 16px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.deliverable-card.reels h4 {
+    color: #d46b08;
+}
+
+.deliverable-card.combos h4 {
+    color: #096dd9;
+}
+
+.deliverable-card.clients h4 {
+    color: #389e0d;
+}
+
+.deliverable-stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--secondary-text);
+}
+
+.deliverable-stat-row:last-child {
+    margin-bottom: 0;
+}
+
+.deliverable-stat-row strong {
+    color: var(--primary-text);
+}
+
+.deliverable-stat-row strong.highlight {
+    color: #52c41a;
+}
+
+/* ==================== User Details Modal Styles ==================== */
+.user-details-modal .ant-modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.user-details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.role-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.role-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--brand-color);
+    margin: 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.user-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all var(--transition-fast) ease;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--brand-color);
+}
+
+.user-card-header {
+    margin-bottom: 12px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-text);
+    margin: 0;
+}
+
+.user-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.metric-row:last-child {
+    border-bottom: none;
+}
+
+.metric-label {
+    font-size: 13px;
+    color: var(--secondary-text);
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-text);
+}
+
+.metric-value.completed {
+    color: #52c41a;
+}
+
+.metric-value.pending {
+    color: #faad14;
+}
+
+.empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--secondary-text);
+    margin: 0;
+}
+
+/* Modal Search Input Styling */
+.modal-search-input {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--primary-text) !important;
+}
+
+.modal-search-input:hover,
+.modal-search-input:focus {
+    border-color: var(--brand-color) !important;
+    background-color: var(--card-bg) !important;
+}
+
+.modal-search-input input {
+    background-color: transparent !important;
+    color: var(--primary-text) !important;
+}
+
+.modal-search-input input::placeholder {
+    color: var(--secondary-text) !important;
+}
+
+.modal-search-input .ant-input-prefix {
+    color: var(--secondary-text) !important;
+}
+
+.modal-search-input .ant-input-clear-icon {
+    color: var(--secondary-text) !important;
+}
+
+.modal-search-input .ant-input-clear-icon:hover {
+    color: var(--primary-text) !important;
+}
+
+/* Fix Table Filter Dropdown Styling - Global for portals */
+.ant-table-filter-dropdown {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.ant-table-filter-dropdown .ant-checkbox-wrapper {
+    color: var(--primary-text) !important;
+}
+
+.ant-table-filter-dropdown .ant-checkbox-inner {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+}
+
+.ant-table-filter-dropdown .ant-checkbox-checked .ant-checkbox-inner {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+}
+
+.ant-table-filter-dropdown .ant-checkbox-wrapper:hover .ant-checkbox-inner {
+    border-color: var(--brand-color) !important;
+}
+
+.ant-table-filter-dropdown .ant-dropdown-menu-item {
+    color: var(--primary-text) !important;
+}
+
+.ant-table-filter-dropdown .ant-dropdown-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.ant-table-filter-dropdown-btns {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.ant-table-filter-dropdown .ant-btn-link {
+    color: var(--brand-color) !important;
+}
+
+.ant-table-filter-dropdown .ant-btn-link:hover {
+    color: var(--brand-color) !important;
+    opacity: 0.8;
+}
+
+.ant-table-filter-dropdown .ant-btn-primary {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    color: white !important;
+}
+
+.ant-table-filter-dropdown .ant-btn-primary:hover {
+    background-color: var(--brand-color) !important;
+    border-color: var(--brand-color) !important;
+    opacity: 0.9;
+}
+
+
+.ant-table-filter-dropdown .ant-dropdown-menu .ant-dropdown-menu-item .ant-dropdown-menu-title-content span {
+    color: var(--primary-text)
+}

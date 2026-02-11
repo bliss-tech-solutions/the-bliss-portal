@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import './ClientAndData.css';
-import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete, Switch, Checkbox, Form, Row, Col, Space, DatePicker } from 'antd';
+import { Table, Tag, Avatar, Tooltip, Modal, Button, Collapse, Input, AutoComplete, Switch, Checkbox, Form, Row, Col, Space, DatePicker, Select } from 'antd';
 import { useSelector } from 'react-redux';
 import { selectTheme } from '../../../../store/slices/themeSlice';
 import { selectUser, selectUserId } from '../../../../store/slices/authSlice';
@@ -171,7 +171,7 @@ const ClientAndData = () => {
             // The backend is already returning the data with the correct column names:
             // "Client Name", "City", "Onboard Date", "Reels", "Combos", etc.
             // We can directly use this for the Excel sheet.
-            
+
             // Create XLSX worksheet directly from the API response
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
@@ -627,7 +627,7 @@ const ClientAndData = () => {
                     size="small"
                     onClick={() => handleUpdateWorkClick(record)}
                 >
-                   Complete Work
+                    Complete Work
                 </Button>
             )
         },
