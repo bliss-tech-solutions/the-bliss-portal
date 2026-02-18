@@ -1,13 +1,34 @@
 import React, { useState } from "react";
-import { Form, Input, InputNumber, DatePicker, Select, Upload, Button, message, Typography, Tooltip } from "antd";
 import {
-    UploadOutlined, HomeOutlined, EnvironmentOutlined,
-    DollarOutlined, TeamOutlined,
-    TagOutlined, EyeOutlined, QuestionCircleOutlined,
-    PictureOutlined
+    Form,
+    Input,
+    InputNumber,
+    Select,
+    Upload,
+    Button,
+    message,
+    Typography,
+    Tooltip,
+    Switch,
+    Card,
+    Space,
+} from "antd";
+import {
+    PlusOutlined,
+    DeleteOutlined,
+    HomeOutlined,
+    EnvironmentOutlined,
+    DollarOutlined,
+    TeamOutlined,
+    TagOutlined,
+    PictureOutlined,
+    AimOutlined,
+    QuestionCircleOutlined,
+    LayoutOutlined,
+    SlidersOutlined,
 } from "@ant-design/icons";
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.bubble.css';
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.bubble.css";
 import { useCreateRealEstateProjectMutation } from "../../../../store/api";
 import { uploadToCloudinary } from "../../../../utils/cloudinary";
 import "./RealEstateProjectUpload.css";
@@ -15,321 +36,665 @@ import "./RealEstateProjectUpload.css";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// Dummy data matching req.body (for later dynamic implementation)
+const DUMMY_INITIAL = {
+    projectName: "Sunrise Apartments",
+    projectLocation: "Mumbai, Maharashtra",
+    projectPrice: "1.2 Cr",
+    groupSize: 50,
+    tag: "Exclusive deal",
+    latitude: "19.0760",
+    longitude: "72.8777",
+    status: "active",
+    projectDescriptionAndDetails:
+        "Luxury 2BHK and 3BHK apartments with modern amenities.",
+    amenities: [
+        { name: "Swimming Pool", icon: "pool", enabled: true },
+        { name: "Gym", icon: "gym", enabled: true },
+        { name: "Parking", icon: "parking", enabled: true },
+    ],
+};
+
 const RealEstateProjectUpload = () => {
     const [form] = Form.useForm();
-    const [description, setDescription] = useState('Write something amazing...');
-    const [fileList, setFileList] = useState([]); // Array of { uid, name, status, url, previewUrl }
+    const [description, setDescription] = useState(
+        DUMMY_INITIAL.projectDescriptionAndDetails
+    );
+    const [fileList, setFileList] = useState([]);
+    const [slideHeroFileList, setSlideHeroFileList] = useState([]);
+    const [floorPlanFileList, setFloorPlanFileList] = useState([]);
+    const [amenities, setAmenities] = useState(DUMMY_INITIAL.amenities);
     const [isPublishing, setIsPublishing] = useState(false);
-    const [publishStatus, setPublishStatus] = useState(""); // "Uploading Images...", "Creating Project..."
+    const [publishStatus, setPublishStatus] = useState("");
 
     const [createProject] = useCreateRealEstateProjectMutation();
 
     const onFinish = async (values) => {
         try {
-            // Check if any images are still uploading
-            const stillUploading = fileList.some(file => file.status === 'uploading');
-            if (stillUploading) {
+            const stillUploading = fileList.some((f) => f.status === "uploading");
+            const stillUploadingSlideHero = slideHeroFileList.some((f) => f.status === "uploading");
+            const stillUploadingFloorPlan = floorPlanFileList.some((f) => f.status === "uploading");
+            if (stillUploading || stillUploadingSlideHero || stillUploadingFloorPlan) {
                 message.warning("Please wait for all images to finish uploading.");
                 return;
             }
 
-            // Collect only successfully uploaded image URLs
             const uploadedImageUrls = fileList
-                .filter(file => file.status === 'done')
-                .map(file => file.url);
-
-            if (uploadedImageUrls.length === 0 && fileList.length > 0) {
-                message.error("No images were successfully uploaded. Please try again.");
-                return;
-            }
-
-            setIsPublishing(true);
-            setPublishStatus("Creating Project...");
+                .filter((f) => f.status === "done")
+                .map((f) => f.url);
+            const uploadedSlideHeroUrls = slideHeroFileList
+                .filter((f) => f.status === "done")
+                .map((f) => f.url);
+            const uploadedFloorPlanUrls = floorPlanFileList
+                .filter((f) => f.status === "done")
+                .map((f) => f.url);
 
             const payload = {
                 ...values,
                 projectDescriptionAndDetails: description,
-                projectImages: uploadedImageUrls
+                projectImages: uploadedImageUrls,
+                projectSlideHeroImages: uploadedSlideHeroUrls,
+                floorPlanImages: uploadedFloorPlanUrls,
+                amenities: amenities
+                    .filter((a) => a.enabled)
+                    .map(({ name, icon }) => ({ name, icon })),
             };
 
+            setIsPublishing(true);
+            setPublishStatus("Creating Project...");
             await createProject(payload).unwrap();
 
             message.success("Real Estate Project Published Successfully!");
             form.resetFields();
             setFileList([]);
+            setSlideHeroFileList([]);
+            setFloorPlanFileList([]);
             setDescription("");
+            setAmenities(DUMMY_INITIAL.amenities.map((a) => ({ ...a })));
         } catch (error) {
             console.error("Publish Error:", error);
-            message.error(error?.data?.message || "Failed to publish project. Please try again.");
+            message.error(
+                error?.data?.message || "Failed to publish project. Please try again."
+            );
         } finally {
             setIsPublishing(false);
             setPublishStatus("");
         }
     };
 
-    const handleFileUpload = async (file) => {
+    const handleImageUpload = async (file) => {
         const uid = Date.now() + Math.random();
         const previewUrl = URL.createObjectURL(file);
-
-        // Add placeholder to fileList
         const newFile = {
             uid,
             name: file.name,
-            status: 'uploading',
-            previewUrl
+            status: "uploading",
+            previewUrl,
         };
-        setFileList(prev => [...prev, newFile]);
+        setFileList((prev) => [...prev, newFile]);
 
         try {
             const result = await uploadToCloudinary(file);
-            const imageUrl = result.secure_url;
-
+            const imageUrl = result?.secure_url;
             if (imageUrl) {
-                setFileList(prev => prev.map(f =>
-                    f.uid === uid ? { ...f, status: 'done', url: imageUrl } : f
-                ));
-            } else {
-                throw new Error("Upload failed");
-            }
-        } catch (error) {
-            console.error("Cloudinary Upload Error:", error);
-            setFileList(prev => prev.map(f =>
-                f.uid === uid ? { ...f, status: 'error' } : f
-            ));
+                setFileList((prev) =>
+                    prev.map((f) =>
+                        f.uid === uid ? { ...f, status: "done", url: imageUrl } : f
+                    )
+                );
+            } else throw new Error("Upload failed");
+        } catch (err) {
+            setFileList((prev) =>
+                prev.map((f) => (f.uid === uid ? { ...f, status: "error" } : f))
+            );
             message.error(`Failed to upload ${file.name}`);
         }
     };
 
-    const uploadProps = {
-        onRemove: (file) => {
-            const newFileList = fileList.filter(f => f.uid !== (file.uid || file));
-            setFileList(newFileList);
-        },
-        beforeUpload: (file) => {
-            handleFileUpload(file);
-            return false;
-        },
-        fileList,
-        multiple: true,
-        accept: "image/*"
+    const removeImage = (uid) => {
+        setFileList((prev) => prev.filter((f) => f.uid !== uid));
+    };
+
+    const handleFloorPlanUpload = async (file) => {
+        const uid = Date.now() + Math.random();
+        const previewUrl = URL.createObjectURL(file);
+        const newFile = {
+            uid,
+            name: file.name,
+            status: "uploading",
+            previewUrl,
+        };
+        setFloorPlanFileList((prev) => [...prev, newFile]);
+
+        try {
+            const result = await uploadToCloudinary(file);
+            const imageUrl = result?.secure_url;
+            if (imageUrl) {
+                setFloorPlanFileList((prev) =>
+                    prev.map((f) =>
+                        f.uid === uid ? { ...f, status: "done", url: imageUrl } : f
+                    )
+                );
+            } else throw new Error("Upload failed");
+        } catch (err) {
+            setFloorPlanFileList((prev) =>
+                prev.map((f) => (f.uid === uid ? { ...f, status: "error" } : f))
+            );
+            message.error(`Failed to upload ${file.name}`);
+        }
+    };
+
+    const removeFloorPlanImage = (uid) => {
+        setFloorPlanFileList((prev) => prev.filter((f) => f.uid !== uid));
+    };
+
+    const handleSlideHeroUpload = async (file) => {
+        const uid = Date.now() + Math.random();
+        const previewUrl = URL.createObjectURL(file);
+        const newFile = {
+            uid,
+            name: file.name,
+            status: "uploading",
+            previewUrl,
+        };
+        setSlideHeroFileList((prev) => [...prev, newFile]);
+
+        try {
+            const result = await uploadToCloudinary(file);
+            const imageUrl = result?.secure_url;
+            if (imageUrl) {
+                setSlideHeroFileList((prev) =>
+                    prev.map((f) =>
+                        f.uid === uid ? { ...f, status: "done", url: imageUrl } : f
+                    )
+                );
+            } else throw new Error("Upload failed");
+        } catch (err) {
+            setSlideHeroFileList((prev) =>
+                prev.map((f) => (f.uid === uid ? { ...f, status: "error" } : f))
+            );
+            message.error(`Failed to upload ${file.name}`);
+        }
+    };
+
+    const removeSlideHeroImage = (uid) => {
+        setSlideHeroFileList((prev) => prev.filter((f) => f.uid !== uid));
+    };
+
+    const addAmenity = () => {
+        setAmenities((prev) => [
+            ...prev,
+            { name: "", icon: "", enabled: true },
+        ]);
+    };
+
+    const updateAmenity = (index, field, value) => {
+        setAmenities((prev) =>
+            prev.map((a, i) =>
+                i === index ? { ...a, [field]: value } : a
+            )
+        );
+    };
+
+    const removeAmenity = (index) => {
+        setAmenities((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleAmenityIconUpload = async (index, file) => {
+        try {
+            const result = await uploadToCloudinary(file);
+            const url = result?.secure_url || "";
+            updateAmenity(index, "icon", url);
+        } catch {
+            message.error("Icon upload failed");
+        }
+        return false;
     };
 
     const quillModules = {
         toolbar: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            ['link'],
-            ['clean']
+            [{ header: [1, 2, 3, false] }],
+            ["bold", "italic", "underline", "strike"],
+            [{ color: [] }, { background: [] }],
+            [{ list: "ordered" }, { list: "bullet" }],
+            ["link"],
+            ["clean"],
         ],
     };
-
     const quillFormats = [
-        'header',
-        'bold', 'italic', 'underline', 'strike',
-        'color', 'background',
-        'list', 'bullet',
-        'link'
+        "header",
+        "bold", "italic", "underline", "strike",
+        "color", "background",
+        "list", "bullet",
+        "link",
     ];
 
+    const label = (text, tip) => (
+        <span className="real-estate-upload-form__label">
+            {text}
+            {tip && (
+                <Tooltip title={tip}>
+                    <QuestionCircleOutlined className="real-estate-upload-form__label-icon" />
+                </Tooltip>
+            )}
+        </span>
+    );
+
     return (
-        <div className="new-project-panel">
-            {/* Global Publishing Overlay */}
+        <div className="real-estate-upload-form">
             {isPublishing && (
-                <div className="publishing-overlay">
-                    <div className="loader-box">
-                        <div className="spinner"></div>
-                        <Text className="mt-2" strong>{publishStatus}</Text>
+                <div className="real-estate-upload-form__overlay">
+                    <div className="real-estate-upload-form__loader">
+                        <div className="real-estate-upload-form__spinner" />
+                        <Text strong>{publishStatus}</Text>
                     </div>
                 </div>
             )}
 
-            {/* Top Navigation Bar */}
-            <div className="panel-top-nav">
-                <div className="nav-left">
-                    <Title level={4} className="m-0">Create New Project</Title>
-                </div>
-                <button
-                    type="button"
-                    className="global-action-btn"
-                    onClick={() => message.info("Preview Mode Enabled")}
-                    disabled={isPublishing}
-                >
-                    <EyeOutlined />&nbsp;Preview
-                </button>
+            <div className="real-estate-upload-form__header">
+                <Title level={4} className="real-estate-upload-form__title">
+                    Create New Project
+                </Title>
             </div>
 
-            <div className="panel-content">
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={onFinish}
-                    autoComplete="off"
-                    requiredMark={false}
-                    disabled={isPublishing}
-                >
-                    {/* Project Name */}
-                    <div className="input-row-section" style={{ marginBottom: '24px' }}>
-                        <div className="mini-label">
-                            * PROJECT NAME <Tooltip title="The official name of the project"><QuestionCircleOutlined /></Tooltip>
-                        </div>
-                        <Form.Item
-                            name="projectName"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Input prefix={<HomeOutlined />} placeholder="e.g. Bliss Heights" className="styled-input full-width" />
-                        </Form.Item>
-                    </div>
+            <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+                autoComplete="off"
+                requiredMark={false}
+                disabled={isPublishing}
+                initialValues={{
+                    projectName: DUMMY_INITIAL.projectName,
+                    projectLocation: DUMMY_INITIAL.projectLocation,
+                    projectPrice: DUMMY_INITIAL.projectPrice,
+                    groupSize: DUMMY_INITIAL.groupSize,
+                    tag: DUMMY_INITIAL.tag,
+                    latitude: DUMMY_INITIAL.latitude,
+                    longitude: DUMMY_INITIAL.longitude,
+                    status: DUMMY_INITIAL.status,
+                }}
+            >
+                <Card className="real-estate-upload-form__card" size="small">
+                    <Form.Item
+                        label={label("Project Name", "Official name of the project")}
+                        name="projectName"
+                        rules={[{ required: true, message: "Required" }]}
+                    >
+                        <Input
+                            prefix={<HomeOutlined />}
+                            placeholder="e.g. Sunrise Apartments"
+                            className="real-estate-upload-form__input"
+                        />
+                    </Form.Item>
 
-                    <div className="property-grid">
+                    <div className="real-estate-upload-form__row real-estate-upload-form__row--3">
                         <Form.Item
-                            label={<span className="mini-label">* TAG</span>}
+                            label={label("Tag")}
                             name="tag"
                             rules={[{ required: true, message: "Required" }]}
                         >
-                            <Select prefix={<TagOutlined />} placeholder="Select Tag" className="styled-select">
+                            <Select
+                                placeholder="Select tag"
+                                className="real-estate-upload-form__input"
+                            >
                                 <Option value="Exclusive deal">Exclusive deal</Option>
                                 <Option value="Limited time offer">Limited time offer</Option>
                             </Select>
                         </Form.Item>
-
                         <Form.Item
-                            label={<span className="mini-label">* LOCATION</span>}
+                            label={label("Location")}
                             name="projectLocation"
                             rules={[{ required: true, message: "Required" }]}
                         >
-                            <Input prefix={<EnvironmentOutlined />} placeholder="e.g. Mumbai, BKC" className="styled-input" />
+                            <Input
+                                prefix={<EnvironmentOutlined />}
+                                placeholder="e.g. Mumbai, Maharashtra"
+                                className="real-estate-upload-form__input"
+                            />
                         </Form.Item>
-
                         <Form.Item
-                            label={<span className="mini-label">* GROUP SIZE</span>}
+                            label={label("Price")}
+                            name="projectPrice"
+                            rules={[{ required: true, message: "Required" }]}
+                        >
+                            <Input
+                                prefix={<DollarOutlined />}
+                                placeholder="e.g. 1.2 Cr"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                        <Form.Item
+                            label={label("Group Size")}
                             name="groupSize"
                             rules={[{ required: true, message: "Required" }]}
                         >
                             <InputNumber
                                 prefix={<TeamOutlined />}
-                                placeholder="Size"
-                                className="styled-input-number"
-                                style={{ width: '100%' }}
+                                placeholder="50"
                                 min={1}
+                                className="real-estate-upload-form__input real-estate-upload-form__input-number"
+                                style={{ width: "100%" }}
                             />
                         </Form.Item>
-
-                        <Form.Item
-                            label={<span className="mini-label">* PRICE</span>}
-                            name="projectPrice"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Input prefix={<DollarOutlined />} placeholder="e.g. ₹50 Lakhs onwards" className="styled-input" />
-                        </Form.Item>
-
-                        <Form.Item
-                            label={<span className="mini-label">* STATUS</span>}
-                            name="status"
-                            initialValue="Active"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Select placeholder="Select Status" className="styled-select">
-                                <Option value="Active">Active</Option>
-                                <Option value="Inactive">Inactive</Option>
-                            </Select>
-                        </Form.Item>
-                    </div>
-
-                    <div className="description-section">
-                        <div className="mini-label">PROJECT DESCRIPTION & DETAILS</div>
-                        <div className="quill-wrapper">
-                            <ReactQuill
-                                theme="bubble"
-                                value={description}
-                                onChange={setDescription}
-                                modules={quillModules}
-                                formats={quillFormats}
-                                placeholder="Describe the project features and benefits..."
-                                readOnly={isPublishing}
-                            />
+                        <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                            <Form.Item
+                                label={label("Latitude")}
+                                name="latitude"
+                            >
+                                <Input
+                                    prefix={<AimOutlined />}
+                                    placeholder="19.0760"
+                                    className="real-estate-upload-form__input"
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                label={label("Longitude")}
+                                name="longitude"
+                            >
+                                <Input
+                                    prefix={<AimOutlined />}
+                                    placeholder="72.8777"
+                                    className="real-estate-upload-form__input"
+                                />
+                            </Form.Item>
                         </div>
                     </div>
+                    <Form.Item
+                        label={label("Status")}
+                        name="status"
+                        valuePropName="checked"
+                        getValueFromEvent={(checked) => (checked ? "active" : "inactive")}
+                        getValueProps={(v) => ({ checked: v === "active" })}
+                    >
+                        <Switch
+                            checkedChildren="Active"
+                            unCheckedChildren="Inactive"
+                            className="real-estate-upload-form__status-switch"
+                        />
+                    </Form.Item>
+                </Card>
 
-                    <div className="upload-container-split" style={{ marginTop: '20px' }}>
-                        <div className="mini-label">* PROJECT IMAGES <Tooltip title="Main project gallery"><QuestionCircleOutlined /></Tooltip></div>
-                        <div className="upload-flex-box">
-                            <Upload.Dragger {...uploadProps} className="media-dragger-compact" showUploadList={false} disabled={isPublishing}>
-                                <div className="dragger-content-compact">
-                                    <p className="dragger-icon-small"><PictureOutlined /></p>
-                                    <p className="dragger-text-small">Drop images or <span className="blue-link">Browse</span></p>
+                <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
+                    <div className="real-estate-upload-form__quill-wrap">
+                        <ReactQuill
+                            theme="bubble"
+                            value={description}
+                            onChange={setDescription}
+                            modules={quillModules}
+                            formats={quillFormats}
+                            placeholder="Describe the project..."
+                            readOnly={isPublishing}
+                        />
+                    </div>
+                </Card>
+
+                <Card className="real-estate-upload-form__card" size="small" title="Project Images">
+                    <p className="real-estate-upload-form__dimension-hint">
+                        Project gallery: <strong>560 × 440</strong> px • same for all
+                    </p>
+                    <div className="real-estate-upload-form__images">
+                        <Upload.Dragger
+                            multiple
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                                handleImageUpload(file);
+                                return false;
+                            }}
+                            disabled={isPublishing}
+                            className="real-estate-upload-form__dropzone"
+                        >
+                            <PictureOutlined className="real-estate-upload-form__dropzone-icon" />
+                            <p className="real-estate-upload-form__dropzone-text">
+                                Drop images or <span>Browse</span>
+                            </p>
+                        </Upload.Dragger>
+                        <div className="real-estate-upload-form__preview-grid">
+                            {fileList.map((file) => (
+                                <div
+                                    key={file.uid}
+                                    className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}
+                                >
+                                    <img src={file.previewUrl} alt="" />
+                                    <span className="real-estate-upload-form__preview-status">
+                                        {file.status === "uploading" && "Uploading..."}
+                                        {file.status === "done" && "Done"}
+                                        {file.status === "error" && "Failed"}
+                                    </span>
+                                    <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        className="real-estate-upload-form__preview-remove"
+                                        onClick={() => removeImage(file.uid)}
+                                        disabled={isPublishing}
+                                    />
                                 </div>
-                            </Upload.Dragger>
-
-                            <div className="preview-grid-side">
-                                {fileList.map((file) => (
-                                    <div key={file.uid} className={`preview-card ${file.status}`}>
-                                        <img
-                                            src={file.previewUrl}
-                                            alt="preview"
-                                        />
-                                        {file.status === 'uploading' && (
-                                            <div className="card-upload-overlay">
-                                                <div className="shimmer"></div>
-                                            </div>
-                                        )}
-                                        {file.status === 'error' && (
-                                            <div className="card-error-overlay">
-                                                <Typography.Text type="danger" style={{ fontSize: '10px' }}>Fail</Typography.Text>
-                                            </div>
-                                        )}
-                                        <div className="preview-overlay">
-                                            <Button
-                                                type="text"
-                                                danger
-                                                icon={<UploadOutlined rotate={45} style={{ transform: 'rotate(0)' }} />}
-                                                className="delete-icon-btn"
-                                                onClick={() => {
-                                                    setFileList(prev => prev.filter(f => f.uid !== file.uid));
-                                                }}
-                                                disabled={isPublishing}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                                {fileList.length === 0 && (
-                                    <div className="empty-preview-state">
-                                        No images uploaded
-                                    </div>
-                                )}
-                            </div>
+                            ))}
+                            {fileList.length === 0 && (
+                                <div className="real-estate-upload-form__preview-empty">
+                                    No images uploaded
+                                </div>
+                            )}
                         </div>
                     </div>
+                </Card>
 
-                    <div className="panel-footer">
+                <Card className="real-estate-upload-form__card" size="small" title="Slider Images (project open)">
+                    <p className="real-estate-upload-form__dimension-hint">
+                        Hero (project open): <strong>1920 × 1080</strong> px • 16:9
+                    </p>
+                    <div className="real-estate-upload-form__images">
+                        <Upload.Dragger
+                            multiple
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                                handleSlideHeroUpload(file);
+                                return false;
+                            }}
+                            disabled={isPublishing}
+                            className="real-estate-upload-form__dropzone"
+                        >
+                            <SlidersOutlined className="real-estate-upload-form__dropzone-icon" />
+                            <p className="real-estate-upload-form__dropzone-text">
+                                Drop slider images or <span>Browse</span>
+                            </p>
+                        </Upload.Dragger>
+                        <div className="real-estate-upload-form__preview-grid">
+                            {slideHeroFileList.map((file) => (
+                                <div
+                                    key={file.uid}
+                                    className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}
+                                >
+                                    <img src={file.previewUrl} alt="" />
+                                    <span className="real-estate-upload-form__preview-status">
+                                        {file.status === "uploading" && "Uploading..."}
+                                        {file.status === "done" && "Done"}
+                                        {file.status === "error" && "Failed"}
+                                    </span>
+                                    <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        className="real-estate-upload-form__preview-remove"
+                                        onClick={() => removeSlideHeroImage(file.uid)}
+                                        disabled={isPublishing}
+                                    />
+                                </div>
+                            ))}
+                            {slideHeroFileList.length === 0 && (
+                                <div className="real-estate-upload-form__preview-empty">
+                                    No slider images uploaded
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="real-estate-upload-form__card" size="small" title="Floor Plan Images">
+                    <p className="real-estate-upload-form__dimension-hint">
+                        Recommended: <strong>800 × 480</strong> px • ~5:4 aspect ratio • full plan
+                    </p>
+                    <div className="real-estate-upload-form__images">
+                        <Upload.Dragger
+                            multiple
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={(file) => {
+                                handleFloorPlanUpload(file);
+                                return false;
+                            }}
+                            disabled={isPublishing}
+                            className="real-estate-upload-form__dropzone"
+                        >
+                            <LayoutOutlined className="real-estate-upload-form__dropzone-icon" />
+                            <p className="real-estate-upload-form__dropzone-text">
+                                Drop floor plans or <span>Browse</span>
+                            </p>
+                        </Upload.Dragger>
+                        <div className="real-estate-upload-form__preview-grid">
+                            {floorPlanFileList.map((file) => (
+                                <div
+                                    key={file.uid}
+                                    className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}
+                                >
+                                    <img src={file.previewUrl} alt="" />
+                                    <span className="real-estate-upload-form__preview-status">
+                                        {file.status === "uploading" && "Uploading..."}
+                                        {file.status === "done" && "Done"}
+                                        {file.status === "error" && "Failed"}
+                                    </span>
+                                    <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        className="real-estate-upload-form__preview-remove"
+                                        onClick={() => removeFloorPlanImage(file.uid)}
+                                        disabled={isPublishing}
+                                    />
+                                </div>
+                            ))}
+                            {floorPlanFileList.length === 0 && (
+                                <div className="real-estate-upload-form__preview-empty">
+                                    No floor plan images uploaded
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="real-estate-upload-form__card" size="small" title="Amenities">
+                    <div className="real-estate-upload-form__amenities">
+                        {amenities.map((amenity, index) => (
+                            <div
+                                key={index}
+                                className="real-estate-upload-form__amenity-card"
+                            >
+                                <div className="real-estate-upload-form__amenity-card-head">
+                                    <Switch
+                                        checked={amenity.enabled}
+                                        onChange={(checked) =>
+                                            updateAmenity(index, "enabled", checked)
+                                        }
+                                        size="small"
+                                    />
+                                    <Button
+                                        type="text"
+                                        danger
+                                        size="small"
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => removeAmenity(index)}
+                                        className="real-estate-upload-form__amenity-delete"
+                                    />
+                                </div>
+                                <Upload
+                                    accept="image/*"
+                                    showUploadList={false}
+                                    beforeUpload={(file) => {
+                                        handleAmenityIconUpload(index, file);
+                                        return false;
+                                    }}
+                                    className="real-estate-upload-form__amenity-icon-upload"
+                                >
+                                    <div className="real-estate-upload-form__amenity-icon-box">
+                                        {amenity.icon ? (
+                                            typeof amenity.icon === "string" &&
+                                            (amenity.icon.startsWith("http") ? (
+                                                <img
+                                                    src={amenity.icon}
+                                                    alt=""
+                                                    className="real-estate-upload-form__amenity-icon-img"
+                                                />
+                                            ) : (
+                                                <span className="real-estate-upload-form__amenity-icon-text">
+                                                    {amenity.icon}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <PlusOutlined />
+                                        )}
+                                    </div>
+                                </Upload>
+                                <Input
+                                    placeholder="Amenity name"
+                                    value={amenity.name}
+                                    onChange={(e) =>
+                                        updateAmenity(index, "name", e.target.value)
+                                    }
+                                    className="real-estate-upload-form__input real-estate-upload-form__amenity-name"
+                                />
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={addAmenity}
+                            className="real-estate-upload-form__add-amenity"
+                        >
+                            <PlusOutlined />
+                            <span>Add Amenity</span>
+                        </button>
+                    </div>
+                </Card>
+
+                <div className="real-estate-upload-form__footer">
+                    <Button
+                        onClick={() => {
+                            form.resetFields();
+                            setDescription(DUMMY_INITIAL.projectDescriptionAndDetails);
+                            setFileList([]);
+                            setSlideHeroFileList([]);
+                            setFloorPlanFileList([]);
+                            setAmenities(DUMMY_INITIAL.amenities.map((a) => ({ ...a })));
+                        }}
+                        disabled={isPublishing}
+                    >
+                        Reset
+                    </Button>
+                    <Space>
                         <Button
-                            className="cancel-footer-btn"
-                            onClick={() => form.resetFields()}
+                            onClick={() => message.info("Saved as Draft")}
                             disabled={isPublishing}
                         >
-                            Reset Form
+                            Save as Draft
                         </Button>
-                        <div className="footer-right">
-                            <Button
-                                className="draft-footer-btn"
-                                onClick={() => message.info("Saved as Draft")}
-                                disabled={isPublishing}
-                            >
-                                Save as Draft
-                            </Button>
-                            <Button
-                                type="primary"
-                                className="continue-footer-btn"
-                                onClick={() => form.submit()}
-                                loading={isPublishing}
-                            >
-                                {isPublishing ? "Publishing..." : "Publish Project"}
-                            </Button>
-                        </div>
-                    </div>
-                </Form>
-            </div>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={isPublishing}
+                        >
+                            Publish Project
+                        </Button>
+                    </Space>
+                </div>
+            </Form>
         </div>
     );
 };

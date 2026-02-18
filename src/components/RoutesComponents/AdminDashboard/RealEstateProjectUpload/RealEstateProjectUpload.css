@@ -1,3 +1,408 @@
+/* ========== Real Estate Upload Form (scoped) ========== */
+.real-estate-upload-form {
+    --reuf-border: var(--border-color);
+    --reuf-bg: var(--card-bg);
+    --reuf-input-bg: var(--input-bg);
+    --reuf-text: var(--primary-text);
+    --reuf-muted: var(--secondary-text);
+    /* max-width: 900px; */
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid var(--reuf-border);
+    border-radius: 12px;
+    background: var(--reuf-bg);
+    position: relative;
+}
+
+.real-estate-upload-form__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* .real-estate-upload-form .ant-input-affix-wrapper {
+    background-color: black !important;
+} */
+
+.real-estate-upload-form__loader {
+    background: var(--reuf-bg);
+    padding: 24px 40px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--reuf-border);
+}
+
+.real-estate-upload-form__spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--reuf-border);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: real-estate-upload-form-spin 0.8s linear infinite;
+}
+
+@keyframes real-estate-upload-form-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.real-estate-upload-form__header {
+    margin-bottom: 20px;
+}
+
+.real-estate-upload-form__title {
+    margin: 0 !important;
+    color: var(--reuf-text);
+}
+
+.real-estate-upload-form__card {
+    margin-bottom: 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--reuf-border) !important;
+}
+
+.real-estate-upload-form__card .ant-card-head {
+    border-bottom: 1px solid var(--reuf-border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--reuf-muted);
+}
+
+.real-estate-upload-form__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--reuf-muted);
+    letter-spacing: 0.04em;
+}
+
+.real-estate-upload-form__label-icon {
+    margin-left: 4px;
+    color: var(--reuf-muted);
+    font-size: 12px;
+}
+
+.real-estate-upload-form__row {
+    display: grid;
+    gap: 16px;
+}
+
+.real-estate-upload-form__row--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.real-estate-upload-form__row--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.real-estate-upload-form__status-switch {
+    margin-top: 2px;
+}
+
+.real-estate-upload-form__input,
+.real-estate-upload-form__input-number {
+    border-radius: 8px !important;
+    border: 1px solid var(--reuf-border) !important;
+    background: var(--reuf-input-bg) !important;
+}
+
+.real-estate-upload-form__input-number.ant-input-number {
+    width: 100%;
+}
+
+.real-estate-upload-form__quill-wrap {
+    background: var(--reuf-input-bg);
+    border: 1px solid var(--reuf-border);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 160px;
+}
+
+.real-estate-upload-form__quill-wrap .ql-container.ql-bubble {
+    font-size: 14px;
+    color: var(--reuf-text);
+}
+
+.real-estate-upload-form__quill-wrap .ql-editor {
+    min-height: 120px;
+}
+
+/* Dimension hint (e.g. floor plans) */
+.real-estate-upload-form__dimension-hint {
+    margin: 0 0 12px 0;
+    font-size: 12px;
+    color: var(--reuf-muted);
+}
+
+.real-estate-upload-form__dimension-hint strong {
+    color: var(--reuf-text);
+    font-weight: 600;
+}
+
+/* Project Images */
+.real-estate-upload-form__images {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.real-estate-upload-form__dropzone {
+    flex: 0 0 180px;
+    padding: 20px !important;
+    border: 2px dashed var(--reuf-border) !important;
+    border-radius: 10px !important;
+    background: var(--reuf-input-bg) !important;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.real-estate-upload-form__dropzone:hover {
+    border-color: var(--accent-color) !important;
+}
+
+.real-estate-upload-form__dropzone-icon {
+    font-size: 28px;
+    color: var(--reuf-muted);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.real-estate-upload-form__dropzone-text {
+    font-size: 12px;
+    color: var(--reuf-text);
+    margin: 0;
+}
+
+.real-estate-upload-form__dropzone-text span {
+    color: var(--accent-color);
+    cursor: pointer;
+}
+
+.real-estate-upload-form__preview-grid {
+    flex: 1;
+    min-width: 200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 10px;
+    background: var(--reuf-input-bg);
+    border: 1px solid var(--reuf-border);
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.real-estate-upload-form__preview-card {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--reuf-border);
+    background: var(--accent-color);
+}
+
+.real-estate-upload-form__preview-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.real-estate-upload-form__preview-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+}
+
+.real-estate-upload-form__preview-card--uploading .real-estate-upload-form__preview-status {
+    background: rgba(255, 193, 7, 0.9);
+    color: #000;
+}
+
+.real-estate-upload-form__preview-card--done .real-estate-upload-form__preview-status {
+    background: rgba(34, 197, 94, 0.9);
+}
+
+.real-estate-upload-form__preview-card--error .real-estate-upload-form__preview-status {
+    background: rgba(255, 77, 79, 0.9);
+}
+
+.real-estate-upload-form__preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    padding: 0;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: #ff4d4f !important;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.real-estate-upload-form__preview-card:hover .real-estate-upload-form__preview-remove {
+    opacity: 1;
+}
+
+.real-estate-upload-form__preview-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: var(--reuf-muted);
+    font-style: italic;
+}
+
+/* Amenities – grid 3–4 per row */
+.real-estate-upload-form__amenities {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.real-estate-upload-form__amenity-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--reuf-border);
+    border-radius: 10px;
+    background: var(--reuf-input-bg);
+}
+
+.real-estate-upload-form__amenity-card-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.real-estate-upload-form__amenity-delete {
+    padding: 0 4px !important;
+}
+
+.real-estate-upload-form__amenity-icon-upload {
+    flex-shrink: 0;
+}
+
+.real-estate-upload-form__amenity-icon-box {
+    width: 60px;
+    height: 60px;
+    border: 1px dashed var(--reuf-border);
+    border-radius: 8px;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.real-estate-upload-form__amenity-icon-box:hover {
+    border-color: var(--accent-color);
+}
+
+.real-estate-upload-form__amenity-icon-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.real-estate-upload-form__amenity-icon-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--reuf-muted);
+    text-transform: uppercase;
+}
+
+.real-estate-upload-form__amenity-name {
+    width: 100% !important;
+}
+
+.real-estate-upload-form__add-amenity {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px;
+    border: 1px dashed var(--reuf-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--reuf-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.real-estate-upload-form__add-amenity:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(255, 193, 7, 0.06);
+}
+
+.real-estate-upload-form__add-amenity .anticon {
+    font-size: 20px;
+}
+
+.real-estate-upload-form__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--reuf-border);
+    margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+
+    .real-estate-upload-form__row--2,
+    .real-estate-upload-form__row--3 {
+        grid-template-columns: 1fr;
+    }
+
+    .real-estate-upload-form__images {
+        flex-direction: column;
+    }
+
+    .real-estate-upload-form__dropzone {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    .real-estate-upload-form__amenities {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .real-estate-upload-form__amenities {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ========== End scoped upload form ========== */
+
 .panel-top-nav {
     display: flex;
     justify-content: space-between;

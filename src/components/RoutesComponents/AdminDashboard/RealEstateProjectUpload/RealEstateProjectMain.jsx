@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Tabs, Table, Tag, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Radio } from 'antd';
+import { Tabs, Table, Tag, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Upload, Switch } from 'antd';
 import {
     ProjectOutlined, PlusOutlined, EditOutlined,
     DeleteOutlined, CheckCircleOutlined,
     StopOutlined, ReloadOutlined, HomeOutlined, EnvironmentOutlined,
     DollarOutlined, TeamOutlined, TagOutlined, QuestionCircleOutlined,
-    SearchOutlined
+    SearchOutlined, PictureOutlined, LayoutOutlined, SlidersOutlined, AimOutlined
 } from '@ant-design/icons';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.bubble.css';
 import RealEstateProjectUpload from './RealEstateProjectUpload';
 import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation } from '../../../../store/api';
+import { uploadToCloudinary } from '../../../../utils/cloudinary';
 import './RealEstateProjectUpload.css';
 
 const { Title, Text } = Typography;
@@ -21,21 +24,45 @@ const RealEstateProjectMain = () => {
     const [editingProject, setEditingProject] = useState(null);
     const [editedFields, setEditedFields] = useState([]);
     const [form] = Form.useForm();
+    // Edit form state (same as upload form)
+    const [editDescription, setEditDescription] = useState('');
+    const [editFileList, setEditFileList] = useState([]);
+    const [editSlideHeroFileList, setEditSlideHeroFileList] = useState([]);
+    const [editFloorPlanFileList, setEditFloorPlanFileList] = useState([]);
+    const [editAmenities, setEditAmenities] = useState([]);
 
     // Extract projects from response
     const projects = projectsResponse?.data || [];
 
+    // Helpers: existing URLs to file list shape
+    const urlsToFileList = (urls) => (urls || []).map((url, i) => ({
+        uid: `existing-${i}-${url}`,
+        name: `image-${i}`,
+        status: 'done',
+        url,
+        previewUrl: url,
+    }));
+
     // Handle opening edit drawer
     const handleEdit = (record) => {
         setEditingProject(record);
-        setEditedFields([]); // Reset edited fields
+        setEditedFields([]);
+        const status = (record.status || 'active').toLowerCase();
         form.setFieldsValue({
             projectName: record.projectName,
             tag: record.tag,
             projectLocation: record.projectLocation,
             groupSize: record.groupSize,
             projectPrice: record.projectPrice,
+            latitude: record.latitude ?? '',
+            longitude: record.longitude ?? '',
+            status: status === 'active' ? 'active' : 'inactive',
         });
+        setEditDescription(record.projectDescriptionAndDetails || '');
+        setEditFileList(urlsToFileList(record.projectImages));
+        setEditSlideHeroFileList(urlsToFileList(record.projectSlideHeroImages));
+        setEditFloorPlanFileList(urlsToFileList(record.floorPlanImages));
+        setEditAmenities((record.amenities || []).map((a) => ({ ...a, enabled: true })));
         setEditDrawerVisible(true);
     };
 
@@ -48,26 +75,110 @@ const RealEstateProjectMain = () => {
         });
     };
 
+    // Edit form: upload handlers (same pattern as RealEstateProjectUpload)
+    const handleEditImageUpload = async (file) => {
+        const uid = Date.now() + Math.random();
+        const previewUrl = URL.createObjectURL(file);
+        setEditFileList((prev) => [...prev, { uid, name: file.name, status: 'uploading', previewUrl }]);
+        try {
+            const result = await uploadToCloudinary(file);
+            const imageUrl = result?.secure_url;
+            if (imageUrl) {
+                setEditFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'done', url: imageUrl } : f)));
+            } else throw new Error('Upload failed');
+        } catch (err) {
+            setEditFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'error' } : f)));
+            message.error(`Failed to upload ${file.name}`);
+        }
+    };
+    const handleEditSlideHeroUpload = async (file) => {
+        const uid = Date.now() + Math.random();
+        const previewUrl = URL.createObjectURL(file);
+        setEditSlideHeroFileList((prev) => [...prev, { uid, name: file.name, status: 'uploading', previewUrl }]);
+        try {
+            const result = await uploadToCloudinary(file);
+            const imageUrl = result?.secure_url;
+            if (imageUrl) {
+                setEditSlideHeroFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'done', url: imageUrl } : f)));
+            } else throw new Error('Upload failed');
+        } catch (err) {
+            setEditSlideHeroFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'error' } : f)));
+            message.error(`Failed to upload ${file.name}`);
+        }
+    };
+    const handleEditFloorPlanUpload = async (file) => {
+        const uid = Date.now() + Math.random();
+        const previewUrl = URL.createObjectURL(file);
+        setEditFloorPlanFileList((prev) => [...prev, { uid, name: file.name, status: 'uploading', previewUrl }]);
+        try {
+            const result = await uploadToCloudinary(file);
+            const imageUrl = result?.secure_url;
+            if (imageUrl) {
+                setEditFloorPlanFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'done', url: imageUrl } : f)));
+            } else throw new Error('Upload failed');
+        } catch (err) {
+            setEditFloorPlanFileList((prev) => prev.map((f) => (f.uid === uid ? { ...f, status: 'error' } : f)));
+            message.error(`Failed to upload ${file.name}`);
+        }
+    };
+    const updateEditAmenity = (index, field, value) => {
+        setEditAmenities((prev) => prev.map((a, i) => (i === index ? { ...a, [field]: value } : a)));
+    };
+    const handleEditAmenityIconUpload = async (index, file) => {
+        try {
+            const result = await uploadToCloudinary(file);
+            const url = result?.secure_url || '';
+            updateEditAmenity(index, 'icon', url);
+        } catch {
+            message.error('Icon upload failed');
+        }
+        return false;
+    };
+
+    const quillModules = {
+        toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ color: [] }, { background: [] }], [{ list: 'ordered' }, { list: 'bullet' }], ['link'], ['clean']],
+    };
+    const quillFormats = ['header', 'bold', 'italic', 'underline', 'strike', 'color', 'background', 'list', 'bullet', 'link'];
+
+    const editLabel = (text, tip) => (
+        <span className="real-estate-upload-form__label">
+            {text}
+            {tip && <Tooltip title={tip}><QuestionCircleOutlined className="real-estate-upload-form__label-icon" /></Tooltip>}
+        </span>
+    );
+
     // Handle form submission
     const handleUpdateProject = async (values) => {
         try {
-            console.log('Updated Project ID:', editingProject._id);
-            console.log('All Values:', values);
-            console.log('Edited Fields:', editedFields);
-
-            // Call the update API with all form values
-            await updateProject({
-                id: editingProject._id,
-                body: values
-            }).unwrap();
-
+            const stillUploading = editFileList.some((f) => f.status === 'uploading') ||
+                editSlideHeroFileList.some((f) => f.status === 'uploading') ||
+                editFloorPlanFileList.some((f) => f.status === 'uploading');
+            if (stillUploading) {
+                message.warning('Please wait for all images to finish uploading.');
+                return;
+            }
+            const projectImages = editFileList.filter((f) => f.status === 'done').map((f) => f.url);
+            const projectSlideHeroImages = editSlideHeroFileList.filter((f) => f.status === 'done').map((f) => f.url);
+            const floorPlanImages = editFloorPlanFileList.filter((f) => f.status === 'done').map((f) => f.url);
+            const body = {
+                ...values,
+                projectDescriptionAndDetails: editDescription,
+                projectImages,
+                projectSlideHeroImages,
+                floorPlanImages,
+                amenities: editAmenities.filter((a) => a.enabled).map(({ name, icon }) => ({ name, icon })),
+            };
+            await updateProject({ id: editingProject._id, body }).unwrap();
             message.success('Project updated successfully!');
-
-            // Close drawer and reset
             setEditDrawerVisible(false);
             setEditingProject(null);
             setEditedFields([]);
             form.resetFields();
+            setEditDescription('');
+            setEditFileList([]);
+            setEditSlideHeroFileList([]);
+            setEditFloorPlanFileList([]);
+            setEditAmenities([]);
         } catch (error) {
             console.error('Update Error:', error);
             message.error(error?.data?.message || 'Failed to update project');
@@ -133,8 +244,9 @@ const RealEstateProjectMain = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status) => {
-                const color = status === 'Active' ? 'green' : 'default';
-                const text = status || 'Inactive';
+                const isActive = (status || '').toLowerCase() === 'active';
+                const color = isActive ? 'green' : 'default';
+                const text = status ? (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()) : 'Inactive';
                 return <Tag color={color}>{text}</Tag>;
             },
         },
@@ -253,7 +365,7 @@ const RealEstateProjectMain = () => {
                 animated={{ inkBar: true, tabs: true }}
             />
 
-            {/* Edit Drawer */}
+            {/* Edit Drawer - same fields as upload form */}
             <Drawer
                 title={null}
                 placement="right"
@@ -263,158 +375,153 @@ const RealEstateProjectMain = () => {
                     setEditingProject(null);
                     setEditedFields([]);
                     form.resetFields();
+                    setEditDescription('');
+                    setEditFileList([]);
+                    setEditSlideHeroFileList([]);
+                    setEditFloorPlanFileList([]);
+                    setEditAmenities([]);
                 }}
                 open={editDrawerVisible}
                 closable={false}
                 styles={{ body: { padding: 0 } }}
             >
-                <div className="new-project-panel">
-                    {/* Top Navigation Bar */}
-                    <div className="panel-top-nav">
-                        <div className="nav-left">
-                            <Title level={4} className="m-0">Edit Project</Title>
-                        </div>
-                        <Button
-                            type="text"
-                            onClick={() => {
-                                setEditDrawerVisible(false);
-                                setEditingProject(null);
-                                setEditedFields([]);
-                                form.resetFields();
-                            }}
-                            style={{ fontSize: '20px' }}
-                        >
-                            ✕
-                        </Button>
+                <div className="real-estate-upload-form" style={{ border: 'none', padding: '0 20px 20px' }}>
+                    <div className="real-estate-upload-form__header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Title level={4} className="real-estate-upload-form__title" style={{ margin: 0 }}>Edit Project</Title>
+                        <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); }} style={{ fontSize: '20px' }}>✕</Button>
                     </div>
-
-                    <div className="panel-content">
-                        <Form
-                            form={form}
-                            layout="vertical"
-                            onFinish={handleUpdateProject}
-                            onFieldsChange={handleFieldChange}
-                            autoComplete="off"
-                            requiredMark={false}
-                            disabled={isUpdating}
-
-                        >
-                            {/* Project Name */}
-                            <div className="input-row-section" style={{ marginBottom: '24px' }}>
-                                <div className="mini-label">
-                                    * PROJECT NAME <Tooltip title="The official name of the project"><QuestionCircleOutlined /></Tooltip>
-                                </div>
-                                <Form.Item
-                                    name="projectName"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <Input
-                                        prefix={<HomeOutlined />}
-                                        placeholder="e.g. Bliss Heights"
-                                        className="styled-input full-width"
-                                    />
-                                </Form.Item>
-                            </div>
-
-                            <div className="property-grid">
-                                <Form.Item
-                                    label={<span className="mini-label">* TAG</span>}
-                                    name="tag"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <Select
-                                        prefix={<TagOutlined />}
-                                        placeholder="Select Tag"
-                                        className="styled-select"
-                                    >
+                    <Form form={form} layout="vertical" onFinish={handleUpdateProject} onFieldsChange={handleFieldChange} autoComplete="off" requiredMark={false} disabled={isUpdating}>
+                        <Card className="real-estate-upload-form__card" size="small">
+                            <Form.Item label={editLabel('Project Name', 'Official name of the project')} name="projectName" rules={[{ required: true, message: 'Required' }]}>
+                                <Input prefix={<HomeOutlined />} placeholder="e.g. Sunrise Apartments" className="real-estate-upload-form__input" />
+                            </Form.Item>
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--3">
+                                <Form.Item label={editLabel('Tag')} name="tag" rules={[{ required: true, message: 'Required' }]}>
+                                    <Select placeholder="Select tag" className="real-estate-upload-form__input">
                                         <Option value="Exclusive deal">Exclusive deal</Option>
                                         <Option value="Limited time offer">Limited time offer</Option>
                                     </Select>
                                 </Form.Item>
-
-                                <Form.Item
-                                    label={<span className="mini-label">* LOCATION</span>}
-                                    name="projectLocation"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <Input
-                                        prefix={<EnvironmentOutlined />}
-                                        placeholder="e.g. Mumbai, BKC"
-                                        className="styled-input"
-                                    />
+                                <Form.Item label={editLabel('Location')} name="projectLocation" rules={[{ required: true, message: 'Required' }]}>
+                                    <Input prefix={<EnvironmentOutlined />} placeholder="e.g. Mumbai, Maharashtra" className="real-estate-upload-form__input" />
                                 </Form.Item>
-
-                                <Form.Item
-                                    label={<span className="mini-label">* GROUP SIZE</span>}
-                                    name="groupSize"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <InputNumber
-                                        prefix={<TeamOutlined />}
-                                        placeholder="Size"
-                                        className="styled-input-number"
-                                        style={{ width: '100%' }}
-                                        min={1}
-                                    />
+                                <Form.Item label={editLabel('Price')} name="projectPrice" rules={[{ required: true, message: 'Required' }]}>
+                                    <Input prefix={<DollarOutlined />} placeholder="e.g. 1.2 Cr" className="real-estate-upload-form__input" />
                                 </Form.Item>
                             </div>
-
-                            {/* Price Section */}
-                            <div className="input-row-section" style={{ marginBottom: '20px', marginTop: '20px' }}>
-                                <Form.Item
-                                    label={<span className="mini-label">* PRICE</span>}
-                                    name="projectPrice"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <Input
-                                        prefix={<DollarOutlined />}
-                                        placeholder="e.g. ₹50 Lakhs onwards"
-                                        className="styled-input"
-                                    />
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                <Form.Item label={editLabel('Group Size')} name="groupSize" rules={[{ required: true, message: 'Required' }]}>
+                                    <InputNumber prefix={<TeamOutlined />} placeholder="50" min={1} className="real-estate-upload-form__input real-estate-upload-form__input-number" style={{ width: '100%' }} />
                                 </Form.Item>
-                            </div>
-
-                            {/* Status Section */}
-                            <div className="input-row-section" style={{ marginBottom: '20px' }}>
-                                <Form.Item
-                                    label={<span className="mini-label">* STATUS</span>}
-                                    name="status"
-                                    initialValue="Active"
-                                    rules={[{ required: true, message: "Required" }]}
-                                >
-                                    <Radio.Group className="status-radio-group">
-                                        <Radio.Button value="Active" className="status-radio-btn active">Active</Radio.Button>
-                                        <Radio.Button value="Inactive" className="status-radio-btn inactive">Inactive</Radio.Button>
-                                    </Radio.Group>
-                                </Form.Item>
-                            </div>
-
-                            <div className="panel-footer">
-                                <Button
-                                    className="cancel-footer-btn"
-                                    onClick={() => {
-                                        setEditDrawerVisible(false);
-                                        setEditingProject(null);
-                                        setEditedFields([]);
-                                        form.resetFields();
-                                    }}
-                                    disabled={isUpdating}
-                                >
-                                    Cancel
-                                </Button>
-                                <div className="footer-right">
-                                    <Button
-                                        type="primary"
-                                        className="continue-footer-btn"
-                                        onClick={() => form.submit()}
-                                        loading={isUpdating}
-                                    >
-                                        {isUpdating ? "Updating..." : "Update Project"}
-                                    </Button>
+                                <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                    <Form.Item label={editLabel('Latitude')} name="latitude">
+                                        <Input prefix={<AimOutlined />} placeholder="19.0760" className="real-estate-upload-form__input" />
+                                    </Form.Item>
+                                    <Form.Item label={editLabel('Longitude')} name="longitude">
+                                        <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
+                                    </Form.Item>
                                 </div>
                             </div>
-                        </Form>
-                    </div>
+                            <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
+                                <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="real-estate-upload-form__status-switch" />
+                            </Form.Item>
+                        </Card>
+
+                        <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
+                            <div className="real-estate-upload-form__quill-wrap">
+                                <ReactQuill theme="bubble" value={editDescription} onChange={setEditDescription} modules={quillModules} formats={quillFormats} placeholder="Describe the project..." readOnly={isUpdating} />
+                            </div>
+                        </Card>
+
+                        <Card className="real-estate-upload-form__card" size="small" title="Project Images">
+                            <p className="real-estate-upload-form__dimension-hint">Project gallery: <strong>560 × 440</strong> px • same for all</p>
+                            <div className="real-estate-upload-form__images">
+                                <Upload.Dragger multiple accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditImageUpload(file); return false; }} disabled={isUpdating} className="real-estate-upload-form__dropzone">
+                                    <PictureOutlined className="real-estate-upload-form__dropzone-icon" />
+                                    <p className="real-estate-upload-form__dropzone-text">Drop images or <span>Browse</span></p>
+                                </Upload.Dragger>
+                                <div className="real-estate-upload-form__preview-grid">
+                                    {editFileList.map((file) => (
+                                        <div key={file.uid} className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}>
+                                            <img src={file.previewUrl} alt="" />
+                                            <span className="real-estate-upload-form__preview-status">{file.status === 'uploading' ? 'Uploading...' : file.status === 'done' ? 'Done' : 'Failed'}</span>
+                                            <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__preview-remove" onClick={() => setEditFileList((prev) => prev.filter((f) => f.uid !== file.uid))} disabled={isUpdating} />
+                                        </div>
+                                    ))}
+                                    {editFileList.length === 0 && <div className="real-estate-upload-form__preview-empty">No images uploaded</div>}
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card className="real-estate-upload-form__card" size="small" title="Slider Images (project open)">
+                            <p className="real-estate-upload-form__dimension-hint">Hero (project open): <strong>1920 × 1080</strong> px • 16:9</p>
+                            <div className="real-estate-upload-form__images">
+                                <Upload.Dragger multiple accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditSlideHeroUpload(file); return false; }} disabled={isUpdating} className="real-estate-upload-form__dropzone">
+                                    <SlidersOutlined className="real-estate-upload-form__dropzone-icon" />
+                                    <p className="real-estate-upload-form__dropzone-text">Drop slider images or <span>Browse</span></p>
+                                </Upload.Dragger>
+                                <div className="real-estate-upload-form__preview-grid">
+                                    {editSlideHeroFileList.map((file) => (
+                                        <div key={file.uid} className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}>
+                                            <img src={file.previewUrl} alt="" />
+                                            <span className="real-estate-upload-form__preview-status">{file.status === 'uploading' ? 'Uploading...' : file.status === 'done' ? 'Done' : 'Failed'}</span>
+                                            <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__preview-remove" onClick={() => setEditSlideHeroFileList((prev) => prev.filter((f) => f.uid !== file.uid))} disabled={isUpdating} />
+                                        </div>
+                                    ))}
+                                    {editSlideHeroFileList.length === 0 && <div className="real-estate-upload-form__preview-empty">No slider images uploaded</div>}
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card className="real-estate-upload-form__card" size="small" title="Floor Plan Images">
+                            <p className="real-estate-upload-form__dimension-hint">Recommended: <strong>800 × 480</strong> px • ~5:4 aspect ratio • full plan</p>
+                            <div className="real-estate-upload-form__images">
+                                <Upload.Dragger multiple accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditFloorPlanUpload(file); return false; }} disabled={isUpdating} className="real-estate-upload-form__dropzone">
+                                    <LayoutOutlined className="real-estate-upload-form__dropzone-icon" />
+                                    <p className="real-estate-upload-form__dropzone-text">Drop floor plans or <span>Browse</span></p>
+                                </Upload.Dragger>
+                                <div className="real-estate-upload-form__preview-grid">
+                                    {editFloorPlanFileList.map((file) => (
+                                        <div key={file.uid} className={`real-estate-upload-form__preview-card real-estate-upload-form__preview-card--${file.status}`}>
+                                            <img src={file.previewUrl} alt="" />
+                                            <span className="real-estate-upload-form__preview-status">{file.status === 'uploading' ? 'Uploading...' : file.status === 'done' ? 'Done' : 'Failed'}</span>
+                                            <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__preview-remove" onClick={() => setEditFloorPlanFileList((prev) => prev.filter((f) => f.uid !== file.uid))} disabled={isUpdating} />
+                                        </div>
+                                    ))}
+                                    {editFloorPlanFileList.length === 0 && <div className="real-estate-upload-form__preview-empty">No floor plan images uploaded</div>}
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card className="real-estate-upload-form__card" size="small" title="Amenities">
+                            <div className="real-estate-upload-form__amenities">
+                                {editAmenities.map((amenity, index) => (
+                                    <div key={index} className="real-estate-upload-form__amenity-card">
+                                        <div className="real-estate-upload-form__amenity-card-head">
+                                            <Switch checked={amenity.enabled} onChange={(checked) => updateEditAmenity(index, 'enabled', checked)} size="small" />
+                                            <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__amenity-delete" onClick={() => setEditAmenities((prev) => prev.filter((_, i) => i !== index))} />
+                                        </div>
+                                        <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditAmenityIconUpload(index, file); return false; }} className="real-estate-upload-form__amenity-icon-upload">
+                                            <div className="real-estate-upload-form__amenity-icon-box">
+                                                {amenity.icon ? (typeof amenity.icon === 'string' && amenity.icon.startsWith('http') ? <img src={amenity.icon} alt="" className="real-estate-upload-form__amenity-icon-img" /> : <span className="real-estate-upload-form__amenity-icon-text">{amenity.icon}</span>) : <PlusOutlined />}
+                                            </div>
+                                        </Upload>
+                                        <Input placeholder="Amenity name" value={amenity.name} onChange={(e) => updateEditAmenity(index, 'name', e.target.value)} className="real-estate-upload-form__input real-estate-upload-form__amenity-name" />
+                                    </div>
+                                ))}
+                                <button type="button" onClick={() => setEditAmenities((prev) => [...prev, { name: '', icon: '', enabled: true }])} className="real-estate-upload-form__add-amenity">
+                                    <PlusOutlined /><span>Add Amenity</span>
+                                </button>
+                            </div>
+                        </Card>
+
+                        <div className="real-estate-upload-form__footer">
+                            <Button onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); }} disabled={isUpdating}>Cancel</Button>
+                            <Space>
+                                <Button type="primary" htmlType="submit" loading={isUpdating}>{isUpdating ? 'Updating...' : 'Update Project'}</Button>
+                            </Space>
+                        </div>
+                    </Form>
                 </div>
             </Drawer>
 
