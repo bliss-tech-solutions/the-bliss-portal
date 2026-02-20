@@ -272,6 +272,57 @@
     font-style: italic;
 }
 
+/* Common amenities (from API) */
+.real-estate-upload-form__common-amenities {
+    margin-bottom: 16px;
+}
+
+.real-estate-upload-form__common-amenities-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--reuf-muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+
+.real-estate-upload-form__common-amenities-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.real-estate-upload-form__common-amenity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--reuf-border);
+    border-radius: 8px;
+    background: var(--reuf-input-bg);
+    color: var(--reuf-text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.real-estate-upload-form__common-amenity-tag:hover:not(:disabled) {
+    border-color: var(--accent-color);
+    background: rgba(255, 193, 7, 0.08);
+}
+
+.real-estate-upload-form__common-amenity-tag:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.real-estate-upload-form__common-amenity-tag-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
 /* Amenities – grid 3–4 per row */
 .real-estate-upload-form__amenities {
     display: grid;

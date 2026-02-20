@@ -29,7 +29,7 @@ import {
 } from "@ant-design/icons";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.bubble.css";
-import { useCreateRealEstateProjectMutation } from "../../../../store/api";
+import { useCreateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery } from "../../../../store/api";
 import { uploadToCloudinary } from "../../../../utils/cloudinary";
 import "./RealEstateProjectUpload.css";
 
@@ -47,6 +47,7 @@ const DUMMY_INITIAL = {
     latitude: "19.0760",
     longitude: "72.8777",
     status: "active",
+    possessionDate: "",
     projectDescriptionAndDetails:
         "Luxury 2BHK and 3BHK apartments with modern amenities.",
     amenities: [
@@ -69,6 +70,8 @@ const RealEstateProjectUpload = () => {
     const [publishStatus, setPublishStatus] = useState("");
 
     const [createProject] = useCreateRealEstateProjectMutation();
+    const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
+    const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
 
     const onFinish = async (values) => {
         try {
@@ -92,6 +95,7 @@ const RealEstateProjectUpload = () => {
 
             const payload = {
                 ...values,
+                possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: description,
                 projectImages: uploadedImageUrls,
                 projectSlideHeroImages: uploadedSlideHeroUrls,
@@ -229,6 +233,15 @@ const RealEstateProjectUpload = () => {
         ]);
     };
 
+    const addCommonAmenity = (item) => {
+        const name = item?.name || item?.title || "";
+        const icon = item?.icon || "";
+        if (!name) return;
+        const alreadyAdded = amenities.some((a) => (a.name || "").trim().toLowerCase() === name.trim().toLowerCase());
+        if (alreadyAdded) return;
+        setAmenities((prev) => [...prev, { name, icon, enabled: true }]);
+    };
+
     const updateAmenity = (index, field, value) => {
         setAmenities((prev) =>
             prev.map((a, i) =>
@@ -315,6 +328,7 @@ const RealEstateProjectUpload = () => {
                     latitude: DUMMY_INITIAL.latitude,
                     longitude: DUMMY_INITIAL.longitude,
                     status: DUMMY_INITIAL.status,
+                    possessionDate: DUMMY_INITIAL.possessionDate,
                 }}
             >
                 <Card className="real-estate-upload-form__card" size="small">
@@ -414,19 +428,30 @@ const RealEstateProjectUpload = () => {
                             />
                         </Form.Item>
                     </div>
-                    <Form.Item
-                        label={label("Status")}
-                        name="status"
-                        valuePropName="checked"
-                        getValueFromEvent={(checked) => (checked ? "active" : "inactive")}
-                        getValueProps={(v) => ({ checked: v === "active" })}
-                    >
-                        <Switch
-                            checkedChildren="Active"
-                            unCheckedChildren="Inactive"
-                            className="real-estate-upload-form__status-switch"
-                        />
-                    </Form.Item>
+                    <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                        <Form.Item
+                            label={label("Possession Date")}
+                            name="possessionDate"
+                        >
+                            <Input
+                                placeholder="e.g. Dec 2025"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label={label("Status")}
+                            name="status"
+                            valuePropName="checked"
+                            getValueFromEvent={(checked) => (checked ? "active" : "inactive")}
+                            getValueProps={(v) => ({ checked: v === "active" })}
+                        >
+                            <Switch
+                                checkedChildren="Active"
+                                unCheckedChildren="Inactive"
+                                className="real-estate-upload-form__status-switch"
+                            />
+                        </Form.Item>
+                    </div>
                 </Card>
 
                 <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
@@ -603,6 +628,34 @@ const RealEstateProjectUpload = () => {
                 </Card>
 
                 <Card className="real-estate-upload-form__card" size="small" title="Amenities">
+                    {commonAmenities.length > 0 && (
+                        <div className="real-estate-upload-form__common-amenities">
+                            <span className="real-estate-upload-form__common-amenities-label">Add from common:</span>
+                            <div className="real-estate-upload-form__common-amenities-tags">
+                                {commonAmenities.map((item) => {
+                                    const name = item?.name || item?.title || "";
+                                    const icon = item?.icon;
+                                    const alreadyAdded = amenities.some((a) => (a.name || "").trim().toLowerCase() === name.trim().toLowerCase());
+                                    return (
+                                        <button
+                                            key={item?._id || name || Math.random()}
+                                            type="button"
+                                            className="real-estate-upload-form__common-amenity-tag"
+                                            onClick={() => addCommonAmenity(item)}
+                                            disabled={alreadyAdded || !name}
+                                            title={alreadyAdded ? "Already added" : `Add ${name}`}
+                                        >
+                                            {typeof icon === "string" && icon.startsWith("http") ? (
+                                                <img src={icon} alt="" className="real-estate-upload-form__common-amenity-tag-icon" />
+                                            ) : null}
+                                            <span>{name}</span>
+                                            {alreadyAdded ? " ✓" : " +"}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                     <div className="real-estate-upload-form__amenities">
                         {amenities.map((amenity, index) => (
                             <div
@@ -670,7 +723,7 @@ const RealEstateProjectUpload = () => {
                             className="real-estate-upload-form__add-amenity"
                         >
                             <PlusOutlined />
-                            <span>Add Amenity</span>
+                            <span>Add custom amenity</span>
                         </button>
                     </div>
                 </Card>

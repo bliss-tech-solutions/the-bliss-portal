@@ -10,7 +10,7 @@ import {
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.bubble.css';
 import RealEstateProjectUpload from './RealEstateProjectUpload';
-import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation } from '../../../../store/api';
+import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery } from '../../../../store/api';
 import { uploadToCloudinary } from '../../../../utils/cloudinary';
 import './RealEstateProjectUpload.css';
 
@@ -19,6 +19,8 @@ const { Option } = Select;
 
 const RealEstateProjectMain = () => {
     const { data: projectsResponse, isLoading, isFetching, refetch } = useGetAllRealEstateProjectsQuery();
+    const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
+    const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
     const [updateProject, { isLoading: isUpdating }] = useUpdateRealEstateProjectMutation();
     const [editDrawerVisible, setEditDrawerVisible] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
@@ -57,6 +59,7 @@ const RealEstateProjectMain = () => {
             projectSize: record.projectSize ?? '',
             latitude: record.latitude ?? '',
             longitude: record.longitude ?? '',
+            possessionDate: record.possessionDate ?? '',
             status: status === 'active' ? 'active' : 'inactive',
         });
         setEditDescription(record.projectDescriptionAndDetails || '');
@@ -125,6 +128,14 @@ const RealEstateProjectMain = () => {
     const updateEditAmenity = (index, field, value) => {
         setEditAmenities((prev) => prev.map((a, i) => (i === index ? { ...a, [field]: value } : a)));
     };
+    const addCommonAmenityToEdit = (item) => {
+        const name = item?.name || item?.title || '';
+        const icon = item?.icon || '';
+        if (!name) return;
+        const alreadyAdded = editAmenities.some((a) => (a.name || '').trim().toLowerCase() === name.trim().toLowerCase());
+        if (alreadyAdded) return;
+        setEditAmenities((prev) => [...prev, { name, icon, enabled: true }]);
+    };
     const handleEditAmenityIconUpload = async (index, file) => {
         try {
             const result = await uploadToCloudinary(file);
@@ -163,6 +174,7 @@ const RealEstateProjectMain = () => {
             const floorPlanImages = editFloorPlanFileList.filter((f) => f.status === 'done').map((f) => f.url);
             const body = {
                 ...values,
+                possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: editDescription,
                 projectImages,
                 projectSlideHeroImages,
@@ -426,9 +438,14 @@ const RealEstateProjectMain = () => {
                                     <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
                                 </Form.Item>
                             </div>
-                            <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                <Form.Item label={editLabel('Possession Date')} name="possessionDate">
+                                    <Input placeholder="e.g. Dec 2025" className="real-estate-upload-form__input" />
+                                </Form.Item>
+                                <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
                                 <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="real-estate-upload-form__status-switch" />
-                            </Form.Item>
+                                </Form.Item>
+                            </div>
                         </Card>
 
                         <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
@@ -498,6 +515,34 @@ const RealEstateProjectMain = () => {
                         </Card>
 
                         <Card className="real-estate-upload-form__card" size="small" title="Amenities">
+                            {commonAmenities.length > 0 && (
+                                <div className="real-estate-upload-form__common-amenities">
+                                    <span className="real-estate-upload-form__common-amenities-label">Add from common:</span>
+                                    <div className="real-estate-upload-form__common-amenities-tags">
+                                        {commonAmenities.map((item) => {
+                                            const name = item?.name || item?.title || '';
+                                            const icon = item?.icon;
+                                            const alreadyAdded = editAmenities.some((a) => (a.name || '').trim().toLowerCase() === name.trim().toLowerCase());
+                                            return (
+                                                <button
+                                                    key={item?._id || name || Math.random()}
+                                                    type="button"
+                                                    className="real-estate-upload-form__common-amenity-tag"
+                                                    onClick={() => addCommonAmenityToEdit(item)}
+                                                    disabled={alreadyAdded || !name}
+                                                    title={alreadyAdded ? 'Already added' : `Add ${name}`}
+                                                >
+                                                    {typeof icon === 'string' && icon.startsWith('http') ? (
+                                                        <img src={icon} alt="" className="real-estate-upload-form__common-amenity-tag-icon" />
+                                                    ) : null}
+                                                    <span>{name}</span>
+                                                    {alreadyAdded ? ' ✓' : ' +'}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                             <div className="real-estate-upload-form__amenities">
                                 {editAmenities.map((amenity, index) => (
                                     <div key={index} className="real-estate-upload-form__amenity-card">
@@ -514,7 +559,7 @@ const RealEstateProjectMain = () => {
                                     </div>
                                 ))}
                                 <button type="button" onClick={() => setEditAmenities((prev) => [...prev, { name: '', icon: '', enabled: true }])} className="real-estate-upload-form__add-amenity">
-                                    <PlusOutlined /><span>Add Amenity</span>
+                                    <PlusOutlined /><span>Add custom amenity</span>
                                 </button>
                             </div>
                         </Card>

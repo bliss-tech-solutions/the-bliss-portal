@@ -916,6 +916,10 @@ export const api = createApi({
             query: () => '/api/realEstate/project/getAll',
             providesTags: ['RealEstateProjects'],
         }),
+        getRealEstateAmenities: builder.query({
+            query: () => '/api/realEstate/amenities/getAll',
+            transformResponse: (response) => response?.data ?? response,
+        }),
         // Image Upload Endpoint (same format as your working HTML)
         uploadImage: builder.mutation({
             queryFn: async (formData) => {
@@ -1049,6 +1053,7 @@ export const {
     useCreateRealEstateProjectMutation,
     useUpdateRealEstateProjectMutation,
     useGetAllRealEstateProjectsQuery,
+    useGetRealEstateAmenitiesQuery,
     useGetUniqueRolesQuery,
     useLazyGetCheckinAnalysisQuery,
     useGetDashboardAnalysisQuery,
