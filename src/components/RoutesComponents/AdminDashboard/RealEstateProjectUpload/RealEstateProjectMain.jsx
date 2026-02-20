@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tabs, Table, Tag, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Upload, Switch } from 'antd';
+import { Tabs, Table, Tag, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Upload, Switch, Popconfirm } from 'antd';
 import {
     ProjectOutlined, PlusOutlined, EditOutlined,
     DeleteOutlined, CheckCircleOutlined,
@@ -22,6 +22,7 @@ const RealEstateProjectMain = () => {
     const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
     const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
     const [updateProject, { isLoading: isUpdating }] = useUpdateRealEstateProjectMutation();
+    const [togglingStatusId, setTogglingStatusId] = useState(null);
     const [editDrawerVisible, setEditDrawerVisible] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [editedFields, setEditedFields] = useState([]);
@@ -223,6 +224,20 @@ const RealEstateProjectMain = () => {
         setProjectToDelete(null);
     };
 
+    const handleToggleStatus = async (record) => {
+        const current = (record.status || '').toLowerCase();
+        const newStatus = current === 'active' ? 'inactive' : 'active';
+        setTogglingStatusId(record._id);
+        try {
+            await updateProject({ id: record._id, body: { status: newStatus } }).unwrap();
+            message.success(`Status set to ${newStatus === 'active' ? 'Active' : 'Inactive'}`);
+        } catch (err) {
+            message.error(err?.data?.message || 'Failed to update status');
+        } finally {
+            setTogglingStatusId(null);
+        }
+    };
+
     // Filter projects based on search
     const filteredProjects = projects.filter(project => {
         const searchLower = searchTerm.toLowerCase();
@@ -256,11 +271,27 @@ const RealEstateProjectMain = () => {
             title: 'STATUS',
             dataIndex: 'status',
             key: 'status',
-            render: (status) => {
+            render: (status, record) => {
                 const isActive = (status || '').toLowerCase() === 'active';
-                const color = isActive ? 'green' : 'default';
-                const text = status ? (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()) : 'Inactive';
-                return <Tag color={color}>{text}</Tag>;
+                const newStatusLabel = isActive ? 'Inactive' : 'Active';
+                const isToggling = togglingStatusId === record._id;
+                return (
+                    <Popconfirm
+                        title={`Set status to ${newStatusLabel}?`}
+                        onConfirm={() => handleToggleStatus(record)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Switch
+                            size="small"
+                            checked={isActive}
+                            checkedChildren="Active"
+                            unCheckedChildren="Inactive"
+                            loading={isToggling}
+                            disabled={isToggling}
+                        />
+                    </Popconfirm>
+                );
             },
         },
         {
