@@ -41,6 +41,7 @@ const DUMMY_INITIAL = {
     projectName: "Sunrise Apartments",
     projectLocation: "Mumbai, Maharashtra",
     projectPrice: "1.2 Cr",
+    projectSize: "",
     groupSize: 50,
     tag: "Exclusive deal",
     latitude: "19.0760",
@@ -308,6 +309,7 @@ const RealEstateProjectUpload = () => {
                     projectName: DUMMY_INITIAL.projectName,
                     projectLocation: DUMMY_INITIAL.projectLocation,
                     projectPrice: DUMMY_INITIAL.projectPrice,
+                    projectSize: DUMMY_INITIAL.projectSize,
                     groupSize: DUMMY_INITIAL.groupSize,
                     tag: DUMMY_INITIAL.tag,
                     latitude: DUMMY_INITIAL.latitude,
@@ -380,28 +382,37 @@ const RealEstateProjectUpload = () => {
                                 style={{ width: "100%" }}
                             />
                         </Form.Item>
-                        <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
-                            <Form.Item
-                                label={label("Latitude")}
-                                name="latitude"
-                            >
-                                <Input
-                                    prefix={<AimOutlined />}
-                                    placeholder="19.0760"
-                                    className="real-estate-upload-form__input"
-                                />
-                            </Form.Item>
-                            <Form.Item
-                                label={label("Longitude")}
-                                name="longitude"
-                            >
-                                <Input
-                                    prefix={<AimOutlined />}
-                                    placeholder="72.8777"
-                                    className="real-estate-upload-form__input"
-                                />
-                            </Form.Item>
-                        </div>
+                        <Form.Item
+                            label={label("Project Size")}
+                            name="projectSize"
+                        >
+                            <Input
+                                placeholder="e.g. 1200 sq ft"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
+                    </div>
+                    <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                        <Form.Item
+                            label={label("Latitude")}
+                            name="latitude"
+                        >
+                            <Input
+                                prefix={<AimOutlined />}
+                                placeholder="19.0760"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
+                        <Form.Item
+                            label={label("Longitude")}
+                            name="longitude"
+                        >
+                            <Input
+                                prefix={<AimOutlined />}
+                                placeholder="72.8777"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
                     </div>
                     <Form.Item
                         label={label("Status")}

@@ -54,6 +54,7 @@ const RealEstateProjectMain = () => {
             projectLocation: record.projectLocation,
             groupSize: record.groupSize,
             projectPrice: record.projectPrice,
+            projectSize: record.projectSize ?? '',
             latitude: record.latitude ?? '',
             longitude: record.longitude ?? '',
             status: status === 'active' ? 'active' : 'inactive',
@@ -413,14 +414,17 @@ const RealEstateProjectMain = () => {
                                 <Form.Item label={editLabel('Group Size')} name="groupSize" rules={[{ required: true, message: 'Required' }]}>
                                     <InputNumber prefix={<TeamOutlined />} placeholder="50" min={1} className="real-estate-upload-form__input real-estate-upload-form__input-number" style={{ width: '100%' }} />
                                 </Form.Item>
-                                <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
-                                    <Form.Item label={editLabel('Latitude')} name="latitude">
-                                        <Input prefix={<AimOutlined />} placeholder="19.0760" className="real-estate-upload-form__input" />
-                                    </Form.Item>
-                                    <Form.Item label={editLabel('Longitude')} name="longitude">
-                                        <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
-                                    </Form.Item>
-                                </div>
+                                <Form.Item label={editLabel('Project Size')} name="projectSize">
+                                    <Input placeholder="e.g. 1200 sq ft" className="real-estate-upload-form__input" />
+                                </Form.Item>
+                            </div>
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                <Form.Item label={editLabel('Latitude')} name="latitude">
+                                    <Input prefix={<AimOutlined />} placeholder="19.0760" className="real-estate-upload-form__input" />
+                                </Form.Item>
+                                <Form.Item label={editLabel('Longitude')} name="longitude">
+                                    <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
+                                </Form.Item>
                             </div>
                             <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
                                 <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="real-estate-upload-form__status-switch" />
