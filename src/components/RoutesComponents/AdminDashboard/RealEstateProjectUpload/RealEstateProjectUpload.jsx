@@ -12,6 +12,8 @@ import {
     Switch,
     Card,
     Space,
+    Modal,
+    Spin,
 } from "antd";
 import {
     PlusOutlined,
@@ -29,18 +31,30 @@ import {
 } from "@ant-design/icons";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.bubble.css";
-import { useCreateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery } from "../../../../store/api";
+import * as FaIcons from "react-icons/fa";
+import { renderToString } from "react-dom/server";
+import { useCreateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateProjectTypesQuery } from "../../../../store/api";
 import { uploadToCloudinary } from "../../../../utils/cloudinary";
 import "./RealEstateProjectUpload.css";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const OTHER_PROJECT_TYPE = "__other__";
+const DEFAULT_PROJECT_TYPES = ["Plotted Development", "Villa", "Apartment"];
+
+export const iconToFile = (IconComponent, iconName = "icon") => {
+    const svgString = renderToString(<IconComponent />);
+    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+    return new File([blob], `${iconName}.svg`, { type: "image/svg+xml" });
+};
 
 // Dummy data matching req.body (for later dynamic implementation)
 const DUMMY_INITIAL = {
     projectName: "Sunrise Apartments",
     projectLocation: "Mumbai, Maharashtra",
     projectPrice: "1.2 Cr",
+    projectType: undefined,
+    newProjectType: undefined,
     projectSize: "",
     groupSize: 50,
     tag: "Exclusive deal",
@@ -68,10 +82,34 @@ const RealEstateProjectUpload = () => {
     const [amenities, setAmenities] = useState(DUMMY_INITIAL.amenities);
     const [isPublishing, setIsPublishing] = useState(false);
     const [publishStatus, setPublishStatus] = useState("");
+    const [iconPickerOpenForIndex, setIconPickerOpenForIndex] = useState(null);
+    const [iconSearch, setIconSearch] = useState("");
+    const [isIconUploading, setIsIconUploading] = useState(false);
+    const [iconUploadingIndex, setIconUploadingIndex] = useState(null);
 
     const [createProject] = useCreateRealEstateProjectMutation();
     const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
     const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
+    const { data: projectTypesList = [], refetch: refetchProjectTypes } = useGetRealEstateProjectTypesQuery();
+    const normalizeProjectTypes = (list) => {
+        const arr = Array.isArray(list) ? list : [];
+        return arr
+            .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object") return item.name || item.title || item.type || "";
+                return "";
+            })
+            .filter(Boolean);
+    };
+    const projectTypes = [
+        ...new Set([...DEFAULT_PROJECT_TYPES, ...normalizeProjectTypes(projectTypesList)]),
+    ];
+    const selectedProjectType = Form.useWatch("projectType", form);
+
+    const iconKeys = Object.keys(FaIcons);
+    const filteredIconKeys = iconKeys
+        .filter((k) => k.toLowerCase().includes(iconSearch.trim().toLowerCase()))
+        .slice(0, 100);
 
     const onFinish = async (values) => {
         try {
@@ -95,6 +133,12 @@ const RealEstateProjectUpload = () => {
 
             const payload = {
                 ...values,
+                // projectType: dropdown value or custom input when "Other" selected
+                newProjectType: undefined,
+                projectType:
+                    values.projectType === OTHER_PROJECT_TYPE
+                        ? String(values.newProjectType ?? "").trim()
+                        : String(values.projectType ?? "").trim(),
                 possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: description,
                 projectImages: uploadedImageUrls,
@@ -108,6 +152,7 @@ const RealEstateProjectUpload = () => {
             setIsPublishing(true);
             setPublishStatus("Creating Project...");
             await createProject(payload).unwrap();
+            refetchProjectTypes();
 
             message.success("Real Estate Project Published Successfully!");
             form.resetFields();
@@ -265,6 +310,31 @@ const RealEstateProjectUpload = () => {
         return false;
     };
 
+    const handleAmenityIconSelect = async (index, iconName) => {
+        if (isIconUploading) return;
+        try {
+            const IconComponent = FaIcons?.[iconName];
+            if (!IconComponent) return;
+
+            // Convert icon SVG -> File -> Upload -> URL
+            setIsIconUploading(true);
+            setIconUploadingIndex(index);
+            const file = iconToFile(IconComponent, iconName);
+            const result = await uploadToCloudinary(file);
+            const url = result?.secure_url || "";
+            if (!url) throw new Error("Upload failed");
+
+            updateAmenity(index, "icon", url);
+            setIconPickerOpenForIndex(null);
+            setIconSearch("");
+        } catch (e) {
+            message.error("Failed to upload selected icon");
+        } finally {
+            setIsIconUploading(false);
+            setIconUploadingIndex(null);
+        }
+    };
+
     const quillModules = {
         toolbar: [
             [{ header: [1, 2, 3, false] }],
@@ -377,6 +447,39 @@ const RealEstateProjectUpload = () => {
                             <Input
                                 prefix={<DollarOutlined />}
                                 placeholder="e.g. 1.2 Cr"
+                                className="real-estate-upload-form__input"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                        <Form.Item label={label("Project Type")} name="projectType">
+                            <Select
+                                placeholder="Select project type (optional)"
+                                className="real-estate-upload-form__input"
+                                allowClear
+                            >
+                                {[...new Set(projectTypes.filter(Boolean))].map((t) => (
+                                    <Option key={t} value={t}>
+                                        {t}
+                                    </Option>
+                                ))}
+                                <Option value={OTHER_PROJECT_TYPE}>Other (Add new)</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            label={label("New Project Type")}
+                            name="newProjectType"
+                            rules={[
+                                {
+                                    required: selectedProjectType === OTHER_PROJECT_TYPE,
+                                    message: "Please enter a new project type",
+                                },
+                            ]}
+                            hidden={selectedProjectType !== OTHER_PROJECT_TYPE}
+                        >
+                            <Input
+                                placeholder="Type new project type (e.g. Farm House)"
                                 className="real-estate-upload-form__input"
                             />
                         </Form.Item>
@@ -688,7 +791,19 @@ const RealEstateProjectUpload = () => {
                                     }}
                                     className="real-estate-upload-form__amenity-icon-upload"
                                 >
-                                    <div className="real-estate-upload-form__amenity-icon-box">
+                                    <div
+                                        className="real-estate-upload-form__amenity-icon-box"
+                                        onClick={(e) => {
+                                            // keep existing UI but allow icon search flow
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (isIconUploading) return;
+                                            setIconPickerOpenForIndex(index);
+                                        }}
+                                    >
+                                        {iconUploadingIndex === index ? (
+                                            <Spin size="small" />
+                                        ) : null}
                                         {amenity.icon ? (
                                             typeof amenity.icon === "string" &&
                                             (amenity.icon.startsWith("http") ? (
@@ -727,6 +842,63 @@ const RealEstateProjectUpload = () => {
                         </button>
                     </div>
                 </Card>
+
+                <Modal
+                    title="Search icon"
+                    open={iconPickerOpenForIndex != null}
+                    onCancel={() => {
+                        if (isIconUploading) return;
+                        setIconPickerOpenForIndex(null);
+                        setIconSearch("");
+                    }}
+                    footer={null}
+                    width={720}
+                    destroyOnClose
+                >
+                    <Input
+                        value={iconSearch}
+                        onChange={(e) => setIconSearch(e.target.value)}
+                        placeholder="Search icons (e.g. wifi, home, car...)"
+                        className="real-estate-upload-form__input"
+                        disabled={isIconUploading}
+                    />
+                    {isIconUploading ? (
+                        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                            <Spin size="small" />
+                            <span style={{ fontSize: 12, color: "var(--secondary-text)" }}>
+                                Uploading icon…
+                            </span>
+                        </div>
+                    ) : null}
+                    <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 10 }}>
+                        {filteredIconKeys.map((key) => {
+                            const Icon = FaIcons[key];
+                            const isThisUploading = isIconUploading && iconPickerOpenForIndex === iconUploadingIndex;
+                            return (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => handleAmenityIconSelect(iconPickerOpenForIndex, key)}
+                                    disabled={isIconUploading}
+                                    style={{
+                                        border: "1px solid var(--border-color)",
+                                        background: "var(--input-bg)",
+                                        borderRadius: 8,
+                                        height: 44,
+                                        cursor: isIconUploading ? "not-allowed" : "pointer",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        opacity: isIconUploading ? 0.6 : 1,
+                                    }}
+                                    title={key}
+                                >
+                                    {Icon ? <Icon /> : null}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </Modal>
 
                 <div className="real-estate-upload-form__footer">
                     <Button

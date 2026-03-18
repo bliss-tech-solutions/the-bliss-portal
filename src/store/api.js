@@ -6,7 +6,7 @@ export const api = createApi({
         baseUrl: import.meta.env.VITE_API_BASE_URL,
         credentials: 'include',
     }),
-    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus', 'DailyWorking', 'RealEstateProjects'],
+    tagTypes: ['User', 'UserData', 'Tasks', 'UserDocuments', 'Teams', 'GlobalChat', 'SalaryHistory', 'Clients', 'Leaves', 'CheckInStatus', 'DailyWorking', 'RealEstateProjects', 'RealEstateProjectTypes'],
     endpoints: (builder) => ({
         incrementSalary: builder.mutation({
             query: ({ userId, body }) => ({
@@ -916,6 +916,11 @@ export const api = createApi({
             query: () => '/api/realEstate/project/getAll',
             providesTags: ['RealEstateProjects'],
         }),
+        getRealEstateProjectTypes: builder.query({
+            query: () => '/api/realEstate/projectType/getAll',
+            transformResponse: (response) => response?.data ?? response,
+            providesTags: ['RealEstateProjectTypes'],
+        }),
         getRealEstateAmenities: builder.query({
             query: () => '/api/realEstate/amenities/getAll',
             transformResponse: (response) => response?.data ?? response,
@@ -1053,6 +1058,7 @@ export const {
     useCreateRealEstateProjectMutation,
     useUpdateRealEstateProjectMutation,
     useGetAllRealEstateProjectsQuery,
+    useGetRealEstateProjectTypesQuery,
     useGetRealEstateAmenitiesQuery,
     useGetUniqueRolesQuery,
     useLazyGetCheckinAnalysisQuery,

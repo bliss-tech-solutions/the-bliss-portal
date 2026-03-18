@@ -10,17 +10,33 @@ import {
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.bubble.css';
 import RealEstateProjectUpload from './RealEstateProjectUpload';
-import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery } from '../../../../store/api';
+import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateProjectTypesQuery } from '../../../../store/api';
 import { uploadToCloudinary } from '../../../../utils/cloudinary';
 import './RealEstateProjectUpload.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const OTHER_PROJECT_TYPE = "__other__";
+const DEFAULT_PROJECT_TYPES = ["Plotted Development", "Villa", "Apartment"];
 
 const RealEstateProjectMain = () => {
     const { data: projectsResponse, isLoading, isFetching, refetch } = useGetAllRealEstateProjectsQuery();
     const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
     const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
+    const { data: projectTypesList = [], refetch: refetchProjectTypes } = useGetRealEstateProjectTypesQuery();
+    const normalizeProjectTypes = (list) => {
+        const arr = Array.isArray(list) ? list : [];
+        return arr
+            .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object") return item.name || item.title || item.type || "";
+                return "";
+            })
+            .filter(Boolean);
+    };
+    const projectTypes = [
+        ...new Set([...DEFAULT_PROJECT_TYPES, ...normalizeProjectTypes(projectTypesList)]),
+    ];
     const [updateProject, { isLoading: isUpdating }] = useUpdateRealEstateProjectMutation();
     const [togglingStatusId, setTogglingStatusId] = useState(null);
     const [editDrawerVisible, setEditDrawerVisible] = useState(false);
@@ -33,6 +49,8 @@ const RealEstateProjectMain = () => {
     const [editSlideHeroFileList, setEditSlideHeroFileList] = useState([]);
     const [editFloorPlanFileList, setEditFloorPlanFileList] = useState([]);
     const [editAmenities, setEditAmenities] = useState([]);
+
+    const selectedProjectType = Form.useWatch("projectType", form);
 
     // Extract projects from response
     const projects = projectsResponse?.data || [];
@@ -57,6 +75,8 @@ const RealEstateProjectMain = () => {
             projectLocation: record.projectLocation,
             groupSize: record.groupSize,
             projectPrice: record.projectPrice,
+            projectType: record.projectType ?? undefined,
+            newProjectType: undefined,
             projectSize: record.projectSize ?? '',
             latitude: record.latitude ?? '',
             longitude: record.longitude ?? '',
@@ -175,6 +195,11 @@ const RealEstateProjectMain = () => {
             const floorPlanImages = editFloorPlanFileList.filter((f) => f.status === 'done').map((f) => f.url);
             const body = {
                 ...values,
+                newProjectType: undefined,
+                projectType:
+                    values.projectType === OTHER_PROJECT_TYPE
+                        ? String(values.newProjectType ?? "").trim()
+                        : String(values.projectType ?? "").trim(),
                 possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: editDescription,
                 projectImages,
@@ -184,6 +209,7 @@ const RealEstateProjectMain = () => {
             };
             await updateProject({ id: editingProject._id, body }).unwrap();
             message.success('Project updated successfully!');
+            refetchProjectTypes();
             setEditDrawerVisible(false);
             setEditingProject(null);
             setEditedFields([]);
@@ -451,6 +477,27 @@ const RealEstateProjectMain = () => {
                                 </Form.Item>
                                 <Form.Item label={editLabel('Price')} name="projectPrice" rules={[{ required: true, message: 'Required' }]}>
                                     <Input prefix={<DollarOutlined />} placeholder="e.g. 1.2 Cr" className="real-estate-upload-form__input" />
+                                </Form.Item>
+                            </div>
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                <Form.Item label={editLabel('Project Type')} name="projectType">
+                                    <Select placeholder="Select project type (optional)" className="real-estate-upload-form__input" allowClear>
+                                        {[...new Set(projectTypes.filter(Boolean))].map((t) => (
+                                            <Option key={t} value={t}>{t}</Option>
+                                        ))}
+                                        {form.getFieldValue('projectType') && !projectTypes.includes(form.getFieldValue('projectType')) && form.getFieldValue('projectType') !== OTHER_PROJECT_TYPE ? (
+                                            <Option key={`current-${form.getFieldValue('projectType')}`} value={form.getFieldValue('projectType')}>{form.getFieldValue('projectType')}</Option>
+                                        ) : null}
+                                        <Option value={OTHER_PROJECT_TYPE}>Other (Add new)</Option>
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item
+                                    label={editLabel('New Project Type')}
+                                    name="newProjectType"
+                                    rules={[{ required: selectedProjectType === OTHER_PROJECT_TYPE, message: 'Please enter a new project type' }]}
+                                    hidden={selectedProjectType !== OTHER_PROJECT_TYPE}
+                                >
+                                    <Input placeholder="Type new project type (e.g. Farm House)" className="real-estate-upload-form__input" />
                                 </Form.Item>
                             </div>
                             <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
