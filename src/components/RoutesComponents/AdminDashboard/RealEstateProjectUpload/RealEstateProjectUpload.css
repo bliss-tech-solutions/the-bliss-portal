@@ -323,6 +323,144 @@
     border-radius: 4px;
 }
 
+/* Project highlight cards (title / value / icon) */
+.real-estate-upload-form__project-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.real-estate-upload-form__project-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--reuf-border);
+    border-radius: 12px;
+    background: var(--reuf-input-bg);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+.real-estate-upload-form__project-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.real-estate-upload-form__project-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--reuf-muted);
+}
+
+.real-estate-upload-form__project-card-remove {
+    padding: 0 4px !important;
+}
+
+.real-estate-upload-form__project-card-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--reuf-border);
+    background: var(--reuf-bg);
+    min-height: 56px;
+}
+
+.real-estate-upload-form__project-card-preview img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.real-estate-upload-form__project-card-preview-placeholder {
+    font-size: 28px;
+    color: var(--reuf-muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.real-estate-upload-form__project-card-preview-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.real-estate-upload-form__project-card-preview-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--reuf-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.real-estate-upload-form__project-card-preview-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--reuf-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.real-estate-upload-form__project-card-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.real-estate-upload-form__project-card-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.real-estate-upload-form__project-card-icon-box {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border: 1px dashed var(--reuf-border);
+    border-radius: 8px;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.real-estate-upload-form__project-card-icon-box:hover {
+    border-color: var(--accent-color);
+}
+
+.real-estate-upload-form__project-card-icon-box img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.real-estate-upload-form__project-card-icon-hint {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+}
+
+.real-estate-upload-form__add-project-card {
+    margin-top: 4px !important;
+}
+
 /* Amenities – grid 3–4 per row */
 .real-estate-upload-form__amenities {
     display: grid;

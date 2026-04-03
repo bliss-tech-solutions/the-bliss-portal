@@ -5,12 +5,13 @@ import {
     DeleteOutlined, CheckCircleOutlined,
     StopOutlined, ReloadOutlined, HomeOutlined, EnvironmentOutlined,
     DollarOutlined, TeamOutlined, TagOutlined, QuestionCircleOutlined,
-    SearchOutlined, PictureOutlined, LayoutOutlined, SlidersOutlined, AimOutlined
+    SearchOutlined, PictureOutlined, LayoutOutlined, SlidersOutlined, AimOutlined, BlockOutlined
 } from '@ant-design/icons';
+import * as FaIcons from "react-icons/fa";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.bubble.css';
-import RealEstateProjectUpload from './RealEstateProjectUpload';
-import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateProjectTypesQuery } from '../../../../store/api';
+import RealEstateProjectUpload, { iconToFile, buildProjectCardsPayload } from './RealEstateProjectUpload';
+import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateBhksQuery, useGetRealEstateProjectTypesQuery } from '../../../../store/api';
 import { uploadToCloudinary } from '../../../../utils/cloudinary';
 import './RealEstateProjectUpload.css';
 
@@ -18,12 +19,15 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const OTHER_PROJECT_TYPE = "__other__";
 const DEFAULT_PROJECT_TYPES = ["Plotted Development", "Villa", "Apartment"];
+const OTHER_BHK = "__other_bhk__";
+const DEFAULT_BHKS = ["Studio", "1 BHK", "2 BHK", "3 BHK", "4 BHK", "5 BHK", "6 BHK"];
 
 const RealEstateProjectMain = () => {
     const { data: projectsResponse, isLoading, isFetching, refetch } = useGetAllRealEstateProjectsQuery();
     const { data: commonAmenitiesList = [] } = useGetRealEstateAmenitiesQuery();
     const commonAmenities = Array.isArray(commonAmenitiesList) ? commonAmenitiesList : [];
     const { data: projectTypesList = [], refetch: refetchProjectTypes } = useGetRealEstateProjectTypesQuery();
+    const { data: bhkList = [], refetch: refetchBhks } = useGetRealEstateBhksQuery();
     const normalizeProjectTypes = (list) => {
         const arr = Array.isArray(list) ? list : [];
         return arr
@@ -37,6 +41,17 @@ const RealEstateProjectMain = () => {
     const projectTypes = [
         ...new Set([...DEFAULT_PROJECT_TYPES, ...normalizeProjectTypes(projectTypesList)]),
     ];
+    const normalizeBhks = (list) => {
+        const arr = Array.isArray(list) ? list : [];
+        return arr
+            .map((item) => {
+                if (typeof item === "string") return item;
+                if (item && typeof item === "object") return item.name || item.title || item.bhk || item.value || "";
+                return "";
+            })
+            .filter(Boolean);
+    };
+    const bhkOptions = [...new Set([...DEFAULT_BHKS, ...normalizeBhks(bhkList)])];
     const [updateProject, { isLoading: isUpdating }] = useUpdateRealEstateProjectMutation();
     const [togglingStatusId, setTogglingStatusId] = useState(null);
     const [editDrawerVisible, setEditDrawerVisible] = useState(false);
@@ -49,8 +64,19 @@ const RealEstateProjectMain = () => {
     const [editSlideHeroFileList, setEditSlideHeroFileList] = useState([]);
     const [editFloorPlanFileList, setEditFloorPlanFileList] = useState([]);
     const [editAmenities, setEditAmenities] = useState([]);
+    const [editProjectCards, setEditProjectCards] = useState([]);
+    const [editIconPickerTarget, setEditIconPickerTarget] = useState(null);
+    const [editIconSearch, setEditIconSearch] = useState("");
+    const [isEditIconUploading, setIsEditIconUploading] = useState(false);
+    const [editIconUploadingTarget, setEditIconUploadingTarget] = useState(null);
 
     const selectedProjectType = Form.useWatch("projectType", form);
+    const selectedBhk = Form.useWatch("bhk", form);
+
+    const editIconKeys = Object.keys(FaIcons);
+    const filteredEditIconKeys = editIconKeys
+        .filter((k) => k.toLowerCase().includes(editIconSearch.trim().toLowerCase()))
+        .slice(0, 100);
 
     // Extract projects from response
     const projects = projectsResponse?.data || [];
@@ -77,6 +103,8 @@ const RealEstateProjectMain = () => {
             projectPrice: record.projectPrice,
             projectType: record.projectType ?? undefined,
             newProjectType: undefined,
+            bhk: record.bhk ?? undefined,
+            newBhk: undefined,
             projectSize: record.projectSize ?? '',
             latitude: record.latitude ?? '',
             longitude: record.longitude ?? '',
@@ -88,6 +116,15 @@ const RealEstateProjectMain = () => {
         setEditSlideHeroFileList(urlsToFileList(record.projectSlideHeroImages));
         setEditFloorPlanFileList(urlsToFileList(record.floorPlanImages));
         setEditAmenities((record.amenities || []).map((a) => ({ ...a, enabled: true })));
+        const rawCards = record.projectCards;
+        const normalizedCards = Array.isArray(rawCards)
+            ? rawCards.map((c) => ({
+                  title: String(c?.title ?? ""),
+                  value: String(c?.value ?? ""),
+                  icon: typeof c?.icon === "string" ? c.icon : "",
+              }))
+            : [];
+        setEditProjectCards(normalizedCards);
         setEditDrawerVisible(true);
     };
 
@@ -168,6 +205,55 @@ const RealEstateProjectMain = () => {
         return false;
     };
 
+    const updateEditProjectCard = (index, field, value) => {
+        setEditProjectCards((prev) => prev.map((c, i) => (i === index ? { ...c, [field]: value } : c)));
+    };
+    const addEditProjectCard = () => {
+        setEditProjectCards((prev) => [...prev, { title: '', value: '', icon: '' }]);
+    };
+    const removeEditProjectCard = (index) => {
+        setEditProjectCards((prev) => prev.filter((_, i) => i !== index));
+    };
+    const handleEditProjectCardIconUpload = async (index, file) => {
+        try {
+            const result = await uploadToCloudinary(file);
+            const url = result?.secure_url || '';
+            updateEditProjectCard(index, 'icon', url);
+        } catch {
+            message.error('Icon upload failed');
+        }
+        return false;
+    };
+
+    const handleEditPickedIconSelect = async (iconName) => {
+        if (editIconPickerTarget == null || isEditIconUploading) return;
+        const target = editIconPickerTarget;
+        try {
+            const IconComponent = FaIcons?.[iconName];
+            if (!IconComponent) return;
+
+            setIsEditIconUploading(true);
+            setEditIconUploadingTarget(target);
+            const file = iconToFile(IconComponent, iconName);
+            const result = await uploadToCloudinary(file);
+            const url = result?.secure_url || '';
+            if (!url) throw new Error('Upload failed');
+
+            if (target.kind === 'amenity') {
+                updateEditAmenity(target.index, 'icon', url);
+            } else {
+                updateEditProjectCard(target.index, 'icon', url);
+            }
+            setEditIconPickerTarget(null);
+            setEditIconSearch('');
+        } catch (e) {
+            message.error('Failed to upload selected icon');
+        } finally {
+            setIsEditIconUploading(false);
+            setEditIconUploadingTarget(null);
+        }
+    };
+
     const quillModules = {
         toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ color: [] }, { background: [] }], [{ list: 'ordered' }, { list: 'bullet' }], ['link'], ['clean']],
     };
@@ -200,16 +286,23 @@ const RealEstateProjectMain = () => {
                     values.projectType === OTHER_PROJECT_TYPE
                         ? String(values.newProjectType ?? "").trim()
                         : String(values.projectType ?? "").trim(),
+                newBhk: undefined,
+                bhk:
+                    values.bhk === OTHER_BHK
+                        ? String(values.newBhk ?? "").trim()
+                        : String(values.bhk ?? "").trim(),
                 possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: editDescription,
                 projectImages,
                 projectSlideHeroImages,
                 floorPlanImages,
                 amenities: editAmenities.filter((a) => a.enabled).map(({ name, icon }) => ({ name, icon })),
+                projectCards: buildProjectCardsPayload(editProjectCards),
             };
             await updateProject({ id: editingProject._id, body }).unwrap();
             message.success('Project updated successfully!');
             refetchProjectTypes();
+            refetchBhks();
             setEditDrawerVisible(false);
             setEditingProject(null);
             setEditedFields([]);
@@ -219,6 +312,7 @@ const RealEstateProjectMain = () => {
             setEditSlideHeroFileList([]);
             setEditFloorPlanFileList([]);
             setEditAmenities([]);
+            setEditProjectCards([]);
         } catch (error) {
             console.error('Update Error:', error);
             message.error(error?.data?.message || 'Failed to update project');
@@ -501,6 +595,27 @@ const RealEstateProjectMain = () => {
                                 </Form.Item>
                             </div>
                             <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
+                                <Form.Item label={editLabel('BHK')} name="bhk">
+                                    <Select placeholder="Select BHK (optional)" className="real-estate-upload-form__input" allowClear>
+                                        {bhkOptions.map((b) => (
+                                            <Option key={b} value={b}>{b}</Option>
+                                        ))}
+                                        {form.getFieldValue('bhk') && !bhkOptions.includes(form.getFieldValue('bhk')) && form.getFieldValue('bhk') !== OTHER_BHK ? (
+                                            <Option key={`current-${form.getFieldValue('bhk')}`} value={form.getFieldValue('bhk')}>{form.getFieldValue('bhk')}</Option>
+                                        ) : null}
+                                        <Option value={OTHER_BHK}>Other (Add new)</Option>
+                                    </Select>
+                                </Form.Item>
+                                <Form.Item
+                                    label={editLabel('New BHK')}
+                                    name="newBhk"
+                                    rules={[{ required: selectedBhk === OTHER_BHK, message: 'Please enter a new BHK value' }]}
+                                    hidden={selectedBhk !== OTHER_BHK}
+                                >
+                                    <Input placeholder="Type new BHK (e.g. 7 BHK)" className="real-estate-upload-form__input" />
+                                </Form.Item>
+                            </div>
+                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
                                 <Form.Item label={editLabel('Group Size')} name="groupSize" rules={[{ required: true, message: 'Required' }]}>
                                     <InputNumber prefix={<TeamOutlined />} placeholder="50" min={1} className="real-estate-upload-form__input real-estate-upload-form__input-number" style={{ width: '100%' }} />
                                 </Form.Item>
@@ -592,6 +707,60 @@ const RealEstateProjectMain = () => {
                             </div>
                         </Card>
 
+                        <Card className="real-estate-upload-form__card" size="small" title="Project highlight cards">
+                            <p className="real-estate-upload-form__dimension-hint">
+                                Short stats for the project detail page (e.g. carpet area, possession). Upload or pick an icon; add as many cards as you need.
+                            </p>
+                            <div className="real-estate-upload-form__project-cards">
+                                {editProjectCards.map((card, index) => (
+                                    <div key={index} className="real-estate-upload-form__project-card">
+                                        <div className="real-estate-upload-form__project-card-head">
+                                            <span className="real-estate-upload-form__project-card-badge">
+                                                <BlockOutlined />
+                                                Card {index + 1}
+                                            </span>
+                                            <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__project-card-remove" onClick={() => removeEditProjectCard(index)} disabled={isUpdating} />
+                                        </div>
+                                        <div className="real-estate-upload-form__project-card-preview">
+                                            {card.icon && typeof card.icon === 'string' && card.icon.startsWith('http') ? (
+                                                <img src={card.icon} alt="" />
+                                            ) : (
+                                                <BlockOutlined className="real-estate-upload-form__project-card-preview-placeholder" />
+                                            )}
+                                            <div className="real-estate-upload-form__project-card-preview-text">
+                                                <span className="real-estate-upload-form__project-card-preview-title">{(card.title || '').trim() || 'Title'}</span>
+                                                <span className="real-estate-upload-form__project-card-preview-value">{(card.value || '').trim() || 'Value'}</span>
+                                            </div>
+                                        </div>
+                                        <div className="real-estate-upload-form__project-card-fields">
+                                            <Input placeholder="Title (e.g. Carpet Area)" value={card.title} onChange={(e) => updateEditProjectCard(index, 'title', e.target.value)} className="real-estate-upload-form__input" disabled={isUpdating} />
+                                            <Input placeholder="Value (e.g. 1200 sq ft)" value={card.value} onChange={(e) => updateEditProjectCard(index, 'value', e.target.value)} className="real-estate-upload-form__input" disabled={isUpdating} />
+                                            <div className="real-estate-upload-form__project-card-icon-row">
+                                                <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditProjectCardIconUpload(index, file); return false; }} className="real-estate-upload-form__amenity-icon-upload" disabled={isUpdating}>
+                                                    <div
+                                                        className="real-estate-upload-form__project-card-icon-box"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (isEditIconUploading || isUpdating) return;
+                                                            setEditIconPickerTarget({ kind: 'projectCard', index });
+                                                        }}
+                                                    >
+                                                        {editIconUploadingTarget?.kind === 'projectCard' && editIconUploadingTarget.index === index ? <Spin size="small" /> : null}
+                                                        {card.icon && typeof card.icon === 'string' && card.icon.startsWith('http') ? <img src={card.icon} alt="" /> : <PlusOutlined />}
+                                                    </div>
+                                                </Upload>
+                                                <Text type="secondary" className="real-estate-upload-form__project-card-icon-hint">Icon: image upload or search</Text>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <Button type="dashed" icon={<PlusOutlined />} onClick={addEditProjectCard} disabled={isUpdating} className="real-estate-upload-form__add-project-card" block>
+                                Add project card
+                            </Button>
+                        </Card>
+
                         <Card className="real-estate-upload-form__card" size="small" title="Amenities">
                             {commonAmenities.length > 0 && (
                                 <div className="real-estate-upload-form__common-amenities">
@@ -629,7 +798,16 @@ const RealEstateProjectMain = () => {
                                             <Button type="text" danger size="small" icon={<DeleteOutlined />} className="real-estate-upload-form__amenity-delete" onClick={() => setEditAmenities((prev) => prev.filter((_, i) => i !== index))} />
                                         </div>
                                         <Upload accept="image/*" showUploadList={false} beforeUpload={(file) => { handleEditAmenityIconUpload(index, file); return false; }} className="real-estate-upload-form__amenity-icon-upload">
-                                            <div className="real-estate-upload-form__amenity-icon-box">
+                                            <div
+                                                className="real-estate-upload-form__amenity-icon-box"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (isEditIconUploading) return;
+                                                    setEditIconPickerTarget({ kind: 'amenity', index });
+                                                }}
+                                            >
+                                                {editIconUploadingTarget?.kind === 'amenity' && editIconUploadingTarget.index === index ? <Spin size="small" /> : null}
                                                 {amenity.icon ? (typeof amenity.icon === 'string' && amenity.icon.startsWith('http') ? <img src={amenity.icon} alt="" className="real-estate-upload-form__amenity-icon-img" /> : <span className="real-estate-upload-form__amenity-icon-text">{amenity.icon}</span>) : <PlusOutlined />}
                                             </div>
                                         </Upload>
@@ -642,8 +820,64 @@ const RealEstateProjectMain = () => {
                             </div>
                         </Card>
 
+                        <Modal
+                            title="Search icon"
+                            open={editIconPickerTarget != null}
+                            onCancel={() => {
+                                if (isEditIconUploading) return;
+                                setEditIconPickerTarget(null);
+                                setEditIconSearch('');
+                            }}
+                            footer={null}
+                            width={720}
+                            destroyOnClose
+                        >
+                            <Input
+                                value={editIconSearch}
+                                onChange={(e) => setEditIconSearch(e.target.value)}
+                                placeholder="Search icons (e.g. wifi, home, car...)"
+                                className="real-estate-upload-form__input"
+                                disabled={isEditIconUploading}
+                            />
+                            {isEditIconUploading ? (
+                                <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                                    <Spin size="small" />
+                                    <span style={{ fontSize: 12, color: "var(--secondary-text)" }}>
+                                        Uploading icon…
+                                    </span>
+                                </div>
+                            ) : null}
+                            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 10 }}>
+                                {filteredEditIconKeys.map((key) => {
+                                    const Icon = FaIcons[key];
+                                    return (
+                                        <button
+                                            key={key}
+                                            type="button"
+                                            onClick={() => handleEditPickedIconSelect(key)}
+                                            disabled={isEditIconUploading}
+                                            style={{
+                                                border: "1px solid var(--border-color)",
+                                                background: "var(--input-bg)",
+                                                borderRadius: 8,
+                                                height: 44,
+                                                cursor: isEditIconUploading ? "not-allowed" : "pointer",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                opacity: isEditIconUploading ? 0.6 : 1,
+                                            }}
+                                            title={key}
+                                        >
+                                            {Icon ? <Icon /> : null}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </Modal>
+
                         <div className="real-estate-upload-form__footer">
-                            <Button onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); }} disabled={isUpdating}>Cancel</Button>
+                            <Button onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} disabled={isUpdating}>Cancel</Button>
                             <Space>
                                 <Button type="primary" htmlType="submit" loading={isUpdating}>{isUpdating ? 'Updating...' : 'Update Project'}</Button>
                             </Space>
