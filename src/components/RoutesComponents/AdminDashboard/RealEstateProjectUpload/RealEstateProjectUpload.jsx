@@ -20,9 +20,7 @@ import {
     DeleteOutlined,
     HomeOutlined,
     EnvironmentOutlined,
-    DollarOutlined,
     TeamOutlined,
-    TagOutlined,
     PictureOutlined,
     AimOutlined,
     QuestionCircleOutlined,
@@ -55,18 +53,14 @@ export const iconToFile = (IconComponent, iconName = "icon") => {
 const DUMMY_INITIAL = {
     projectName: "Sunrise Apartments",
     projectLocation: "Mumbai, Maharashtra",
-    projectPrice: "1.2 Cr",
     projectType: undefined,
     newProjectType: undefined,
     bhk: undefined,
     newBhk: undefined,
-    projectSize: "",
     groupSize: 50,
-    tag: "Exclusive deal",
     latitude: "19.0760",
     longitude: "72.8777",
     status: "active",
-    possessionDate: "",
     projectDescriptionAndDetails:
         "Luxury 2BHK and 3BHK apartments with modern amenities.",
     amenities: [
@@ -172,19 +166,16 @@ const RealEstateProjectUpload = () => {
 
             const payload = {
                 ...values,
-                // projectType: dropdown value or custom input when "Other" selected
                 newProjectType: undefined,
                 projectType:
                     values.projectType === OTHER_PROJECT_TYPE
                         ? String(values.newProjectType ?? "").trim()
                         : String(values.projectType ?? "").trim(),
-                // bhk: dropdown value or custom input when "Other" selected
                 newBhk: undefined,
                 bhk:
                     values.bhk === OTHER_BHK
                         ? String(values.newBhk ?? "").trim()
                         : String(values.bhk ?? "").trim(),
-                possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: description,
                 projectImages: uploadedImageUrls,
                 projectSlideHeroImages: uploadedSlideHeroUrls,
@@ -194,6 +185,10 @@ const RealEstateProjectUpload = () => {
                     .map(({ name, icon }) => ({ name, icon })),
                 projectCards: buildProjectCardsPayload(projectCards),
             };
+            delete payload.tag;
+            delete payload.projectPrice;
+            delete payload.projectSize;
+            delete payload.possessionDate;
 
             setIsPublishing(true);
             setPublishStatus("Creating Project...");
@@ -468,14 +463,10 @@ const RealEstateProjectUpload = () => {
                 initialValues={{
                     projectName: DUMMY_INITIAL.projectName,
                     projectLocation: DUMMY_INITIAL.projectLocation,
-                    projectPrice: DUMMY_INITIAL.projectPrice,
-                    projectSize: DUMMY_INITIAL.projectSize,
                     groupSize: DUMMY_INITIAL.groupSize,
-                    tag: DUMMY_INITIAL.tag,
                     latitude: DUMMY_INITIAL.latitude,
                     longitude: DUMMY_INITIAL.longitude,
                     status: DUMMY_INITIAL.status,
-                    possessionDate: DUMMY_INITIAL.possessionDate,
                 }}
             >
                 <Card className="real-estate-upload-form__card" size="small">
@@ -491,43 +482,17 @@ const RealEstateProjectUpload = () => {
                         />
                     </Form.Item>
 
-                    <div className="real-estate-upload-form__row real-estate-upload-form__row--3">
-                        <Form.Item
-                            label={label("Tag")}
-                            name="tag"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Select
-                                placeholder="Select tag"
-                                className="real-estate-upload-form__input"
-                            >
-                                <Option value="Exclusive deal">Exclusive deal</Option>
-                                <Option value="Limited time offer">Limited time offer</Option>
-                            </Select>
-                        </Form.Item>
-                        <Form.Item
-                            label={label("Location")}
-                            name="projectLocation"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Input
-                                prefix={<EnvironmentOutlined />}
-                                placeholder="e.g. Mumbai, Maharashtra"
-                                className="real-estate-upload-form__input"
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            label={label("Price")}
-                            name="projectPrice"
-                            rules={[{ required: true, message: "Required" }]}
-                        >
-                            <Input
-                                prefix={<DollarOutlined />}
-                                placeholder="e.g. 1.2 Cr"
-                                className="real-estate-upload-form__input"
-                            />
-                        </Form.Item>
-                    </div>
+                    <Form.Item
+                        label={label("Location")}
+                        name="projectLocation"
+                        rules={[{ required: true, message: "Required" }]}
+                    >
+                        <Input
+                            prefix={<EnvironmentOutlined />}
+                            placeholder="e.g. Vadodara, Gujarat"
+                            className="real-estate-upload-form__input"
+                        />
+                    </Form.Item>
 
                     <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
                         <Form.Item label={label("Project Type")} name="projectType">
@@ -610,12 +575,16 @@ const RealEstateProjectUpload = () => {
                             />
                         </Form.Item>
                         <Form.Item
-                            label={label("Project Size")}
-                            name="projectSize"
+                            label={label("Status")}
+                            name="status"
+                            valuePropName="checked"
+                            getValueFromEvent={(checked) => (checked ? "active" : "inactive")}
+                            getValueProps={(v) => ({ checked: v === "active" })}
                         >
-                            <Input
-                                placeholder="e.g. 1200 sq ft"
-                                className="real-estate-upload-form__input"
+                            <Switch
+                                checkedChildren="Active"
+                                unCheckedChildren="Inactive"
+                                className="real-estate-upload-form__status-switch"
                             />
                         </Form.Item>
                     </div>
@@ -638,30 +607,6 @@ const RealEstateProjectUpload = () => {
                                 prefix={<AimOutlined />}
                                 placeholder="72.8777"
                                 className="real-estate-upload-form__input"
-                            />
-                        </Form.Item>
-                    </div>
-                    <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
-                        <Form.Item
-                            label={label("Possession Date")}
-                            name="possessionDate"
-                        >
-                            <Input
-                                placeholder="e.g. Dec 2025"
-                                className="real-estate-upload-form__input"
-                            />
-                        </Form.Item>
-                        <Form.Item
-                            label={label("Status")}
-                            name="status"
-                            valuePropName="checked"
-                            getValueFromEvent={(checked) => (checked ? "active" : "inactive")}
-                            getValueProps={(v) => ({ checked: v === "active" })}
-                        >
-                            <Switch
-                                checkedChildren="Active"
-                                unCheckedChildren="Inactive"
-                                className="real-estate-upload-form__status-switch"
                             />
                         </Form.Item>
                     </div>
@@ -869,8 +814,8 @@ const RealEstateProjectUpload = () => {
                                 </div>
                                 <div className="real-estate-upload-form__project-card-preview">
                                     {card.icon &&
-                                    typeof card.icon === "string" &&
-                                    card.icon.startsWith("http") ? (
+                                        typeof card.icon === "string" &&
+                                        card.icon.startsWith("http") ? (
                                         <img src={card.icon} alt="" />
                                     ) : (
                                         <BlockOutlined className="real-estate-upload-form__project-card-preview-placeholder" />
@@ -927,12 +872,12 @@ const RealEstateProjectUpload = () => {
                                                 }}
                                             >
                                                 {iconUploadingTarget?.kind === "projectCard" &&
-                                                iconUploadingTarget.index === index ? (
+                                                    iconUploadingTarget.index === index ? (
                                                     <Spin size="small" />
                                                 ) : null}
                                                 {card.icon &&
-                                                typeof card.icon === "string" &&
-                                                card.icon.startsWith("http") ? (
+                                                    typeof card.icon === "string" &&
+                                                    card.icon.startsWith("http") ? (
                                                     <img src={card.icon} alt="" />
                                                 ) : (
                                                     <PlusOutlined />
@@ -1031,7 +976,7 @@ const RealEstateProjectUpload = () => {
                                         }}
                                     >
                                         {iconUploadingTarget?.kind === "amenity" &&
-                                        iconUploadingTarget.index === index ? (
+                                            iconUploadingTarget.index === index ? (
                                             <Spin size="small" />
                                         ) : null}
                                         {amenity.icon ? (

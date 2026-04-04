@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Tabs, Table, Tag, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Upload, Switch, Popconfirm } from 'antd';
+import { Tabs, Table, Space, Button, Typography, Card, Spin, Empty, Drawer, Form, Input, InputNumber, Select, message, Tooltip, Modal, Upload, Switch, Popconfirm } from 'antd';
 import {
     ProjectOutlined, PlusOutlined, EditOutlined,
     DeleteOutlined, CheckCircleOutlined,
     StopOutlined, ReloadOutlined, HomeOutlined, EnvironmentOutlined,
-    DollarOutlined, TeamOutlined, TagOutlined, QuestionCircleOutlined,
+    TeamOutlined, QuestionCircleOutlined,
     SearchOutlined, PictureOutlined, LayoutOutlined, SlidersOutlined, AimOutlined, BlockOutlined
 } from '@ant-design/icons';
 import * as FaIcons from "react-icons/fa";
@@ -97,18 +97,14 @@ const RealEstateProjectMain = () => {
         const status = (record.status || 'active').toLowerCase();
         form.setFieldsValue({
             projectName: record.projectName,
-            tag: record.tag,
             projectLocation: record.projectLocation,
             groupSize: record.groupSize,
-            projectPrice: record.projectPrice,
             projectType: record.projectType ?? undefined,
             newProjectType: undefined,
             bhk: record.bhk ?? undefined,
             newBhk: undefined,
-            projectSize: record.projectSize ?? '',
             latitude: record.latitude ?? '',
             longitude: record.longitude ?? '',
-            possessionDate: record.possessionDate ?? '',
             status: status === 'active' ? 'active' : 'inactive',
         });
         setEditDescription(record.projectDescriptionAndDetails || '');
@@ -291,7 +287,6 @@ const RealEstateProjectMain = () => {
                     values.bhk === OTHER_BHK
                         ? String(values.newBhk ?? "").trim()
                         : String(values.bhk ?? "").trim(),
-                possessionDate: values.possessionDate?.trim?.() ?? '',
                 projectDescriptionAndDetails: editDescription,
                 projectImages,
                 projectSlideHeroImages,
@@ -299,6 +294,10 @@ const RealEstateProjectMain = () => {
                 amenities: editAmenities.filter((a) => a.enabled).map(({ name, icon }) => ({ name, icon })),
                 projectCards: buildProjectCardsPayload(editProjectCards),
             };
+            delete body.tag;
+            delete body.projectPrice;
+            delete body.projectSize;
+            delete body.possessionDate;
             await updateProject({ id: editingProject._id, body }).unwrap();
             message.success('Project updated successfully!');
             refetchProjectTypes();
@@ -364,7 +363,8 @@ const RealEstateProjectMain = () => {
         return (
             (project.projectName?.toLowerCase() || '').includes(searchLower) ||
             (project.projectLocation?.toLowerCase() || '').includes(searchLower) ||
-            (project.tag?.toLowerCase() || '').includes(searchLower)
+            (String(project.projectType || '').toLowerCase()).includes(searchLower) ||
+            (String(project.bhk || '').toLowerCase()).includes(searchLower)
         );
     });
 
@@ -382,9 +382,15 @@ const RealEstateProjectMain = () => {
             render: (text) => text || '-',
         },
         {
-            title: 'PRICE',
-            dataIndex: 'projectPrice',
-            key: 'projectPrice',
+            title: 'TYPE',
+            dataIndex: 'projectType',
+            key: 'projectType',
+            render: (text) => text || '-',
+        },
+        {
+            title: 'BHK',
+            dataIndex: 'bhk',
+            key: 'bhk',
             render: (text) => text || '-',
         },
         {
@@ -413,12 +419,6 @@ const RealEstateProjectMain = () => {
                     </Popconfirm>
                 );
             },
-        },
-        {
-            title: 'TAG',
-            dataIndex: 'tag',
-            key: 'tag',
-            render: (tag) => tag ? <Tag color="blue">{tag}</Tag> : '-',
         },
         {
             title: 'ACTIONS',
@@ -544,6 +544,9 @@ const RealEstateProjectMain = () => {
                     setEditSlideHeroFileList([]);
                     setEditFloorPlanFileList([]);
                     setEditAmenities([]);
+                    setEditProjectCards([]);
+                    setEditIconPickerTarget(null);
+                    setEditIconSearch('');
                 }}
                 open={editDrawerVisible}
                 closable={false}
@@ -552,27 +555,16 @@ const RealEstateProjectMain = () => {
                 <div className="real-estate-upload-form" style={{ border: 'none', padding: '0 20px 20px' }}>
                     <div className="real-estate-upload-form__header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Title level={4} className="real-estate-upload-form__title" style={{ margin: 0 }}>Edit Project</Title>
-                        <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); }} style={{ fontSize: '20px' }}>✕</Button>
+                        <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} style={{ fontSize: '20px' }}>✕</Button>
                     </div>
                     <Form form={form} layout="vertical" onFinish={handleUpdateProject} onFieldsChange={handleFieldChange} autoComplete="off" requiredMark={false} disabled={isUpdating}>
                         <Card className="real-estate-upload-form__card" size="small">
                             <Form.Item label={editLabel('Project Name', 'Official name of the project')} name="projectName" rules={[{ required: true, message: 'Required' }]}>
                                 <Input prefix={<HomeOutlined />} placeholder="e.g. Sunrise Apartments" className="real-estate-upload-form__input" />
                             </Form.Item>
-                            <div className="real-estate-upload-form__row real-estate-upload-form__row--3">
-                                <Form.Item label={editLabel('Tag')} name="tag" rules={[{ required: true, message: 'Required' }]}>
-                                    <Select placeholder="Select tag" className="real-estate-upload-form__input">
-                                        <Option value="Exclusive deal">Exclusive deal</Option>
-                                        <Option value="Limited time offer">Limited time offer</Option>
-                                    </Select>
-                                </Form.Item>
-                                <Form.Item label={editLabel('Location')} name="projectLocation" rules={[{ required: true, message: 'Required' }]}>
-                                    <Input prefix={<EnvironmentOutlined />} placeholder="e.g. Mumbai, Maharashtra" className="real-estate-upload-form__input" />
-                                </Form.Item>
-                                <Form.Item label={editLabel('Price')} name="projectPrice" rules={[{ required: true, message: 'Required' }]}>
-                                    <Input prefix={<DollarOutlined />} placeholder="e.g. 1.2 Cr" className="real-estate-upload-form__input" />
-                                </Form.Item>
-                            </div>
+                            <Form.Item label={editLabel('Location')} name="projectLocation" rules={[{ required: true, message: 'Required' }]}>
+                                <Input prefix={<EnvironmentOutlined />} placeholder="e.g. Vadodara, Gujarat" className="real-estate-upload-form__input" />
+                            </Form.Item>
                             <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
                                 <Form.Item label={editLabel('Project Type')} name="projectType">
                                     <Select placeholder="Select project type (optional)" className="real-estate-upload-form__input" allowClear>
@@ -619,8 +611,8 @@ const RealEstateProjectMain = () => {
                                 <Form.Item label={editLabel('Group Size')} name="groupSize" rules={[{ required: true, message: 'Required' }]}>
                                     <InputNumber prefix={<TeamOutlined />} placeholder="50" min={1} className="real-estate-upload-form__input real-estate-upload-form__input-number" style={{ width: '100%' }} />
                                 </Form.Item>
-                                <Form.Item label={editLabel('Project Size')} name="projectSize">
-                                    <Input placeholder="e.g. 1200 sq ft" className="real-estate-upload-form__input" />
+                                <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
+                                    <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="real-estate-upload-form__status-switch" />
                                 </Form.Item>
                             </div>
                             <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
@@ -629,14 +621,6 @@ const RealEstateProjectMain = () => {
                                 </Form.Item>
                                 <Form.Item label={editLabel('Longitude')} name="longitude">
                                     <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
-                                </Form.Item>
-                            </div>
-                            <div className="real-estate-upload-form__row real-estate-upload-form__row--2">
-                                <Form.Item label={editLabel('Possession Date')} name="possessionDate">
-                                    <Input placeholder="e.g. Dec 2025" className="real-estate-upload-form__input" />
-                                </Form.Item>
-                                <Form.Item label={editLabel('Status')} name="status" valuePropName="checked" getValueFromEvent={(checked) => (checked ? 'active' : 'inactive')} getValueProps={(v) => ({ checked: v === 'active' })}>
-                                <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="real-estate-upload-form__status-switch" />
                                 </Form.Item>
                             </div>
                         </Card>
