@@ -28,8 +28,6 @@ import {
     SlidersOutlined,
     BlockOutlined,
 } from "@ant-design/icons";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.bubble.css";
 import * as FaIcons from "react-icons/fa";
 import { renderToString } from "react-dom/server";
 import { useCreateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateBhksQuery, useGetRealEstateProjectTypesQuery } from "../../../../store/api";
@@ -61,8 +59,6 @@ const DUMMY_INITIAL = {
     latitude: "19.0760",
     longitude: "72.8777",
     status: "active",
-    projectDescriptionAndDetails:
-        "Luxury 2BHK and 3BHK apartments with modern amenities.",
     amenities: [
         { name: "Swimming Pool", icon: "pool", enabled: true },
         { name: "Gym", icon: "gym", enabled: true },
@@ -90,9 +86,6 @@ export const buildProjectCardsPayload = (cards) =>
 
 const RealEstateProjectUpload = () => {
     const [form] = Form.useForm();
-    const [description, setDescription] = useState(
-        DUMMY_INITIAL.projectDescriptionAndDetails
-    );
     const [fileList, setFileList] = useState([]);
     const [slideHeroFileList, setSlideHeroFileList] = useState([]);
     const [floorPlanFileList, setFloorPlanFileList] = useState([]);
@@ -176,7 +169,6 @@ const RealEstateProjectUpload = () => {
                     values.bhk === OTHER_BHK
                         ? String(values.newBhk ?? "").trim()
                         : String(values.bhk ?? "").trim(),
-                projectDescriptionAndDetails: description,
                 projectImages: uploadedImageUrls,
                 projectSlideHeroImages: uploadedSlideHeroUrls,
                 floorPlanImages: uploadedFloorPlanUrls,
@@ -201,7 +193,6 @@ const RealEstateProjectUpload = () => {
             setFileList([]);
             setSlideHeroFileList([]);
             setFloorPlanFileList([]);
-            setDescription("");
             setAmenities(DUMMY_INITIAL.amenities.map((a) => ({ ...a })));
             setProjectCards(DUMMY_INITIAL.projectCards.map((c) => ({ ...c })));
         } catch (error) {
@@ -407,24 +398,6 @@ const RealEstateProjectUpload = () => {
         }
     };
 
-    const quillModules = {
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ["bold", "italic", "underline", "strike"],
-            [{ color: [] }, { background: [] }],
-            [{ list: "ordered" }, { list: "bullet" }],
-            ["link"],
-            ["clean"],
-        ],
-    };
-    const quillFormats = [
-        "header",
-        "bold", "italic", "underline", "strike",
-        "color", "background",
-        "list", "bullet",
-        "link",
-    ];
-
     const label = (text, tip) => (
         <span className="real-estate-upload-form__label">
             {text}
@@ -609,20 +582,6 @@ const RealEstateProjectUpload = () => {
                                 className="real-estate-upload-form__input"
                             />
                         </Form.Item>
-                    </div>
-                </Card>
-
-                <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
-                    <div className="real-estate-upload-form__quill-wrap">
-                        <ReactQuill
-                            theme="bubble"
-                            value={description}
-                            onChange={setDescription}
-                            modules={quillModules}
-                            formats={quillFormats}
-                            placeholder="Describe the project..."
-                            readOnly={isPublishing}
-                        />
                     </div>
                 </Card>
 
@@ -1078,7 +1037,6 @@ const RealEstateProjectUpload = () => {
                     <Button
                         onClick={() => {
                             form.resetFields();
-                            setDescription(DUMMY_INITIAL.projectDescriptionAndDetails);
                             setFileList([]);
                             setSlideHeroFileList([]);
                             setFloorPlanFileList([]);

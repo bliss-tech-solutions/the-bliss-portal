@@ -8,8 +8,6 @@ import {
     SearchOutlined, PictureOutlined, LayoutOutlined, SlidersOutlined, AimOutlined, BlockOutlined
 } from '@ant-design/icons';
 import * as FaIcons from "react-icons/fa";
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.bubble.css';
 import RealEstateProjectUpload, { iconToFile, buildProjectCardsPayload } from './RealEstateProjectUpload';
 import { useGetAllRealEstateProjectsQuery, useUpdateRealEstateProjectMutation, useGetRealEstateAmenitiesQuery, useGetRealEstateBhksQuery, useGetRealEstateProjectTypesQuery } from '../../../../store/api';
 import { uploadToCloudinary } from '../../../../utils/cloudinary';
@@ -59,7 +57,6 @@ const RealEstateProjectMain = () => {
     const [editedFields, setEditedFields] = useState([]);
     const [form] = Form.useForm();
     // Edit form state (same as upload form)
-    const [editDescription, setEditDescription] = useState('');
     const [editFileList, setEditFileList] = useState([]);
     const [editSlideHeroFileList, setEditSlideHeroFileList] = useState([]);
     const [editFloorPlanFileList, setEditFloorPlanFileList] = useState([]);
@@ -107,7 +104,6 @@ const RealEstateProjectMain = () => {
             longitude: record.longitude ?? '',
             status: status === 'active' ? 'active' : 'inactive',
         });
-        setEditDescription(record.projectDescriptionAndDetails || '');
         setEditFileList(urlsToFileList(record.projectImages));
         setEditSlideHeroFileList(urlsToFileList(record.projectSlideHeroImages));
         setEditFloorPlanFileList(urlsToFileList(record.floorPlanImages));
@@ -115,10 +111,10 @@ const RealEstateProjectMain = () => {
         const rawCards = record.projectCards;
         const normalizedCards = Array.isArray(rawCards)
             ? rawCards.map((c) => ({
-                  title: String(c?.title ?? ""),
-                  value: String(c?.value ?? ""),
-                  icon: typeof c?.icon === "string" ? c.icon : "",
-              }))
+                title: String(c?.title ?? ""),
+                value: String(c?.value ?? ""),
+                icon: typeof c?.icon === "string" ? c.icon : "",
+            }))
             : [];
         setEditProjectCards(normalizedCards);
         setEditDrawerVisible(true);
@@ -250,11 +246,6 @@ const RealEstateProjectMain = () => {
         }
     };
 
-    const quillModules = {
-        toolbar: [[{ header: [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ color: [] }, { background: [] }], [{ list: 'ordered' }, { list: 'bullet' }], ['link'], ['clean']],
-    };
-    const quillFormats = ['header', 'bold', 'italic', 'underline', 'strike', 'color', 'background', 'list', 'bullet', 'link'];
-
     const editLabel = (text, tip) => (
         <span className="real-estate-upload-form__label">
             {text}
@@ -287,7 +278,6 @@ const RealEstateProjectMain = () => {
                     values.bhk === OTHER_BHK
                         ? String(values.newBhk ?? "").trim()
                         : String(values.bhk ?? "").trim(),
-                projectDescriptionAndDetails: editDescription,
                 projectImages,
                 projectSlideHeroImages,
                 floorPlanImages,
@@ -306,7 +296,6 @@ const RealEstateProjectMain = () => {
             setEditingProject(null);
             setEditedFields([]);
             form.resetFields();
-            setEditDescription('');
             setEditFileList([]);
             setEditSlideHeroFileList([]);
             setEditFloorPlanFileList([]);
@@ -539,7 +528,6 @@ const RealEstateProjectMain = () => {
                     setEditingProject(null);
                     setEditedFields([]);
                     form.resetFields();
-                    setEditDescription('');
                     setEditFileList([]);
                     setEditSlideHeroFileList([]);
                     setEditFloorPlanFileList([]);
@@ -555,7 +543,7 @@ const RealEstateProjectMain = () => {
                 <div className="real-estate-upload-form" style={{ border: 'none', padding: '0 20px 20px' }}>
                     <div className="real-estate-upload-form__header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Title level={4} className="real-estate-upload-form__title" style={{ margin: 0 }}>Edit Project</Title>
-                        <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} style={{ fontSize: '20px' }}>✕</Button>
+                        <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} style={{ fontSize: '20px' }}>✕</Button>
                     </div>
                     <Form form={form} layout="vertical" onFinish={handleUpdateProject} onFieldsChange={handleFieldChange} autoComplete="off" requiredMark={false} disabled={isUpdating}>
                         <Card className="real-estate-upload-form__card" size="small">
@@ -622,12 +610,6 @@ const RealEstateProjectMain = () => {
                                 <Form.Item label={editLabel('Longitude')} name="longitude">
                                     <Input prefix={<AimOutlined />} placeholder="72.8777" className="real-estate-upload-form__input" />
                                 </Form.Item>
-                            </div>
-                        </Card>
-
-                        <Card className="real-estate-upload-form__card" size="small" title="Project Description & Details">
-                            <div className="real-estate-upload-form__quill-wrap">
-                                <ReactQuill theme="bubble" value={editDescription} onChange={setEditDescription} modules={quillModules} formats={quillFormats} placeholder="Describe the project..." readOnly={isUpdating} />
                             </div>
                         </Card>
 
@@ -861,7 +843,7 @@ const RealEstateProjectMain = () => {
                         </Modal>
 
                         <div className="real-estate-upload-form__footer">
-                            <Button onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditDescription(''); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} disabled={isUpdating}>Cancel</Button>
+                            <Button onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} disabled={isUpdating}>Cancel</Button>
                             <Space>
                                 <Button type="primary" htmlType="submit" loading={isUpdating}>{isUpdating ? 'Updating...' : 'Update Project'}</Button>
                             </Space>
