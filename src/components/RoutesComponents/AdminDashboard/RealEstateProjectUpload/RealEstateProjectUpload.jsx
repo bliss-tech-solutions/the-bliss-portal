@@ -181,6 +181,7 @@ const RealEstateProjectUpload = () => {
             delete payload.projectPrice;
             delete payload.projectSize;
             delete payload.possessionDate;
+            delete payload.projectDescriptionAndDetails;
 
             setIsPublishing(true);
             setPublishStatus("Creating Project...");

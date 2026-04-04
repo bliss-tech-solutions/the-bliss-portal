@@ -288,6 +288,7 @@ const RealEstateProjectMain = () => {
             delete body.projectPrice;
             delete body.projectSize;
             delete body.possessionDate;
+            delete body.projectDescriptionAndDetails;
             await updateProject({ id: editingProject._id, body }).unwrap();
             message.success('Project updated successfully!');
             refetchProjectTypes();
@@ -541,6 +542,14 @@ const RealEstateProjectMain = () => {
                 styles={{ body: { padding: 0 } }}
             >
                 <div className="real-estate-upload-form" style={{ border: 'none', padding: '0 20px 20px' }}>
+                    {isUpdating && (
+                        <div className="real-estate-upload-form__overlay">
+                            <div className="real-estate-upload-form__loader">
+                                <div className="real-estate-upload-form__spinner" />
+                                <Text strong>Updating project…</Text>
+                            </div>
+                        </div>
+                    )}
                     <div className="real-estate-upload-form__header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Title level={4} className="real-estate-upload-form__title" style={{ margin: 0 }}>Edit Project</Title>
                         <Button type="text" onClick={() => { setEditDrawerVisible(false); setEditingProject(null); setEditedFields([]); form.resetFields(); setEditFileList([]); setEditSlideHeroFileList([]); setEditFloorPlanFileList([]); setEditAmenities([]); setEditProjectCards([]); setEditIconPickerTarget(null); setEditIconSearch(''); }} style={{ fontSize: '20px' }}>✕</Button>
